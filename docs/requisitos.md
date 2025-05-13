@@ -12,6 +12,7 @@ Priorização utilizando moscow
 | EP04  | REDE SOCIAL                  |
 | EP05  | AJUDA E INFORMAÇÕES          |
 | EP06  | IDENTIFICAÇÃO DO USUÁRIO     |
+| EP07  | ADMINISTRAÇÃO DO APLICATIVO  |
 
 ## Requisitos
 
@@ -58,10 +59,21 @@ Priorização utilizando moscow
 | EP06 | RF34 | Eu enquanto, usuário, desejo editar perfil | should |
 | EP06 | RF35 | Eu enquanto, usuário, desejo sair da conta | must |
 | EP06 | RF36 | Eu enquanto, usuário, desejo confirmar com senha ao alterar modo criança | wont |
+| EP07 | RF37 | Eu enquanto, moderador, desejo poder ver uma lista com o título dos reportes dos usuários, data e hora de criação para poder tomar ações e melhorar o aplicativo | should |
+| EP07 | RF38 | Eu enquanto, moderador, desejo poder alterar a ordem da lista de reportes e ver os mais recentes ou os mais antigos primeiro para poder dar prioridade aos reportes | could |
+| EP07 | RF39 | Eu enquanto, moderador, desejo poder filtrar a lista de reportes para poder ver apenas erros, denúncias ou sugestões | could |
+| EP07 | RF40 | Eu enquanto, moderador, desejo poder ver com mais detalhe algum reporte para ver melhor a descrição e se houver a imagem | should |
+| EP07 | RF41 | Eu enquanto, moderador, desejo poder marcar os reportes como lidos, recusados ou realizados para poder me organizar quanto as ações | could |
+| EP07 | RF42 | Eu enquanto, moderador, desejo poder filtrar entre as marcações de lidos, recusados ou realizados para poder ver apenas o que me interessa no momento | could |
+| EP07 | RF43 | Eu enquanto, moderador, desejo poder ver uma lista com os usuários e seus respectivos níveis no aplicativo | should |
+| EP07 | RF44 | Eu enquanto, moderador, desejo poder editar o nível dos usuários no aplicativo | should |
+| EP07 | RF45 | Eu enquanto, moderador, desejo poder buscar por nome um usuário para encontrá-lo com mais facilidade | could |
+
 
 ## Versão
 
-| Versão | Responsável | Data |
-|:-------|:------------| :--- |
-| 1.0    | [Alexia](https://github.com/alexianaa)   | 16/04/2025 |
-| 1.1    | [Alexia](https://github.com/alexianaa)   | 09/05/2025 |
+| Versão | Descrição                           | Responsável                              | Data       |
+|:-------| :---------------------------------- |:-----------------------------------------| :--------- |
+| 1.0    | Cria requisitos                     | [Alexia](https://github.com/alexianaa)   | 16/04/2025 |
+| 1.1    | Adiciona novos requisitos           | [Alexia](https://github.com/alexianaa)   | 09/05/2025 |
+| 1.2    | Adiciona épico 7 e requisitos novos | [Alexia](https://github.com/alexianaa)   | 13/05/2025 |
