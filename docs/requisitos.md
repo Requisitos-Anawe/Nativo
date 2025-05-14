@@ -66,6 +66,7 @@ Priorização utilizando moscow
 | EP07 | RF41 | Eu enquanto, administrador, desejo poder editar o nível dos usuários no aplicativo | should |
 | EP07 | RF42 | Eu enquanto, administrador, desejo poder buscar por nome um usuário para encontrá-lo com mais facilidade | could |
 | EP06 | RF43 | Eu enquanto, usuário, ao me cadastrar devo entrar no modo criança caso tenha menos de 16 anos | should |
+| EP04 | RF44 | Eu enquanto, administrador, desejo poder gerenciar as categorias de publicações para poder atualizar de acordo com as necessidades da rede social | wont |
 
 
 ## Versão
