@@ -13,14 +13,15 @@ Priorização utilizando moscow
 | EP05  | AJUDA E INFORMAÇÕES          |
 | EP06  | IDENTIFICAÇÃO DO USUÁRIO     |
 | EP07  | ADMINISTRAÇÃO DO APLICATIVO  |
+| EP08  | MODERADOR                    |
 
 ## Requisitos
 
 
 | Épico | Requisitos     | Descrição | Priorização |
-|-------|--------|-----------|--------|
+|-------|----------------|-----------|-------------|
 | EP01 | RF01 | Eu enquanto, usuário, desejo escrever e ver a tradução de um discurso em português para munduruku para eu conseguir saber o significado de um discurso | must |
-| EP01 | RF02 | Eu enquanto, usuário, desejo escutar a pronúncia da tradução de um discurso para eu conseguir falar uma nova línga com mais facilidade | should |
+| EP01 | RF02 | Eu enquanto, usuário, desejo escutar a pronúncia da tradução de um discurso para eu conseguir falar uma nova línuga com mais facilidade | should |
 | EP01 | RF03 | Eu enquanto, usuário, desejo poder falar um discurso em português e ver a tradução em munduruku | could |
 | EP01 | RF04 | Eu enquanto, usuário, desejo escrever e ver a tradução de um discurso em munduruku para português para eu conseguir saber o significado de um discurso | must |
 | EP01 | RF05 | Eu enquanto, usuário, desejo escutar a pronúncia da tradução de um discurso em munduruku para portugês para eu conseguir falar o discurso em portugês | should |
@@ -46,6 +47,7 @@ Priorização utilizando moscow
 | EP04 | RF21 | Eu enquanto, usuário, desejo comentar em postagens | wont |
 | EP04 | RF22 | Eu enquanto, usuário, desejo denunciar postagens inapropriadas | wont |
 | EP04 | RF23 | Eu enquanto, usuário, desejo adicionar imagens a postagens | wont |
+| EP04 | RF44 | Eu enquanto, administrador, desejo poder gerenciar (ver, editar, adicionar e apagar) as categorias de publicações para poder atualizar de acordo com as necessidades da rede social | wont |
 | EP05 | RF24 | Eu enquanto, usuário, desejo enviar sugestões aos desenvolvedores | could |
 | EP05 | RF25 | Eu enquanto, usuário, desejo reportar erros | could |
 | EP05 | RF26 | Eu enquanto, usuário, desejo acessar manual do aplicativo | should |
@@ -56,17 +58,24 @@ Priorização utilizando moscow
 | EP06 | RF31 | Eu enquanto, usuário, desejo recuperar minha senha via email | could |
 | EP06 | RF32 | Eu enquanto, usuário, desejo poder editar informações do meu perfil | should |
 | EP06 | RF33 | Eu enquanto, usuário, desejo poder sair da conta para poder me conectar com outro perfil | must |
-| EP07 | RF34 | Eu enquanto, moderador, desejo poder ver uma lista com o título dos reportes dos usuários, data e hora de criação para poder tomar ações e melhorar o aplicativo | should |
-| EP07 | RF35 | Eu enquanto, moderador, desejo poder alterar a ordem da lista de reportes e ver os mais recentes ou os mais antigos primeiro para poder dar prioridade aos reportes mais significativos | could |
-| EP07 | RF36 | Eu enquanto, moderador, desejo poder filtrar a lista de reportes para poder ver apenas erros, denúncias ou sugestões | could |
-| EP07 | RF37 | Eu enquanto, moderador, desejo poder ver com mais detalhe algum reporte para ver melhor a descrição e se houver a imagem | should |
-| EP07 | RF38 | Eu enquanto, moderador, desejo poder marcar os reportes como lidos, recusados ou realizados para poder me organizar quanto as ações | could |
-| EP07 | RF39 | Eu enquanto, moderador, desejo poder filtrar entre as marcações de lidos, recusados ou realizados para poder ver apenas o que me interessa no momento | could |
+| EP06 | RF43 | Eu enquanto, usuário, ao me cadastrar devo entrar no modo criança caso tenha menos de 16 anos | should |
 | EP07 | RF40 | Eu enquanto, administrador, desejo poder ver uma lista com os usuários e seus respectivos níveis no aplicativo | should |
 | EP07 | RF41 | Eu enquanto, administrador, desejo poder editar o nível dos usuários no aplicativo | should |
 | EP07 | RF42 | Eu enquanto, administrador, desejo poder buscar por nome um usuário para encontrá-lo com mais facilidade | could |
-| EP06 | RF43 | Eu enquanto, usuário, ao me cadastrar devo entrar no modo criança caso tenha menos de 16 anos | should |
-| EP04 | RF44 | Eu enquanto, administrador, desejo poder gerenciar as categorias de publicações para poder atualizar de acordo com as necessidades da rede social | wont |
+| EP07 | RF45 | Eu enquanto, administrador, quero editar o nível de um usuário para banido para que este perfil não possa mais voltar a usar o aplicativo | wont |
+| EP08 | RF34 | Eu enquanto, moderador, desejo poder ver uma lista com o título dos reportes dos usuários, data e hora de criação para poder tomar ações e melhorar o aplicativo | should |
+| EP08 | RF35 | Eu enquanto, moderador, desejo poder alterar a ordem da lista de reportes e ver os mais recentes ou os mais antigos primeiro para poder dar prioridade aos reportes mais significativos | could |
+| EP08 | RF36 | Eu enquanto, moderador, desejo poder filtrar a lista de reportes para poder ver apenas erros, denúncias ou sugestões podendo ser simultaneamente mais de um | could |
+| EP08 | RF37 | Eu enquanto, moderador, desejo poder ver com mais detalhe algum reporte para ver melhor a descrição e se houver a imagem | should |
+| EP08 | RF38 | Eu enquanto, moderador, desejo poder marcar os reportes como lidos para me organizar quanto as necessidades do aplicativo | could |
+| EP08 | RF39 | Eu enquanto, moderador, desejo alterar o status dos reportes para recusado ou realizado para poder me organizar quanto às ações necessárias | could |
+| EP08 | RF46 | Eu enquanto, moderador, ao entrar na página de moderação desejo ver apenas aqueles sem status para poder me deparar inicialmente apenas com o que ainda precisa de alguma ação | could |
+| EP08 | RF47 | Eu enquanto, moderador, desejo poder filtrar os status para poder ver também os reportes recusados ou realizados podendo ser mais de um simultaneamente | could |
+| EP04 | RF48 | Eu enquanto, moderador, desejo poder apagar alguma publicação que eu considerar inapropriada | wont |
+| EP08 | RF49 | Eu enquanto, moderador, desejo poder apagar alguma tradução que eu considerar incondizente | should |
+| EP08 | RF50 | Eu enquanto, moderador, desejo poder ver as traduções que existem no aplicativo | should |
+| EP08 | RF51 | Eu enquanto, moderador, desejo poder buscar as traduções que existem no aplicativo pelo idioma e/ou discurso | could |
+| EP08 | RF52 | Eu enquanto, moderador, desejo poder bloquear ou desbloquear uma tradução para crianças com o objetivo de poder corrigir o bloqueio ou desbloqueio incorreto da tradução | could |
 
 
 ## Versão
@@ -76,3 +85,4 @@ Priorização utilizando moscow
 | 1.0    | Cria requisitos                     | [Alexia](https://github.com/alexianaa)   | 16/04/2025 |
 | 1.1    | Adiciona novos requisitos           | [Alexia](https://github.com/alexianaa)   | 09/05/2025 |
 | 1.2    | Adiciona épico 7 e requisitos novos | [Alexia](https://github.com/alexianaa)   | 13/05/2025 |
+| 1.2    | Adiciona épico 8 e requisitos novos | [Alexia](https://github.com/alexianaa)   | 15/05/2025 |
