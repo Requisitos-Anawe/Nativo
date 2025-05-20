@@ -43,6 +43,8 @@ Priorização utilizando moscow
 | EP03 | RF18 | Eu enquanto, professor, desejo adicionar tradução Português-Munduruku | must |
 | EP03 | RF19 | Eu enquanto, professor, preciso marcar se a tradução é apenas para adultos | must |
 | EP03 | RNF04 | Deve haver suporte a múltiplos idiomas | must |
+| EP03 | RF53 | Eu enquanto, professor, quero ver uma lista das traduções que eu adicionei no aplicativo | must |
+| EP03 | RF54 | Eu enquanto, professor, quero gerenciar uma tradução que eu adicionei para poder fazer uma melhora ou correção | must |
 | EP04 | RF20 | Eu enquanto, usuário, desejo curtir postagens | wont |
 | EP04 | RF21 | Eu enquanto, usuário, desejo comentar em postagens | wont |
 | EP04 | RF22 | Eu enquanto, usuário, desejo denunciar postagens inapropriadas | wont |
@@ -59,8 +61,8 @@ Priorização utilizando moscow
 | EP06 | RF32 | Eu enquanto, usuário, desejo poder editar informações do meu perfil | should |
 | EP06 | RF33 | Eu enquanto, usuário, desejo poder sair da conta para poder me conectar com outro perfil | must |
 | EP06 | RF43 | Eu enquanto, usuário, ao me cadastrar devo entrar no modo criança caso tenha menos de 16 anos | should |
-| EP07 | RF40 | Eu enquanto, administrador, desejo poder ver uma lista com os usuários e seus respectivos níveis no aplicativo | should |
-| EP07 | RF41 | Eu enquanto, administrador, desejo poder editar o nível dos usuários no aplicativo | should |
+| EP07 | RF40 | Eu enquanto, administrador, desejo poder ver uma lista com os usuários e seus respectivos níveis no aplicativo | must |
+| EP07 | RF41 | Eu enquanto, administrador, desejo poder editar o nível dos usuários no aplicativo | must |
 | EP07 | RF42 | Eu enquanto, administrador, desejo poder buscar por nome um usuário para encontrá-lo com mais facilidade | could |
 | EP07 | RF45 | Eu enquanto, administrador, quero editar o nível de um usuário para banido para que este perfil não possa mais voltar a usar o aplicativo | wont |
 | EP08 | RF34 | Eu enquanto, moderador, desejo poder ver uma lista com o título dos reportes dos usuários, data e hora de criação para poder tomar ações e melhorar o aplicativo | should |
@@ -72,17 +74,18 @@ Priorização utilizando moscow
 | EP08 | RF46 | Eu enquanto, moderador, ao entrar na página de moderação desejo ver apenas aqueles sem status para poder me deparar inicialmente apenas com o que ainda precisa de alguma ação | could |
 | EP08 | RF47 | Eu enquanto, moderador, desejo poder filtrar os status para poder ver também os reportes recusados ou realizados podendo ser mais de um simultaneamente | could |
 | EP04 | RF48 | Eu enquanto, moderador, desejo poder apagar alguma publicação que eu considerar inapropriada | wont |
-| EP08 | RF49 | Eu enquanto, moderador, desejo poder apagar alguma tradução que eu considerar incondizente | should |
-| EP08 | RF50 | Eu enquanto, moderador, desejo poder ver as traduções que existem no aplicativo | should |
+| EP08 | RF49 | Eu enquanto, moderador, desejo poder apagar alguma tradução que eu considerar incondizente | must |
+| EP08 | RF50 | Eu enquanto, moderador, desejo poder ver as traduções que existem no aplicativo | must |
 | EP08 | RF51 | Eu enquanto, moderador, desejo poder buscar as traduções que existem no aplicativo pelo idioma e/ou discurso | could |
 | EP08 | RF52 | Eu enquanto, moderador, desejo poder bloquear ou desbloquear uma tradução para crianças com o objetivo de poder corrigir o bloqueio ou desbloqueio incorreto da tradução | could |
 
 
 ## Versão
 
-| Versão | Descrição                           | Responsável                              | Data       |
-|:-------| :---------------------------------- |:-----------------------------------------| :--------- |
-| 1.0    | Cria requisitos                     | [Alexia](https://github.com/alexianaa)   | 16/04/2025 |
-| 1.1    | Adiciona novos requisitos           | [Alexia](https://github.com/alexianaa)   | 09/05/2025 |
-| 1.2    | Adiciona épico 7 e requisitos novos | [Alexia](https://github.com/alexianaa)   | 13/05/2025 |
-| 1.2    | Adiciona épico 8 e requisitos novos | [Alexia](https://github.com/alexianaa)   | 15/05/2025 |
+| Versão | Descrição                                  | Responsável                              | Data       |
+|:-------| :----------------------------------------- |:-----------------------------------------| :--------- |
+| 1.0    | Cria requisitos                            | [Alexia](https://github.com/alexianaa)   | 16/04/2025 |
+| 1.1    | Adiciona novos requisitos                  | [Alexia](https://github.com/alexianaa)   | 09/05/2025 |
+| 1.2    | Adiciona épico 7 e requisitos novos        | [Alexia](https://github.com/alexianaa)   | 13/05/2025 |
+| 1.2    | Adiciona épico 8 e requisitos novos        | [Alexia](https://github.com/alexianaa)   | 15/05/2025 |
+| 1.2    | Adiciona requisitos e atualiza priorização | [Alexia](https://github.com/alexianaa)   | 20/05/2025 |
