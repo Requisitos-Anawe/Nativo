@@ -44,7 +44,7 @@ Priorização utilizando moscow
 | EP03 | RF19 | Eu enquanto, professor, preciso marcar se a tradução é apenas para adultos | must |
 | EP03 | RNF04 | Deve haver suporte a múltiplos idiomas | must |
 | EP03 | RF53 | Eu enquanto, professor, quero ver uma lista das traduções que eu adicionei no aplicativo | must |
-| EP03 | RF54 | Eu enquanto, professor, quero gerenciar uma tradução que eu adicionei para poder fazer uma melhora ou correção | must |
+| EP03 | RF54 | Eu enquanto, professor, quero gerenciar uma tradução que eu adicionei para poder fazer uma melhoria ou correção | must |
 | EP04 | RF20 | Eu enquanto, usuário, desejo curtir postagens | wont |
 | EP04 | RF21 | Eu enquanto, usuário, desejo comentar em postagens | wont |
 | EP04 | RF22 | Eu enquanto, usuário, desejo denunciar postagens inapropriadas | wont |
