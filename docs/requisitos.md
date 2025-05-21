@@ -32,7 +32,7 @@ Priorização utilizando moscow
 | EP01 | RF10 | Eu enquanto, usuário, desejo compartilhar eventos/pesquisas relacionadas aos Munduruku | wont |
 | EP01 | RF11 | Eu enquanto, usuário, quero poder ajustar o tamanho da fonte do aplicativo | could |
 | EP01 | RNF01 | O aplicativo deve permitir o download do banco de dados para traduzir discursos de modo offline | should |
-| EP01 | RNF02 | Deve haver bloqueio de discursos impróprios no modo criança | should |
+| EP01 | RNF02 | Deve haver bloqueio de discursos impróprios no modo criança | must |
 | EP01 | RNF03 | As traduções devem funcionar em internet lenta (<100 kbps) | should |
 | EP02 | RF12 | Eu enquanto, usuário, desejo favoritar traduções pesquisadas | should |
 | EP02 | RF13 | Eu enquanto, usuário, desejo ver histórico das últimas palavras pesquisadas | could |
@@ -60,7 +60,7 @@ Priorização utilizando moscow
 | EP06 | RF31 | Eu enquanto, usuário, desejo recuperar minha senha via email | could |
 | EP06 | RF32 | Eu enquanto, usuário, desejo poder editar informações do meu perfil | should |
 | EP06 | RF33 | Eu enquanto, usuário, desejo poder sair da conta para poder me conectar com outro perfil | must |
-| EP06 | RF43 | Eu enquanto, usuário, ao me cadastrar devo entrar no modo criança caso tenha menos de 16 anos | should |
+| EP06 | RF43 | Eu enquanto, usuário, ao me cadastrar devo entrar no modo criança caso tenha menos de 16 anos | must |
 | EP07 | RF40 | Eu enquanto, administrador, desejo poder ver uma lista com os usuários e seus respectivos níveis no aplicativo | must |
 | EP07 | RF41 | Eu enquanto, administrador, desejo poder editar o nível dos usuários no aplicativo | must |
 | EP07 | RF42 | Eu enquanto, administrador, desejo poder buscar por nome um usuário para encontrá-lo com mais facilidade | could |
@@ -78,6 +78,9 @@ Priorização utilizando moscow
 | EP08 | RF50 | Eu enquanto, moderador, desejo poder ver as traduções que existem no aplicativo | must |
 | EP08 | RF51 | Eu enquanto, moderador, desejo poder buscar as traduções que existem no aplicativo pelo idioma e/ou discurso | could |
 | EP08 | RF52 | Eu enquanto, moderador, desejo poder bloquear ou desbloquear uma tradução para crianças com o objetivo de poder corrigir o bloqueio ou desbloqueio incorreto da tradução | could |
+| EP08 | RF55 | Eu enquanto, usuário, desejo denunciar uma tradução incorreta | could |
+| EP08 | RF56 | Eu enquanto, usuário, quero entrar em contato com a equipe de desenvolvimento para me candidatar a ser professor do aplicativo para poder contribuir com as traduções | wont |
+| EP07 | RF57 | Eu enquanto, administrador, quero gerenciar os idiomas disponíveis para tradução | wont |
 
 
 ## Versão
