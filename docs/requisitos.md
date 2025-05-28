@@ -27,8 +27,8 @@ Priorização utilizando moscow
 | EP01 | RF04 | Eu enquanto, usuário, desejo ver a foto ao traduzir um discurso para poder lembrar com mais facilidade daquele discurso | should |
 | EP01 | RF05 | Eu enquanto, usuário, no modo criança, desejo uma animação ao pedir a tradução de uma frase | wont |
 | EP01 | RF06 | Eu enquanto, usuário, desejo compartilhar a tradução do discurso o qual pesquisei | wont |
-| EP01 | RF07 | Eu enquanto, usuário, desejo compartilhar eventos/pesquisas relacionadas aos Munduruku | wont |
-| EP01 | RF08 | Eu enquanto, usuário, quero poder ajustar o tamanho da fonte do aplicativo | could |
+| EP04 | RF07 | Eu enquanto, usuário, desejo compartilhar eventos/pesquisas relacionadas aos Munduruku | wont |
+| EP05 | RF08 | Eu enquanto, usuário, quero poder ajustar o tamanho da fonte do aplicativo | could |
 | EP02 | RF09 | Eu enquanto, usuário, desejo favoritar traduções pesquisadas | should |
 | EP02 | RF10 | Eu enquanto, usuário, desejo ver histórico das últimas palavras pesquisadas | could |
 | EP02 | RF11 | Eu enquanto, usuário, desejo buscar por discursos nas traduções favoritas | could |
