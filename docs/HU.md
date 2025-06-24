@@ -24,8 +24,8 @@ Priorização utilizando moscow
 | EP01 | HU03 | Eu enquanto, usuário, desejo poder falar um discurso no idioma a ser traduzido e receber a sua tradução em um idioma diferente para conseguir uma tradução mesmo não conseguindo escrever | could |
 | EP01 | HU04 | Eu enquanto, usuário, desejo ver a foto ao traduzir um discurso para poder lembrar com mais facilidade daquele discurso | should |
 | EP01 | HU06 | Eu enquanto, usuário, desejo compartilhar a tradução do discurso o qual pesquisei | wont |
-| EP01 | HU07 | Eu enquanto, usuário, desejo compartilhar eventos/pesquisas relacionadas aos Munduruku | wont |
-| EP01 | HU08 | Eu enquanto, usuário, quero poder ajustar o tamanho da fonte do aplicativo | could |
+| EP04 | HU07 | Eu enquanto, usuário, desejo compartilhar eventos/pesquisas relacionadas aos Munduruku | wont |
+| EP05 | HU08 | Eu enquanto, usuário, quero poder ajustar o tamanho da fonte do aplicativo | could |
 | EP02 | HU09 | Eu enquanto, usuário, desejo favoritar traduções pesquisadas | should |
 | EP02 | HU10 | Eu enquanto, usuário, desejo ver histórico das últimas palavras pesquisadas | could |
 | EP02 | HU11 | Eu enquanto, usuário, desejo buscar por discursos nas traduções favoritas | could |
@@ -93,6 +93,6 @@ Priorização utilizando moscow
 | 1.2    | Adiciona épico 7 e hu novos                             | [Alexia](https://github.com/alexianaa)   | 13/05/2025 |
 | 1.3    | Adiciona épico 8 e hu novos                             | [Alexia](https://github.com/alexianaa)   | 15/05/2025 |
 | 1.4    | Adiciona hu e atualiza priorização                      | [Alexia](https://github.com/alexianaa)   | 20/05/2025 |
-| 1.5    | Exclui hu repetidos, separa RNF e reorderna RF          | [Alexia](https://github.com/alexianaa)   | 23/05/2025 |
+| 1.5    | Exclui hu repetidos, separa RNF e reorderna HU          | [Alexia](https://github.com/alexianaa)   | 23/05/2025 |
 | 1.6    | Exclui hu modo criança                                  | [Alexia](https://github.com/alexianaa)   | 23/06/2025 |
 
