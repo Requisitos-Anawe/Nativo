@@ -32,7 +32,6 @@ Priorização utilizando moscow
 | EP02 | HU12 | Eu enquanto, usuário, desejo excluir traduções do meu histórico | should |
 | EP02 | HU13 | Eu enquanto, usuário, desejo excluir traduções das minhas traduções favoritas | should |
 | EP03 | HU14 | Eu enquanto, professor, desejo adicionar tradução de um discurso para abastecer as possíveis traduções do aplicativo | must |
-| EP03 | HU15 | Eu enquanto, professor, preciso marcar se a tradução é apenas para adultos | must |
 | EP03 | HU16 | Eu enquanto, professor, quero ver uma lista das traduções que eu adicionei no aplicativo | must |
 | EP03 | HU17 | Eu enquanto, professor, quero gerenciar uma tradução que eu adicionei para poder fazer uma melhoria ou correção | must |
 | EP04 | HU18 | Eu enquanto, usuário, desejo curtir postagens | wont |
@@ -67,12 +66,13 @@ Priorização utilizando moscow
 | EP08 | HU48 | Eu enquanto, moderador, desejo poder apagar alguma tradução que eu considerar não condizente | must |
 | EP08 | HU49 | Eu enquanto, moderador, desejo poder ver as traduções que existem no aplicativo | must |
 | EP08 | HU50 | Eu enquanto, moderador, desejo poder buscar as traduções que existem no aplicativo pelo idioma e/ou discurso | could |
-| EP08 | HU51 | Eu enquanto, moderador, desejo poder bloquear ou desbloquear uma tradução para crianças com o objetivo de poder corrigir o bloqueio ou desbloqueio incorreto da tradução | could |
 | EP08 | HU52 | Eu enquanto, usuário, desejo denunciar uma tradução incorreta | could |
 | EP08 | HU53 | Eu enquanto, usuário, quero entrar em contato com a equipe de desenvolvimento para me candidatar a ser professor do aplicativo para poder contribuir com as traduções | wont |
 
 <!-- | EP01 | HU05 | Eu enquanto, usuário, no modo criança, desejo uma animação ao pedir a tradução de uma frase | wont |-->
 <!-- | EP06 | HU34 | Eu enquanto, usuário, ao me cadastrar devo entrar no modo criança caso tenha menos de 16 anos | must | -->
+<!-- | EP03 | HU15 | Eu enquanto, professor, preciso marcar se a tradução é apenas para adultos | must | -->
+<!-- | EP08 | HU51 | Eu enquanto, moderador, desejo poder bloquear ou desbloquear uma tradução para crianças com o objetivo de poder corrigir o bloqueio ou desbloqueio incorreto da tradução | could | -->
 
 ## Requisitos não funcionais
 
