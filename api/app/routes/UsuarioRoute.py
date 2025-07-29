@@ -1,4 +1,5 @@
 from xml.dom import ValidationErr
+from app.firebase import bucket
 from flask import Blueprint, request, jsonify
 from app.models import UsuarioModel
 from app.schemas.UsuarioSchema import UsuarioSchema
@@ -28,3 +29,17 @@ def buscar(usuario_id):
     if usuario:
         return jsonify(usuario)
     return jsonify({"erro": "Usuário não encontrado"}), 404
+
+@bp.route('/upload', methods=['POST'])
+def upload_file():
+    if 'file' not in request.files:
+        return jsonify({'error': 'Nenhum arquivo enviado'}), 400
+    
+    file = request.files['file']
+    blob = bucket.blob(file.filename)
+    blob.upload_from_file(file)
+    
+    blob.make_public()
+    url = blob.public_url
+    
+    return jsonify({'message': 'Arquivo enviado com sucesso', 'url': url})

@@ -1,1 +1,3 @@
 .venv
+app/credentials/firebase_key.json
+.env
