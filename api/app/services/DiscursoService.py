@@ -11,7 +11,7 @@ class DiscursoService:
         if not discurso_doc:
             outras_traducoes = DiscursoService.busca_discurso_nas_traducoes(texto_busca)
             if not outras_traducoes:
-                return None, "Discurso com esse texto não encontrado."
+                return None, "Discurso não encontrado."
             else:
                 return outras_traducoes, None
 
