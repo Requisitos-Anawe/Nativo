@@ -1,6 +1,7 @@
 from datetime import datetime
 from app.firebase import db
 import pytz
+from firebase_admin import firestore
 
 COLLECTION = 'usuario'
 
@@ -13,7 +14,8 @@ def criar_usuario(data):
         'senha': data.get('senha'), 
         'data_nascimento': data.get('data_nascimento'),
         'nome': data.get('nome'),
-        'data_criacao': datetime.now(pytz.utc).astimezone(pytz.timezone('America/Sao_Paulo'))
+        'data_criacao': datetime.now(pytz.utc).astimezone(pytz.timezone('America/Sao_Paulo')),
+        'perfil': firestore.client().document(data.get('perfil'))
     }
     
     doc_ref.set(usuario)
@@ -47,3 +49,14 @@ def atualizar_usuario(usuario_id, dados_atualizados):
 
 def deletar_usuario(usuario_id):
     db.collection(COLLECTION).document(usuario_id).delete()
+
+# TODO: verificar viabilidade
+def get_perfil(usuario_id):
+    doc_ref = db.collection(COLLECTION).document(usuario_id)
+    doc = doc_ref.get()
+
+    if doc.exists:
+        data = doc.to_dict()
+        return data.get('perfil') 
+    else:
+        return None

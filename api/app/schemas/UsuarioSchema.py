@@ -1,6 +1,6 @@
+from app.helpers.validation import validate_ref_exists
 from marshmallow import validates_schema, fields, ValidationError, Schema
 from app.firebase import db
-from datetime import datetime
 
 class UsuarioSchema(Schema):
     id = fields.Str(dump_only=True)
@@ -10,6 +10,7 @@ class UsuarioSchema(Schema):
     data_nascimento = fields.DateTime(required=True)
     nome = fields.Str(required=True)
     data_criacao = fields.DateTime(dump_only=True)
+    perfil = fields.Str(required=True, validate=validate_ref_exists("perfil"))
 
     @validates_schema
     def validate_unique(self, data, **kwargs):

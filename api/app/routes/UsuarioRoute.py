@@ -1,7 +1,7 @@
 from xml.dom import ValidationErr
 from app.firebase import bucket
 from flask import Blueprint, request, jsonify
-from app.models import UsuarioModel
+from app.services import UsuarioService
 from app.schemas.UsuarioSchema import UsuarioSchema
 
 schema = UsuarioSchema()
@@ -15,20 +15,27 @@ def criar():
     except ValidationErr as err:
         return jsonify(err.messages), 400
     
-    usuario = UsuarioModel.criar_usuario(dados)
+    usuario = UsuarioService.criar_usuario(dados)
     resultado = schema.dump(usuario) 
     return jsonify(resultado), 201
 
 @bp.route('/usuarios', methods=['GET'])
 def listar():
-    return jsonify(UsuarioModel.listar_usuarios())
+    return jsonify(UsuarioService.listar_usuarios())
 
 @bp.route('/usuarios/<usuario_id>', methods=['GET'])
 def buscar(usuario_id):
-    usuario = UsuarioModel.buscar_usuario_por_id(usuario_id)
+    usuario = UsuarioService.buscar_usuario_por_id(usuario_id)
     if usuario:
         return jsonify(usuario)
     return jsonify({"erro": "Usuário não encontrado"}), 404
+
+@bp.route('/usuarios/<usuario_id>/perfil', methods=['GET'])
+def buscar(usuario_id):
+    usuario = UsuarioService.get_perfil(usuario_id)
+    if usuario:
+        return jsonify(usuario)
+    return jsonify({"erro": "Não foi possível encontrar o perfil."}), 404
 
 @bp.route('/upload', methods=['POST'])
 def upload_file():
