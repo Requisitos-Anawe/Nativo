@@ -31,7 +31,7 @@ def buscar(usuario_id):
     return jsonify({"erro": "Usuário não encontrado"}), 404
 
 @bp.route('/usuarios/<usuario_id>/perfil', methods=['GET'])
-def buscar(usuario_id):
+def buscar_perfil(usuario_id):
     usuario = UsuarioService.get_perfil(usuario_id)
     if usuario:
         return jsonify(usuario)

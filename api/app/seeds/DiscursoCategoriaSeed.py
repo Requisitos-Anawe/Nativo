@@ -28,7 +28,7 @@ def run():
 
 
     for _id, descricao in categorias.items():
-        db.collection("categoria").document(_id).set({
+        db.collection("discurso_categoria").document(_id).set({
             "descricao": descricao,
             "data_criacao": datetime.now(pytz.timezone("America/Sao_Paulo"))
         })
