@@ -4,12 +4,24 @@ from google.cloud.firestore_v1.base_query import FieldFilter
 class DiscursoService:
 
     @staticmethod
-    def buscar_discurso_e_traducao_por_texto(texto_busca):
-        discursos_query = db.collection("discurso").where(filter=FieldFilter("texto", "==", texto_busca)).stream()
+    def buscar_discurso_e_traducao_por_texto(texto_busca, idioma_discurso=None):
+
+        query = db.collection("discurso")
+        collection = query
+        idioma_doc = None
+
+        if idioma_discurso:
+            idioma_docs = db.collection("idioma").where("nome", "==", idioma_discurso).stream()
+            idioma_doc = next(idioma_docs, None)
+            if not idioma_doc:
+                return None, "Idioma informado não existe."
+            collection = collection.where("idioma", "==", idioma_doc.reference)
+
+        discursos_query = collection.where(filter=FieldFilter("texto", "==", texto_busca)).stream()
         discurso_doc = next(discursos_query, None)
 
         if not discurso_doc:
-            outras_traducoes = DiscursoService.busca_discurso_nas_traducoes(texto_busca)
+            outras_traducoes = DiscursoService.busca_discurso_nas_traducoes(texto_busca,idioma_doc)
             if not outras_traducoes:
                 return None, "Discurso não encontrado."
             else:
@@ -44,8 +56,11 @@ class DiscursoService:
 
     # busca alternativa do texto nas traducoes
     @staticmethod
-    def busca_discurso_nas_traducoes(texto_busca):
-        traducao_query = db.collection("traducao").where(filter=FieldFilter("texto", "==", texto_busca)).stream()
+    def busca_discurso_nas_traducoes(texto_busca,idioma_doc):
+        query = db.collection("traducao")
+        if idioma_doc:
+            query = query.where("idioma", "==", idioma_doc.reference)
+        traducao_query = query.where(filter=FieldFilter("texto", "==", texto_busca)).stream()
         traducao_doc = next(traducao_query, None)
 
         if not traducao_doc:
