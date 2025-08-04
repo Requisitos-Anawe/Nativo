@@ -7,7 +7,7 @@
 ``` bash
 pip install -r requirements.txt
 .\.venv\Scripts\activate # source .venv/bin/activate
-python run.py
+flask run --host=0.0.0.0 --port=5000
 ``` 
 
 ## Seeds

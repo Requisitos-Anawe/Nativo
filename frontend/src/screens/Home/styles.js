@@ -1,34 +1,84 @@
 import { StyleSheet,Dimensions } from 'react-native';
 
-const { width, height } = Dimensions.get('window');
-
 export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
     padding: 24,
   },
-   input: {
+
+  input: {
     height: 150,
-    borderColor: '#666',
     borderWidth: 1,
-    borderRadius: 6,
-    paddingHorizontal: 10,
-    marginTop: 8,
+    borderRadius: 24,
+    borderColor: "#d6d6d6",
+    paddingHorizontal: 20,
     textAlign: 'left',    
     textAlignVertical: 'top', 
+    marginBottom: 24
   },
-  picker: {
-    height: 50,
+
+  actions: {
     width: '100%',
+    justifyContent: 'center',
+    alignItems: 'flex-end',
+    marginBottom: 10
   },
-  traducaoBox: {
-    backgroundColor: '#eef',
-    padding: 15,
-    borderRadius: 5,
+
+  button: {
+    width: 120,
+    backgroundColor: '#CC005F',
+    paddingVertical: 8,
+    borderRadius: 4,
+    alignItems: 'center',
   },
-  traducaoTexto: {
+
+  textButton: {
+    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  divisor: {
+    width: '100%',
+    height: 1,
+    backgroundColor: "#D9D9D9",
+    marginBottom: 15
+  },
+
+  translateActions: {
+    width: '100%',
+    color: "#fff",
+    height: 'auto',
+    marginBottom: 10
+  },
+
+  categoriaTexto: {
+    fontSize: 12,
+    fontFamily: 'InterDisplay-SemiBold',
+    color: "#003066"
+  },
+
+  traducaoBox: {
+    paddingVertical: 32,
+  },
+
+  traducaoTexto: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+
+  copyText: {
+    fontSize: 10,
+    color: "#fff"
+  },
+
+  copy: {
+    backgroundColor: "rgba(0, 48, 102, 0.5)",
+    padding: 6,
+    borderRadius: 6,
+    width: 80,
+    alignItems: 'center'
+  }
+
 });
