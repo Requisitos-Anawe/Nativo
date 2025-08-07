@@ -1,4 +1,4 @@
-import { Text, View, TextInput, TouchableOpacity } from "react-native";
+import { Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
 import styles from "./styles";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from "react";
@@ -26,12 +26,14 @@ function Home(){
         try {
             setCarregando(true);
             const response = await api.post(`/discurso/buscar`, {
-                texto: texto,
+                texto: texto.trim(),
             });
             setTraducao(response.data.traducao);
             setCategoria(response.data.categoria);
         } catch (error) {
-            setCategoria(`Erro ao traduzir: ${error}`);
+            const err = error as any;
+            const mensagemErro = err.response?.data?.erro || "Não foi possível traduzir, erro desconhecido.";
+            Alert.alert(mensagemErro);
         } finally {
             setCarregando(false);
         }

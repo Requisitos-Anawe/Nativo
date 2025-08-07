@@ -15,6 +15,6 @@ def buscar_discurso():
     resultado, erro = DiscursoService.buscar_discurso_e_traducao_por_texto(texto,idioma)
 
     if not resultado:
-        return erro, 404
+        return jsonify({"erro": erro}), 404
 
     return resultado, 200

@@ -5,7 +5,6 @@ class DiscursoService:
 
     @staticmethod
     def buscar_discurso_e_traducao_por_texto(texto_busca, idioma_discurso=None):
-
         query = db.collection("discurso")
         collection = query
         idioma_doc = None
