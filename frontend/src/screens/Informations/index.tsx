@@ -1,0 +1,54 @@
+import React from 'react';
+import { Alert, Text, TouchableOpacity } from 'react-native';
+import ScreenContainer from '../../components/ScreenContainer';
+import styles from './styles';
+import RNFetchBlob from 'rn-fetch-blob';
+
+export default function Informations() {
+ 
+  async function downloadPdf() {
+    const { config, fs } = RNFetchBlob;
+    const dirs = fs.dirs;
+    const filePath = `${dirs.DownloadDir}/manual-tradutor-munduruku.pdf`;
+
+    config({
+      fileCache: true,
+      addAndroidDownloads: {
+        useDownloadManager: true,
+        notification: true,
+        path: filePath,
+        description: 'Baixando o manual do app',
+        mediaScannable: true,
+      },
+    })
+      .fetch(
+        'GET',
+        'https://drive.google.com/uc?export=download&id=1jzShr1gUKPsnOAAxgGMYpZ_srWQIcsyi'
+      )
+      .then((res) => {
+        console.log('Download concluído: ', res.path());
+        Alert.alert('Download concluído', 'O arquivo foi salvo com sucesso!');
+      })
+      .catch((err) => {
+        console.warn('Erro ao baixar o PDF:', err);
+      });
+  }
+
+  return (
+    <ScreenContainer>
+      <Text style={styles.title} >Olá, bem vindo(a)</Text>
+
+      <TouchableOpacity onPress={downloadPdf}>
+        <Text style={styles.link}>Clique aqui para baixar o manual do aplicativo</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.paragraphTitle} >O app:</Text>
+      <Text style={styles.paragraph} >O aplicativo teve origem a partir de um Trabalho de Conclusão de Curso (TCC) da Universidade de Brasília (UnB), desenvolvido pela estudante Alexia Cardoso do curso de Engenharia de Software. O projeto foi orientado pelo professor Dr. Sergio Freitas e contou com a coorientação da professora Dra. Célia Higawa.</Text>
+      <Text style={styles.paragraph} >Tem como propósito contribuir com a preservação e o ensino das línguas indígenas brasileiras. A ferramenta permite realizar traduções escritas de palavras e expressões entre o português e línguas indígenas, com foco inicial na língua Munduruku.</Text>
+      <Text style={styles.paragraph} >O projeto prevê futuras melhorias, como a inclusão de áudios, imagens e novos idiomas, sempre priorizando a valorização das línguas indígenas e sua continuidade.</Text>
+
+      <Text style={styles.paragraphTitle} >A aldeia:</Text>
+      <Text style={styles.paragraph}>Este trabalho começou a partir do contato da professora Celia Kinuko Matsunaga Higawa, da Universidade de Brasília, com a Aldeia Munduruku de Bragança, a Aldeia demonstrou interesse em ter um aplicativo para ajudar na consulta e ensino da língua Munduruku. Conversando com os representantes da comunidade, foi definido que o aplicativo teria o formato de um tradutor, que pudesse ser usado no dia a dia para consultar palavras e frases, além de possibilitar ouvir a pronúncia correta delas (implementação futura).</Text>
+    </ScreenContainer>
+  );
+}
