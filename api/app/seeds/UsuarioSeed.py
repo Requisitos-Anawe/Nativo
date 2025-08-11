@@ -6,7 +6,7 @@ from firebase_admin import firestore
 import bcrypt
 
 def run():
-    senha = 'usuario@123'
+    senha = 'usuario123'
     usuarios = [
         {
             "nome": "Admin",

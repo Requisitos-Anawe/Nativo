@@ -30,6 +30,7 @@ export default StyleSheet.create({
         borderRadius: 5,
         marginBottom: 15,
         height: 40,
+        paddingHorizontal: 10
     },
 
     text_button: {

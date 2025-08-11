@@ -5,7 +5,6 @@ import { useState } from "react";
 import api from "../../services/api";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from 'react-native-vector-icons/Ionicons';
-import { useNavigation } from "@react-navigation/native";
 
 type LoginProps = {
   onLoginSuccess: () => void;
@@ -17,15 +16,17 @@ export default function Login({ onLoginSuccess }: LoginProps) {
     const [password, setPassword] = useState('');
     const [carregando, setCarregando] = useState(false);
     const [erro, setErro] = useState('');
-    
-    const navigation = useNavigation();
 
     const handleLogin = async () => {
         try {
             setCarregando(true);
             setErro('');
+            console.log({
+                email: email,
+                senha: password,
+            })
             const response = await api.post(`/auth/login`, {
-                email: email.trim(),
+                email: email,
                 senha: password,
             });
             await AsyncStorage.setItem('token', response.data.token);
