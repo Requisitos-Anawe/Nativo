@@ -1,0 +1,36 @@
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import ProfessorTabs from "./ProfessorTabs";
+import UserTabs from "./UserTabs";
+import Perfil from "../screens/Perfil";
+import { LogOut } from "../components/Logout";
+
+const Stack = createNativeStackNavigator();
+
+export default function AppStack({perfil}: {perfil: string}) {
+
+  let TabsComponent;
+
+  switch (perfil) {
+    case 'professor':
+      TabsComponent = ProfessorTabs;
+      break;
+    default:
+      TabsComponent = UserTabs;
+  }
+
+  return (
+    <Stack.Navigator
+    >
+      <Stack.Screen 
+        name="Main" 
+        component={TabsComponent} options={{ 
+          headerTitle: '',
+          headerRight: () => <LogOut />,
+          headerStyle: { backgroundColor: '#003066' },
+          headerTintColor: '#fff'
+        }} 
+      />
+        <Stack.Screen name="Perfil" component={Perfil} />
+    </Stack.Navigator>
+  );
+}

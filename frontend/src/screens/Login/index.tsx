@@ -5,34 +5,31 @@ import { useState } from "react";
 import api from "../../services/api";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from 'react-native-vector-icons/Ionicons';
+import {useAuth} from "../../contexts/AuthContext";
 
-type LoginProps = {
-  onLoginSuccess: () => void;
-};
-
-export default function Login({ onLoginSuccess }: LoginProps) {
+export default function Login() {
     const [showPassword, setShowPassword] = useState(false); 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [carregando, setCarregando] = useState(false);
     const [erro, setErro] = useState('');
+    
+    const { setUser } = useAuth();
 
     const handleLogin = async () => {
         try {
             setCarregando(true);
             setErro('');
-            console.log({
-                email: email,
-                senha: password,
-            })
             const response = await api.post(`/auth/login`, {
-                email: email,
+                email,
                 senha: password,
             });
+            setUser(response.data.usuario);
             await AsyncStorage.setItem('token', response.data.token);
-            onLoginSuccess();
+            await AsyncStorage.setItem('user', JSON.stringify(response.data.usuario));
         } catch (error) {
             var err = error as any;
+            console.log('err: ', err);
             setErro(err.response?.data?.erro || "Não foi possível realizar o login.");
         } finally {
             setCarregando(false);
@@ -88,7 +85,10 @@ export default function Login({ onLoginSuccess }: LoginProps) {
                     </View>
                 )}
 
-                <Text style={styles.links} >Cadastre-se</Text>
+                <TouchableOpacity>
+                    <Text style={styles.links}>Cadastre-se</Text>
+                </TouchableOpacity>
+                
                 <Text style={styles.links} >Esqueci minha senha</Text>
             </SafeAreaView>
         </LinearGradient>

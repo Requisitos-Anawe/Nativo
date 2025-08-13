@@ -1,28 +1,19 @@
-import React from 'react';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import Home from '../screens/Home';
-import Informations from '../screens/Informations';
-import Icon from 'react-native-vector-icons/Ionicons';
-import Perfil from '../screens/Perfil';
-import { TouchableOpacity } from 'react-native';
-
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import Home from "../screens/Home";
+import Informations from "../screens/Informations";
+import { TouchableOpacity } from "react-native";
+import Icon from "react-native-vector-icons/Ionicons";
 
 const Tab = createBottomTabNavigator();
 
-const BottomTabs = ({ onMenuPress }: { onMenuPress: () => void }) => {
+export default function UserTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerStyle: { backgroundColor: '#003066' },
-        headerTintColor: '#fff',
+        headerShown: false,
         tabBarActiveTintColor: '#fff',
         tabBarInactiveTintColor: 'gray',
         tabBarShowLabel: false,
-        headerRight: () => (
-          <TouchableOpacity onPress={onMenuPress} style={{ marginRight: 15 }}>
-            <Icon name="menu-outline" size={28} color="#fff" />
-          </TouchableOpacity>
-        ),
         tabBarLabel: () => null,
         tabBarIcon: ({ color, size }) => {
           let iconName = 'home-outline';
@@ -47,6 +38,4 @@ const BottomTabs = ({ onMenuPress }: { onMenuPress: () => void }) => {
       <Tab.Screen name="Informations" component={Informations} />
     </Tab.Navigator>
   );
-};
-
-export default BottomTabs;
+}
