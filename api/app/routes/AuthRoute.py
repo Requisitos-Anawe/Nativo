@@ -1,5 +1,5 @@
 import re
-from app.helpers.cpf_validator import * 
+from app.helpers.senha_validator import validar_senha
 from flask import Blueprint, request, jsonify
 from firebase_admin import firestore
 from flask_bcrypt import check_password_hash
@@ -51,7 +51,8 @@ def login():
             "id": usuario_doc.id,
             "nome": usuario_data.get("nome"),
             "email": usuario_data.get("email"),
-            "perfil": perfil_data.get('descricao')
+            "data_nascimento": usuario_data.get('data_nascimento'),
+            "perfil": perfil_data.get('descricao'),
         }
     }), 200
 
@@ -62,7 +63,6 @@ def cadastro():
     email = data.get("email")
     senha = data.get("senha")
     nome = data.get("nome")
-    cpf = data.get("cpf")
     
     data_nascimento = data.get("data_nascimento")
     data_dt = datetime.fromisoformat(data_nascimento)
@@ -70,7 +70,7 @@ def cadastro():
     perfil_ref = db.collection("perfil").document("1")
 
     # VALIDACOES
-    if not all([email, senha, nome, cpf, data_nascimento]):
+    if not all([email, senha, nome, data_nascimento]):
         return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
     
     if not isinstance(data_dt, datetime):
@@ -82,17 +82,14 @@ def cadastro():
     
     if not is_email(email):
         return jsonify({"erro": "E-mail inválido."}), 400
+    
+    valida, erros_senha = validar_senha(senha)
+    if not valida:
+        return jsonify({"erro": "Senha inválida", "detalhes": erros_senha}), 400
 
-    usuarios_ref = db.collection("usuarios").where("email", "==", email).stream()
+    usuarios_ref = db.collection("usuario").where("email", "==", email).stream()
     if any(usuarios_ref):
         return jsonify({"erro": "Email já cadastrado"}), 400
-    
-    cpf_limpo = limpar_cpf(cpf)
-
-    if not validar_cpf(cpf_limpo):
-        return jsonify({"erro": "CPF inválido"}), 400
-
-    cpf_formatado = formatar_cpf(cpf_limpo)
     
     # CADASTRO
     senha_hash = bcrypt.hashpw(senha.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
@@ -100,7 +97,6 @@ def cadastro():
         "email": email,
         "senha": senha_hash,
         "nome": nome,
-        "cpf": cpf_formatado,
         "data_nascimento": data_dt,
         "perfil": perfil_ref,
         "criado_em": firestore.SERVER_TIMESTAMP

@@ -1,15 +1,24 @@
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { createStaticNavigation } from "@react-navigation/native";
 import Login from "../screens/Login";
 import UserCreate from "../screens/UserCreate";
 
-const Stack = createNativeStackNavigator();
+export type RootStackParamList = {
+  Cadastro: undefined;
+  Login: undefined;
+};
 
-export default function AuthStack() {
-    
-    return (
-        <Stack.Navigator screenOptions={{ headerShown: false }} >
-            <Stack.Screen name="Login" component={Login} />
-            <Stack.Screen name="Cadastro" component={UserCreate} />
-        </Stack.Navigator>
-    );
-}
+const Stack = createNativeStackNavigator<RootStackParamList>({
+    screens: {
+        Login: {
+            screen: Login,
+            options: { headerShown: false },
+        },
+        Cadastro: {
+            screen: UserCreate,
+            options: { headerShown: false },
+        },
+    },
+});
+
+export const Navigation = createStaticNavigation(Stack);

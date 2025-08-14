@@ -6,6 +6,11 @@ import api from "../../services/api";
 import LinearGradient from "react-native-linear-gradient";
 import Icon from 'react-native-vector-icons/Ionicons';
 import {useAuth} from "../../contexts/AuthContext";
+import { useNavigation } from "@react-navigation/native";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../../navigation/AuthStack";
+
+type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false); 
@@ -15,6 +20,7 @@ export default function Login() {
     const [erro, setErro] = useState('');
     
     const { setUser } = useAuth();
+    const navigation = useNavigation<Navigation>();
 
     const handleLogin = async () => {
         try {
@@ -29,7 +35,6 @@ export default function Login() {
             await AsyncStorage.setItem('user', JSON.stringify(response.data.usuario));
         } catch (error) {
             var err = error as any;
-            console.log('err: ', err);
             setErro(err.response?.data?.erro || "Não foi possível realizar o login.");
         } finally {
             setCarregando(false);
@@ -69,8 +74,6 @@ export default function Login() {
 
                 </View>
 
-
-
                 <TouchableOpacity 
                     onPress={handleLogin} 
                     disabled={carregando}
@@ -85,7 +88,7 @@ export default function Login() {
                     </View>
                 )}
 
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => navigation.navigate("Cadastro")}>
                     <Text style={styles.links}>Cadastre-se</Text>
                 </TouchableOpacity>
                 
