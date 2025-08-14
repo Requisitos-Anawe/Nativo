@@ -43,7 +43,6 @@ export default function UserCreate() {
         try {
             setCarregando(true);
             setErro('');
-            console.log('USER \n', user.nome,'\n', user.email,'\n', senha,'\n',date.toISOString().split('T')[0]);
             const response = await api.post(`/auth/cadastro`, {
                 nome: user.nome.trim(),
                 email: user.email.trim(),
