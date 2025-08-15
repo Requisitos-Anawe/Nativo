@@ -1,13 +1,9 @@
-import re
-from app.helpers.senha_validator import validar_senha
 from flask import Blueprint, request, jsonify
 from firebase_admin import firestore
 from flask_bcrypt import check_password_hash
-import jwt
-import os
+import re, jwt, os, pytz, bcrypt
+from app.helpers.senha_validator import validar_senha
 from datetime import datetime, timedelta
-import pytz
-import bcrypt
 
 from app.schemas.UsuarioSchema import UsuarioSchema
 

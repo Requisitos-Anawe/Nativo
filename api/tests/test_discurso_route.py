@@ -29,7 +29,7 @@ class TestDiscursoRoute(unittest.TestCase):
 
     @patch("app.routes.DiscursoRoute.DiscursoService")
     def test_buscar_discurso_nao_encontrado(self, mock_service):
-        mock_service.buscar_discurso_e_traducao_por_texto.return_value = (None, {"erro": "Discurso não encontrado"})
+        mock_service.buscar_discurso_e_traducao_por_texto.return_value = (None, "Discurso não encontrado")
 
         response = self.client.post("/discurso/buscar", json={"texto": "Desconhecido"})
 

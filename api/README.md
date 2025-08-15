@@ -15,3 +15,13 @@ python run.py
 ``` bash
 python -m app.seeds.seed
 ``` 
+
+## Testes
+
+> unittest.TestCase
+
+Exemplo:
+
+``` bash
+python -m unittest tests/test_discurso_route.py
+``` 
