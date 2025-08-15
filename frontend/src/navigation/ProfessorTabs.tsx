@@ -4,6 +4,7 @@ import { TouchableOpacity } from "react-native";
 import Icon from "react-native-vector-icons/Ionicons";
 import TranslationCreate from "../screens/TranslationCreate";
 import Informations from "../screens/Informations";
+import TraslationList from "../screens/TranslationList";
 
 const Tab = createBottomTabNavigator();
 
@@ -18,9 +19,10 @@ export default function ProfessorTabs() {
         tabBarLabel: () => null,
         tabBarIcon: ({ color, size }) => {
           let iconName = 'home-outline';
-          if (route.name === 'Tradutor') iconName = 'text-outline';
+          if (route.name === 'Tradutor') iconName = 'language-outline';
           else if (route.name === 'Informations') iconName = 'information-circle-outline';
           else if (route.name === 'AddTraducao') iconName = 'add-circle-outline';
+          else if (route.name === 'ListTraducao') iconName = 'document-text-outline';
           return <Icon name={iconName} size={size} color={color} />;
         },
         tabBarStyle: {
@@ -38,6 +40,7 @@ export default function ProfessorTabs() {
     >
       <Tab.Screen name="Tradutor" component={Home} />
       <Tab.Screen name="AddTraducao" component={TranslationCreate} />
+      <Tab.Screen name="ListTraducao" component={TraslationList} />
       <Tab.Screen name="Informations" component={Informations} />
     </Tab.Navigator>
   );

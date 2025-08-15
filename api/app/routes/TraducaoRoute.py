@@ -7,6 +7,71 @@ import pytz
 bp = Blueprint("traducao", __name__)
 db = firestore.client()
 
+@bp.route('/traducao/usuario/<usuario_id>', methods=['POST'])
+@autenticar_jwt
+def buscar_tracudao_usuario(usuario_id):
+    filtros = request.get_json()
+    texto_discurso = filtros.get('textoDiscurso')
+    idioma_discurso = filtros.get('idiomaDiscurso')
+
+    print(texto_discurso, " ", idioma_discurso)
+
+    # Buscar usuário
+    usuario_ref = db.collection('usuario').document(usuario_id)
+    usuario_doc = usuario_ref.get()
+
+    if not usuario_doc.exists:
+        return jsonify({'erro': 'Usuário não encontrado'}), 404
+    
+    usuario = usuario_doc.to_dict()
+
+    perfil_ref = usuario.get('perfil')
+    perfil_doc = perfil_ref.get()
+    if perfil_doc.to_dict().get("descricao").lower() != 'professor':
+        return jsonify({'erro': 'Apenas usuários com perfil professor podem acessar'}), 403
+
+    # Busca traduções vinculadas ao usuário
+    query = db.collection('traducao').where('usuario', '==', usuario_ref)
+
+    if idioma_discurso:
+        idioma_ref = db.collection('idioma').document(idioma_discurso)
+        query = query.where('idioma', '==', idioma_ref)
+
+    if texto_discurso and texto_discurso.strip():
+        query = query.where('texto', '>=', texto_discurso).where('texto', '<=', texto_discurso + '\uf8ff')
+
+    query = query.order_by('data_criacao', direction=firestore.Query.DESCENDING)
+
+    traducoes_docs = query.stream()
+
+    traducoes = []
+    for doc in traducoes_docs:
+        dados = doc.to_dict()
+        dados['id'] = doc.id
+
+        # Busca texto do discurso
+        discurso_ref = dados.get('discurso')
+        if discurso_ref:
+            discurso_doc = discurso_ref.get()
+            if discurso_doc.exists:
+                dados['discurso'] = discurso_doc.to_dict().get('texto')
+
+        # Busca nome do idioma
+        idioma_ref = dados.get('idioma')
+        if idioma_ref:
+            idioma_doc = idioma_ref.get()
+            if idioma_doc.exists:
+                dados['idioma'] = idioma_doc.to_dict().get('nome')
+
+        if 'usuario' in dados and hasattr(dados['usuario'], 'id'):
+            dados['usuario'] = dados['usuario'].id
+
+        dados['data_criacao'] = dados.get('data_criacao').strftime("%d/%m/%Y %H:%M")
+
+        traducoes.append(dados)
+
+    return jsonify(traducoes), 200
+
 @bp.route("/traducao/cadastrar", methods=["POST"])
 @autenticar_jwt
 def cadastrar_traducao():
