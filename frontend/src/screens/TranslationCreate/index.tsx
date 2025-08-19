@@ -2,67 +2,126 @@ import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "./styles";
 import { Picker } from '@react-native-picker/picker';
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api";
+import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 
-export default function(){
+type RootStackParamList = {
+  TraslationCreate: {
+    traducao_id?: string;
+  };
+};
+
+export default function TraslationCreate(){
+    const route = useRoute<RouteProp<RootStackParamList, 'TraslationCreate'>>();
+    const traducao_id = route.params?.traducao_id ?? null;
+    const [traducao, setTraducao] = useState<TraducaoInterface>();
     const [categorias, setCategorias] = useState<CategoriaInterface[]>([]);
     const [idiomas, setIdiomas] = useState<IdiomaInterface[]>([]);
-
     const [categoriaSelecionada, setCategoriaSelecionada] = useState<CategoriaInterface|null>(null);
     const [idiomaTraducao, setIdiomaTraducao] = useState<IdiomaInterface|null>(null);
     const [idiomaDiscurso, setIdiomaDiscurso] = useState<IdiomaInterface|null>(null);
     const [textoDiscurso, setTextoDiscurso] = useState('');
     const [textoTraducao, setTextoTraducao] = useState('');
-
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState('');
+    const navigation = useNavigation();
 
-    useEffect(() => {
-        const getCategorias = async () => {
-            const response = await api.get(`/categorias`);
-            setCategorias(response.data);
-            setCategoriaSelecionada(response.data[0]);
-        }
+    useFocusEffect(
+        useCallback(() => {
+            let isActive = true;
 
-        const getIdiomas = async () => {
-            const response = await api.get(`/idiomas`);
-            setIdiomas(response.data);
-            setIdiomaTraducao(response.data[0]);
-            setIdiomaDiscurso(response.data[1]);
-        }
+            const loadData = async () => {
+            try {
+                setCarregando(true);
+                setErro('');
 
+                const [catRes, idiRes] = await Promise.all([
+                    api.get(`/categorias`),
+                    api.get(`/idiomas`),
+                ]);
+
+                if (!isActive) return;
+
+                setCategorias(catRes.data);
+                setCategoriaSelecionada(catRes.data[0]);
+
+                setIdiomas(idiRes.data);
+                setIdiomaTraducao(idiRes.data[0]);
+                setIdiomaDiscurso(idiRes.data[1]);
+
+                if (traducao_id) {
+                    const traducaoRes = await api.get(`/traducao/${traducao_id}`);
+                    if (!isActive) return;
+
+                    setTraducao(traducaoRes.data);
+
+                    // Preencher os estados com os dados da tradução carregada
+                    setCategoriaSelecionada(traducaoRes.data.discurso.discurso_categoria);
+                    setIdiomaDiscurso(traducaoRes.data.discurso.idioma);
+                    setTextoDiscurso(traducaoRes.data.discurso.texto);
+                    setIdiomaTraducao(traducaoRes.data.idioma);
+                    setTextoTraducao(traducaoRes.data.texto);
+                } else {
+                    // Se for adicionar nova, limpa os estados (útil para resetar caso tenha vindo de edição)
+                    setTraducao(undefined);
+                    setCategoriaSelecionada(catRes.data[0]);
+                    setIdiomaDiscurso(idiRes.data[1]);
+                    setTextoDiscurso('');
+                    setIdiomaTraducao(idiRes.data[0]);
+                    setTextoTraducao('');
+                }
+            } catch (error) {
+                const err = error as any;
+                setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
+            } finally {
+                if (isActive) setCarregando(false);
+            }
+            };
+
+            loadData();
+
+            return () => {
+                isActive = false;
+                // Limpa o param quando sair da tela
+                navigation.setParams({ traducao_id: undefined });
+            };
+        }, [traducao_id])
+    );
+
+    const handleEvent = async () => {
         try{
             setCarregando(true);
-            setErro('');
-            getCategorias();
-            getIdiomas();
-        }catch(error){
-            var err = error as any;
-            setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
-        }finally{
-            setCarregando(false);
-        }
 
-    }, []);
+            if(!traducao)
+            {
+                const response = await api.post('/traducao/cadastrar', {
+                    "traducao_texto": textoTraducao.trim(),
+                    "discurso_texto": textoDiscurso.trim(), 
+                    "idioma_discurso_id": idiomaDiscurso?.id,  
+                    "idioma_traducao_id": idiomaTraducao?.id,  
+                    "discurso_categoria_id": categoriaSelecionada?.id, 
+                })
+                if(response) Alert.alert('Tradução cadastrada com sucesso');
+                setTextoDiscurso('');
+                setTextoTraducao('');
+                setErro('');
+            }else{
+                await api.put(`/traducao/discurso/edit-completo/${traducao_id}`, {
+                    texto_traducao: textoTraducao.trim(),
+                    idioma_traducao_id: idiomaTraducao?.id,
+                    texto_discurso: textoDiscurso.trim(),
+                    idioma_discurso_id: idiomaDiscurso?.id,
+                    discurso_categoria_id: categoriaSelecionada?.id
+                });
 
-    const handleAdd = async () => {
-        try{
-            setCarregando(true);
-            const response = await api.post('/traducao/cadastrar', {
-                "traducao_texto": textoTraducao.trim(),
-                "discurso_texto": textoDiscurso.trim(), 
-                "idioma_discurso_id": idiomaDiscurso?.id,  
-                "idioma_traducao_id": idiomaTraducao?.id,  
-                "discurso_categoria_id": categoriaSelecionada?.id, 
-            })
-            if(response) Alert.alert('Tradução cadastrada com sucesso');
-            setTextoDiscurso('');
-            setTextoTraducao('');
-            setErro('');
+                Alert.alert('Tradução e discurso atualizados com sucesso');
+            }
+
         }catch(error){
             const err = error as any;
-            const mensagemErro = err.response?.data?.erro || "Não foi possível adicionar a tradução.";
+            const mensagemErro = err.response?.data?.erro || 
+                `Não foi possível ${traducao? "atualizar" : "adicionar"} a tradução.`;
             setErro(mensagemErro)
             Alert.alert('Não foi possível realizar o cadastro.')
         }finally{
@@ -77,7 +136,9 @@ export default function(){
             <ScrollView>
                 <SafeAreaView style={styles.container} >
                     
-                    <Text style={styles.title}> Adicionar Tradução</Text>
+                    <Text style={styles.title}>
+                        {traducao ? 'Editar Tradução' : 'Nova Tradução'}
+                    </Text>
 
                     {erro && (
                         <View style={styles.erro} >
@@ -88,7 +149,12 @@ export default function(){
                     <View style={styles.divisor} />
                     <Text style={styles.subtitle} >Categoria do discurso</Text>
                     <View style={styles.input} >
-                        <Picker selectedValue={categoriaSelecionada} onValueChange={(item) => setCategoriaSelecionada(item)} >
+                        <Picker 
+                            selectedValue={categoriaSelecionada?.id} 
+                            onValueChange={(item) => {
+                                setCategoriaSelecionada(categorias.find((i) => i.id === item) || null);
+                            }} 
+                        >
                             {categorias.map((item) => (
                                 <Picker.Item key={item.id} label={item.descricao} value={item.id} />
                             ))}
@@ -145,11 +211,11 @@ export default function(){
                     <View style={styles.divisor} />
 
                     <TouchableOpacity 
-                        onPress={handleAdd} 
+                        onPress={handleEvent} 
                         disabled={carregando}
                         style={styles.button}
                     >
-                        <Text style={{color:'#fff'}}>{carregando ? "Aguarde..." : "Adicionar"}</Text>
+                        <Text style={{color:'#fff'}}>{carregando ? "Aguarde..." : traducao? "Atualizar" : "Adicionar"}</Text>
                     </TouchableOpacity>
 
                 </SafeAreaView>

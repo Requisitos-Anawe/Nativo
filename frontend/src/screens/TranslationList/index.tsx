@@ -2,15 +2,19 @@ import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View 
 import { SafeAreaView } from "react-native-safe-area-context"
 import styles from "./styles"
 import { Picker } from "@react-native-picker/picker"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import api from "../../services/api"
 import AsyncStorage from "@react-native-async-storage/async-storage"
+import Icon from "react-native-vector-icons/Ionicons"
+import { useFocusEffect, useNavigation } from "@react-navigation/native"
 
 export default function TraslationList(){
+    const navigation = useNavigation();
+
     const [idiomaDiscurso, setIdiomaDiscurso] = useState<IdiomaInterface|null>(null);
     const [textoDiscurso, setTextoDiscurso] = useState('');
     const [idiomas, setIdiomas] = useState<IdiomaInterface[]>([]);
-    const [traducoes, setTraducoes] = useState<TraducaoInterface[]>([]);
+    const [traducoes, setTraducoes] = useState<TraducaoResponse[]>([]);
 
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState('');
@@ -29,7 +33,7 @@ export default function TraslationList(){
                 });
                 setTraducoes(response.data);
             }else{
-                setErro('Não foi possível buscar as traduções.');
+                setErro('Não foi possível buscar as traduções.'); 
             }
         }catch(error){
             var err = error as any;
@@ -38,6 +42,28 @@ export default function TraslationList(){
             setCarregando(false);
         }
     }
+
+    useFocusEffect(
+        useCallback(() => {
+            const buscarDados = async () => {
+            try {
+                setCarregando(true);
+                setErro('');
+                await handleSearch();
+            } catch (error) {
+                const err = error as any;
+                setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
+            } finally {
+                setCarregando(false);
+            }
+            };
+
+            buscarDados();
+
+            // Não precisa de cleanup aqui
+
+        }, [])
+    );
 
     useEffect(() => {
         
@@ -115,6 +141,11 @@ export default function TraslationList(){
                         ) : (
                         traducoes.map((item) => (
                             <View key={item.id} style={styles.traducaoBox}>
+                                <View style={{alignItems: "flex-end"}}>
+                                    <TouchableOpacity onPress={() => navigation.navigate('AddTraducao', { traducao_id: item.id })}>
+                                        <Icon name={"create-outline"} size={18} color="#000"/>
+                                    </TouchableOpacity>
+                                </View>
                                 <Text style={styles.boxTitle} >Discurso: <Text style={styles.discursoText} >{item.discurso}</Text> </Text>
                                 <View style={styles.divisor}/>
                                 <Text style={styles.boxTitle} >Tradução: <Text style={styles.discursoText} >{item.texto}</Text> </Text>
