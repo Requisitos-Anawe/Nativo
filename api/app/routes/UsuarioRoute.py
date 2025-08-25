@@ -4,6 +4,7 @@ from flask import Blueprint, request, jsonify
 from app.services import UsuarioService
 from app.schemas.UsuarioSchema import UsuarioSchema
 from app.middlewares.autenticar_jwt import autenticar_jwt
+from app.middlewares.verificar_admin import verificar_admin
 
 schema = UsuarioSchema()
 
@@ -40,6 +41,25 @@ def buscar_perfil(usuario_id):
     if usuario:
         return jsonify(usuario)
     return jsonify({"erro": "Não foi possível encontrar o perfil."}), 404
+
+@bp.route('/usuario/<usuario_id>/perfil', methods=['PUT'])
+@autenticar_jwt
+@verificar_admin
+def editar_perfil_usuario(usuario_id):
+    dados = request.get_json()
+    novo_perfil_id = dados.get('perfil_id')
+
+    if not novo_perfil_id:
+        return jsonify({'erro': 'ID do novo perfil não fornecido'}), 400
+
+    try:
+        response = UsuarioService.atualizar_usuario(usuario_id, novo_perfil_id)
+        if(response):
+            return response
+        return jsonify({'mensagem': 'Perfil do usuário atualizado com sucesso'}), 200
+
+    except Exception as e:
+        return jsonify({'erro': f'Erro ao atualizar perfil: {str(e)}'}), 500
 
 @bp.route('/upload', methods=['POST'])
 @autenticar_jwt

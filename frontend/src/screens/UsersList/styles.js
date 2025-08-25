@@ -47,7 +47,7 @@ export default StyleSheet.create({
         padding: 15,
         borderRadius: 5,
         marginVertical: 10,
-        width: 250,
+        width: '100%',
         alignItems: 'center'
     },
 
@@ -67,5 +67,45 @@ export default StyleSheet.create({
     textoAviso: {
         color: '#333',
         fontSize: 16,
+    },
+
+    background: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+    },
+
+    modal: {
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        height: screenHeight * 0.4,
+        backgroundColor: 'white',
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        padding: 30
+    },
+
+    closeButton: {
+        backgroundColor: 'red',
+        padding: 12,
+        borderRadius: 6,
+        alignSelf: 'flex-end',
+    },
+
+    pickerInput: {
+        borderColor: '#d9d9d9',
+        borderWidth: 1,
+        borderRadius: 5,
+        paddingHorizontal: 10,
+        marginBottom: 20
+    },
+
+    button: {
+        width: 150,
+        backgroundColor: '#CC005F',
+        paddingVertical: 8,
+        borderRadius: 4,
+        alignItems: 'center',
+        marginBottom: 10
     },
 });

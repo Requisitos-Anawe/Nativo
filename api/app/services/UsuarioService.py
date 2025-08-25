@@ -2,6 +2,7 @@ from datetime import datetime
 from app.firebase import db
 import pytz
 from firebase_admin import firestore
+from flask import jsonify
 
 COLLECTION = 'usuario'
 
@@ -36,8 +37,8 @@ def listar_usuarios():
         if isinstance(perfil_ref, firestore.DocumentReference):
             perfil_doc = perfil_ref.get()
             if perfil_doc.exists:
-                perfil_data = perfil_doc.to_dict()
-                usuario['perfil'] = perfil_data.get('descricao', 'Perfil sem descrição')
+                usuario['perfil'] = perfil_doc.to_dict()
+                usuario['perfil']['id'] = perfil_doc.id
             else:
                 usuario['perfil'] = 'Perfil não encontrado'
         else:
@@ -57,9 +58,29 @@ def buscar_usuario_por_id(usuario_id):
         return usuario
     return None
 
-def atualizar_usuario(usuario_id, dados_atualizados):
-    doc_ref = db.collection(COLLECTION).document(usuario_id)
-    doc_ref.update(dados_atualizados)
+def atualizar_usuario(usuario_id, novo_perfil_id):
+    usuario_ref = db.collection('usuario').document(usuario_id)
+    usuario_doc = usuario_ref.get()
+    if not usuario_doc.exists:
+        return jsonify({'erro': 'Usuário não encontrado'}), 404
+
+    usuario_alvo = usuario_doc.to_dict()
+    perfil_ref_alvo = usuario_alvo.get('perfil')
+    perfil_doc_alvo = perfil_ref_alvo.get()
+    descricao_alvo = perfil_doc_alvo.to_dict().get('descricao', '').lower()
+    # Se o usuário alvo é admin
+    if descricao_alvo == 'admin':
+        return jsonify({'erro': 'Não é permitido alterar o perfil de um administrador'}), 403
+    
+    novo_perfil_ref = db.collection('perfil').document(novo_perfil_id)
+    perfil_doc = novo_perfil_ref.get()
+    if not perfil_doc.exists:
+        return jsonify({'erro': 'Perfil não encontrado'}), 404
+
+    usuario_ref.update({
+        'perfil': novo_perfil_ref,
+        'data_atualizacao': datetime.now(pytz.timezone("America/Sao_Paulo"))
+    })
 
 def deletar_usuario(usuario_id):
     db.collection(COLLECTION).document(usuario_id).delete()

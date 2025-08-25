@@ -2,8 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 
 interface AuthContextType {
-  user: User | null;
-  setUser: React.Dispatch<React.SetStateAction<User|null>>;
+  user: UserInterface | null;
+  setUser: React.Dispatch<React.SetStateAction<UserInterface|null>>;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -14,7 +14,7 @@ interface AuthProviderProps {
 
 
 export function AuthProvider({ children }: AuthProviderProps) {
-    const [user, setUser] = useState<User|null>(null);
+    const [user, setUser] = useState<UserInterface|null>(null);
 
     return (
         <AuthContext.Provider value={{ user, setUser }}>

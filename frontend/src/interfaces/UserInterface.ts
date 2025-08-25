@@ -1,7 +1,10 @@
-interface User {
+interface UserInterface {
     nome: string,
     email: string,
-    perfil: string,
+    perfil: {
+        id: string,
+        descricao: string
+    },
     data_nascimento: string
     id: string
 }
