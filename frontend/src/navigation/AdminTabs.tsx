@@ -1,13 +1,12 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import Home from "../screens/Home";
 import Icon from "react-native-vector-icons/Ionicons";
-import TranslationCreate from "../screens/TranslationCreate";
 import Informations from "../screens/Informations";
-import TraslationList from "../screens/TranslationList";
+import UsersList from "../screens/UsersList";
 
 const Tab = createBottomTabNavigator();
 
-export default function ProfessorTabs() {
+export default function AdminTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -20,8 +19,7 @@ export default function ProfessorTabs() {
           let iconName = 'home-outline';
           if (route.name === 'Tradutor') iconName = 'language-outline';
           else if (route.name === 'Informations') iconName = 'information-circle-outline';
-          else if (route.name === 'AddTraducao') iconName = 'add-circle-outline';
-          else if (route.name === 'ListTraducao') iconName = 'document-text-outline';
+          else if (route.name === 'ListUsers') iconName = 'people-outline';
           return <Icon name={iconName} size={size} color={color} />;
         },
         tabBarStyle: {
@@ -38,8 +36,7 @@ export default function ProfessorTabs() {
       })}
     >
       <Tab.Screen name="Tradutor" component={Home} />
-      <Tab.Screen name="AddTraducao" component={TranslationCreate} />
-      <Tab.Screen name="ListTraducao" component={TraslationList} />
+      <Tab.Screen name="ListUsers" component={UsersList} />
       <Tab.Screen name="Informations" component={Informations} />
     </Tab.Navigator>
   );

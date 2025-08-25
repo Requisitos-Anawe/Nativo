@@ -3,6 +3,7 @@ import ProfessorTabs from "./ProfessorTabs";
 import UserTabs from "./UserTabs";
 import Perfil from "../screens/Perfil";
 import { LogOut } from "../components/Logout";
+import AdminTabs from "./AdminTabs";
 
 const Stack = createNativeStackNavigator();
 
@@ -13,6 +14,9 @@ export default function AppStack({perfil}: {perfil: string}) {
   switch (perfil) {
     case 'professor':
       TabsComponent = ProfessorTabs;
+      break;
+    case 'admin':
+      TabsComponent = AdminTabs;
       break;
     default:
       TabsComponent = UserTabs;

@@ -3,12 +3,14 @@ from app.firebase import bucket
 from flask import Blueprint, request, jsonify
 from app.services import UsuarioService
 from app.schemas.UsuarioSchema import UsuarioSchema
+from app.middlewares.autenticar_jwt import autenticar_jwt
 
 schema = UsuarioSchema()
 
 bp = Blueprint('usuarios', __name__)
 
 @bp.route('/usuarios', methods=['POST'])
+@autenticar_jwt
 def criar():
     try:
         dados = schema.load(request.json)
@@ -24,6 +26,7 @@ def listar():
     return jsonify(UsuarioService.listar_usuarios())
 
 @bp.route('/usuarios/<usuario_id>', methods=['GET'])
+@autenticar_jwt
 def buscar(usuario_id):
     usuario = UsuarioService.buscar_usuario_por_id(usuario_id)
     if usuario:
@@ -31,6 +34,7 @@ def buscar(usuario_id):
     return jsonify({"erro": "Usuário não encontrado"}), 404
 
 @bp.route('/usuarios/<usuario_id>/perfil', methods=['GET'])
+@autenticar_jwt
 def buscar_perfil(usuario_id):
     usuario = UsuarioService.get_perfil(usuario_id)
     if usuario:
@@ -38,6 +42,7 @@ def buscar_perfil(usuario_id):
     return jsonify({"erro": "Não foi possível encontrar o perfil."}), 404
 
 @bp.route('/upload', methods=['POST'])
+@autenticar_jwt
 def upload_file():
     if 'file' not in request.files:
         return jsonify({'error': 'Nenhum arquivo enviado'}), 400

@@ -31,7 +31,21 @@ def listar_usuarios():
         usuario = doc.to_dict()
         usuario['id'] = doc.id
         usuario.pop('senha', None)
+
+        perfil_ref = usuario.get('perfil')
+        if isinstance(perfil_ref, firestore.DocumentReference):
+            perfil_doc = perfil_ref.get()
+            if perfil_doc.exists:
+                perfil_data = perfil_doc.to_dict()
+                usuario['perfil'] = perfil_data.get('descricao', 'Perfil sem descrição')
+            else:
+                usuario['perfil'] = 'Perfil não encontrado'
+        else:
+            usuario['perfil'] = 'Perfil indefinido'
+
         usuarios.append(usuario)
+
+    usuarios.sort(key=lambda u: (u.get('nome') or '').strip().lower())
     return usuarios
 
 def buscar_usuario_por_id(usuario_id):
