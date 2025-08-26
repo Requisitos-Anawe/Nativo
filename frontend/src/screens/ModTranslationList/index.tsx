@@ -1,4 +1,4 @@
-import { ActivityIndicator, Button, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { ActivityIndicator, Alert, Button, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import styles from "./styles";
 import { useEffect, useState } from "react";
@@ -20,34 +20,44 @@ export default function ModTranslationList(){
         }
     };
 
-    useEffect(() => {
-        const carregarTraducoes = async () => {
-            setCarregando(true);
-            try {
-                const response = await api.get('/traducao', {
-                    params: {
-                    pagina: paginaAtual,
-                    limite,
-                    },
-                });
-                setTraducoes(response.data.traducoes);
-                setPaginaAtual(response.data.pagina);
-                setTotalPaginas(response.data.total_paginas);
-            } catch (error) {
-            const err = error as any;
-                setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
-            } finally {
-                setCarregando(false);
-            }
-        };
+    const carregarTraducoes = async () => {
+        setCarregando(true);
+        try {
+            const response = await api.get('/traducao', {
+                params: {
+                pagina: paginaAtual,
+                limite,
+                },
+            });
+            setTraducoes(response.data.traducoes);
+            setPaginaAtual(response.data.pagina);
+            setTotalPaginas(response.data.total_paginas);
+        } catch (error) {
+        const err = error as any;
+            setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
+        } finally {
+            setCarregando(false);
+        }
+    };
 
+    useEffect(() => {
         carregarTraducoes();
     }, [paginaAtual]);
+
+    const handleDelete = async (traducao_id: string) => {
+        try {
+            const response = await api.delete(`/traducao/${traducao_id}`);
+            Alert.alert(response.data.mensagem);
+            carregarTraducoes();
+        } catch (error: any) {
+            Alert.alert(error.response.data.erro);
+        }
+    }
 
     if (carregando) {
         return (
             <SafeAreaView style={styles.container}>
-                <ActivityIndicator/>
+                <ActivityIndicator />
             </SafeAreaView>
         );
     }
@@ -92,6 +102,11 @@ export default function ModTranslationList(){
 
                 {traducoes?.map((item) => (
                     <View style={styles.block} key={item.id}>
+                        <View style={{alignItems: 'flex-end', padding: 10}} >
+                            <TouchableOpacity onPress={() => {handleDelete(item.id)}}>
+                                <Icon name="trash-outline" size={18} />
+                            </TouchableOpacity>
+                        </View>
                         <Text style={styles.textDiscurso} > 
                             <Text style={{fontWeight: 'bold'}}>Discurso: </Text> 
                             {item.discurso.texto}

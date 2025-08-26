@@ -370,3 +370,20 @@ def listar_traducoes():
 
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
+    
+@bp.route("/traducao/<traducao_id>", methods=["DELETE"])
+@autenticar_jwt
+def apagar_traducao(traducao_id):
+    try:
+        traducao_ref = db.collection("traducao").document(traducao_id)
+        doc = traducao_ref.get()
+
+        if not doc.exists:
+            return jsonify({"erro": "Tradução não encontrada"}), 404
+
+        traducao_ref.delete()
+
+        return jsonify({"mensagem": "Tradução excluída com sucesso"}), 200
+
+    except Exception as e:
+        return jsonify({"erro": f"Erro ao excluir tradução: {str(e)}"}), 500

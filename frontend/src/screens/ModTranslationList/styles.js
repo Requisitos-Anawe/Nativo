@@ -17,7 +17,8 @@ export default StyleSheet.create({
     },
 
     textDiscurso: {
-        padding: 20
+        paddingHorizontal: 20,
+        paddingBottom: 20
     },
 
     textTraducao: {
