@@ -8,7 +8,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import api from "../../services/api";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
-import DownloadTermo from "../../components/DownloadTermo";
+import DownloadFile from "../../components/DownloadFile";
 
 export default function UserCreate() {
     const [user, setUser] = useState<UserRequest>({
@@ -119,7 +119,7 @@ export default function UserCreate() {
                         </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity onPress={() => DownloadTermo('https://drive.google.com/uc?export=download&id=1V74rvGWG31ek6fx51rP64viIYK8vtvnk')}>
+                    <TouchableOpacity onPress={() => DownloadFile('https://drive.google.com/uc?export=download&id=1V74rvGWG31ek6fx51rP64viIYK8vtvnk')}>
                         <Text style={styles.termo}>Baixar Termo de Uso e Políticas de Privacidade</Text>
                     </TouchableOpacity>
 

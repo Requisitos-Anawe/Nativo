@@ -1,44 +1,16 @@
 import React from 'react';
-import { Alert, Text, TouchableOpacity } from 'react-native';
+import { Text, TouchableOpacity } from 'react-native';
 import ScreenContainer from '../../components/ScreenContainer';
 import styles from './styles';
-import RNFetchBlob from 'rn-fetch-blob';
+import DownloadFile from '../../components/DownloadFile';
 
 export default function Informations() {
- 
-  async function downloadPdf() {
-    const { config, fs } = RNFetchBlob;
-    const dirs = fs.dirs;
-    const filePath = `${dirs.DownloadDir}/manual-tradutor-munduruku.pdf`;
-
-    config({
-      fileCache: true,
-      addAndroidDownloads: {
-        useDownloadManager: true,
-        notification: true,
-        path: filePath,
-        description: 'Baixando o manual do app',
-        mediaScannable: true,
-      },
-    })
-      .fetch(
-        'GET',
-        'https://drive.google.com/uc?export=download&id=1jzShr1gUKPsnOAAxgGMYpZ_srWQIcsyi'
-      )
-      .then((res) => {
-        console.log('Download concluído: ', res.path());
-        Alert.alert('Download concluído', 'O arquivo foi salvo com sucesso!');
-      })
-      .catch((err) => {
-        console.warn('Erro ao baixar o PDF:', err);
-      });
-  }
 
   return (
     <ScreenContainer>
       <Text style={styles.title} >Olá, bem vindo(a)</Text>
 
-      <TouchableOpacity onPress={downloadPdf}>
+      <TouchableOpacity onPress={() => DownloadFile('https://drive.google.com/uc?export=download&id=1jzShr1gUKPsnOAAxgGMYpZ_srWQIcsyi')}>
         <Text style={styles.link}>Clique aqui para baixar o manual do aplicativo</Text>
       </TouchableOpacity>
 

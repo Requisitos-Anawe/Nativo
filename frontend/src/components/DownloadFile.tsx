@@ -2,7 +2,7 @@
 import { Alert } from 'react-native';
 import RNFS from 'react-native-fs';
 
-export default async function DownloadTermo(fileUrl: string) {
+export default async function DownloadFile(fileUrl: string) {
     const filePath = `${RNFS.DownloadDirectoryPath}/termo-de-uso-tradutor.pdf`;
 
     try {
