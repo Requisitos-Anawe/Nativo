@@ -54,7 +54,23 @@ export default StyleSheet.create({
         marginBottom: 10
     },
 
+    buttonNot: {
+        backgroundColor: '#686868ff',
+        paddingVertical: 8,
+        borderRadius: 4,
+        alignItems: 'center',
+        marginBottom: 10,
+        width: 150,
+    },
+
     links: {
+        color: '#fff',
+        textDecorationLine: 'underline',
+        marginBottom: 15
+    },
+
+    termo: {
+        fontSize: 10,
         color: '#fff',
         textDecorationLine: 'underline',
         marginBottom: 15
@@ -71,5 +87,9 @@ export default StyleSheet.create({
 
     erro_text: {
         color: '#fff',
+    },
+
+    checkbox: {
+        color: '#FFF'
     },
 });

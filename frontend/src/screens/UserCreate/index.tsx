@@ -7,6 +7,8 @@ import { useState } from "react";
 import Icon from "react-native-vector-icons/Ionicons";
 import DateTimePicker from '@react-native-community/datetimepicker';
 import api from "../../services/api";
+import BouncyCheckbox from "react-native-bouncy-checkbox";
+import DownloadTermo from "../../components/DownloadTermo";
 
 export default function UserCreate() {
     const [user, setUser] = useState<UserRequest>({
@@ -20,6 +22,7 @@ export default function UserCreate() {
     const [showPassword, setShowPassword] = useState(false); 
     const [carregando, setCarregando] = useState(false);
     const [erro, setErro] = useState('');
+    const [isSelected, setSelection] = useState(false);
 
     const formatDate = (date: Date) => {
         const day = String(date.getDate()).padStart(2, '0');
@@ -115,6 +118,22 @@ export default function UserCreate() {
                             />
                         </TouchableOpacity>
                     </View>
+
+                    <TouchableOpacity onPress={() => DownloadTermo('https://drive.google.com/uc?export=download&id=1V74rvGWG31ek6fx51rP64viIYK8vtvnk')}>
+                        <Text style={styles.termo}>Baixar Termo de Uso e Políticas de Privacidade</Text>
+                    </TouchableOpacity>
+
+                    <BouncyCheckbox
+                        textStyle={{ color: '#FFF', fontSize: 14, marginBottom: 10 }}
+                        size={25}
+                        fillColor="#CC005F"
+                        unFillColor="#FFFFFF"
+                        text="Li e concordo com os Termos de Uso e Políticas de Privacidade"
+                        iconStyle={{ borderColor: "#CC005F" }}
+                        innerIconStyle={{ borderWidth: 2 }}
+                        onPress={() => {setSelection(!isSelected)}}
+                    />
+
                 </View>
 
                 {erro && (
@@ -125,8 +144,8 @@ export default function UserCreate() {
 
                 <TouchableOpacity 
                     onPress={handleCreate} 
-                    disabled={carregando}
-                    style={styles.button}
+                    disabled={carregando || !isSelected}
+                    style={ !carregando && isSelected ? styles.button : styles.buttonNot}
                 >
                     <Text style={{color:'#fff'}}>{carregando ? "Aguarde..." : "Cadastrar"}</Text>
                 </TouchableOpacity>
