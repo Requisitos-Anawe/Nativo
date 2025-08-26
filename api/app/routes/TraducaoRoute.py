@@ -1,9 +1,11 @@
+import math
 import pytz
 from app.middlewares.autenticar_jwt import autenticar_jwt
 from app.middlewares.verificar_professor import verificar_professor
 from datetime import datetime
 from flask import Blueprint, request, jsonify, g
 from firebase_admin import firestore
+from datetime import datetime
 
 bp = Blueprint("traducao", __name__)
 db = firestore.client()
@@ -292,3 +294,79 @@ def cadastrar_traducao():
 
     except Exception as e:
         return jsonify({"erro": f"Erro ao cadastrar: {str(e)}"}), 500
+
+@bp.route("/traducao", methods=["GET"])
+@autenticar_jwt
+def listar_traducoes():
+    try:
+        pagina = int(request.args.get('pagina', 1))
+        limite = int(request.args.get('limite', 10))
+        if not pagina: 
+            pagina = 1
+        if not limite:
+            limite = 10
+        offset = (pagina - 1) * limite
+
+        count_result = db.collection("traducao").count().get()
+        total_traducoes = count_result[0][0].value
+        total_paginas = math.ceil(total_traducoes / limite)
+
+        traducoes_query = db.collection('traducao') \
+            .order_by('data_criacao', direction=firestore.Query.DESCENDING) \
+            .offset(offset).limit(limite)
+
+        traducoes_docs = traducoes_query.stream()
+
+        resultados = []
+
+        for doc in traducoes_docs:
+            traducao_data = doc.to_dict()
+            discurso_ref = traducao_data.get('discurso')
+            idioma_ref = traducao_data.get('idioma')
+            usuario_ref = traducao_data.get('usuario')
+
+            data_criacao = traducao_data.get('data_criacao')
+            data_criacao_formatada = data_criacao.strftime("%d/%m/%Y %H:%M") if isinstance(data_criacao, datetime) else None
+
+            discurso_doc = discurso_ref.get() if discurso_ref else None
+            idioma_doc = idioma_ref.get() if idioma_ref else None
+            usuario_doc = usuario_ref.get() if usuario_ref else None
+
+            discurso_data = discurso_doc.to_dict() if discurso_doc and discurso_doc.exists else {}
+            idioma_data_discurso = discurso_data.get('idioma').get().to_dict() if discurso_data.get('idioma') else {}
+            categoria_data = discurso_data.get('discurso_categoria').get().to_dict() if discurso_data.get('discurso_categoria') else {}
+
+            resultados.append({
+                'id': doc.id,
+                'texto': traducao_data.get('texto'),
+                'data_criacao': data_criacao_formatada,
+                'usuario': usuario_doc.to_dict().get('nome') if usuario_doc and usuario_doc.exists else None,
+                'idioma': {
+                    'id': idioma_ref.id,
+                    **idioma_doc.to_dict()
+                } if idioma_doc else None,
+                'discurso': {
+                    'id': discurso_ref.id,
+                    'data_criacao': discurso_data.get('data_criacao'),
+                    'texto': discurso_data.get('texto'),
+                    'idioma': {
+                        'id': discurso_data.get('idioma').id,
+                        **idioma_data_discurso
+                    } if idioma_data_discurso else None,
+                    'discurso_categoria': {
+                        'id': discurso_data.get('discurso_categoria').id,
+                        **categoria_data
+                    } if categoria_data else None,
+                }
+            })
+
+        return jsonify({
+            "total_paginas": total_paginas,
+            "total_registros": total_traducoes,
+            'pagina': pagina,
+            'limite': limite,
+            'traducoes': resultados
+        })
+
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
