@@ -25,6 +25,7 @@ function Home(){
     const handleTraduzir = async () => {
         try {
             setCarregando(true);
+            setTraducao([])
             const response = await api.post(`/discurso/buscar`, {
                 texto: texto.trim(),
             });
@@ -64,17 +65,17 @@ function Home(){
                 </TouchableOpacity>
             </View>
             <View style={styles.divisor} />
-            <View style={styles.translateActions}>
-                {/* Ações da tradução */}
-                <View>
-                    {categoria !== '' && (<AppText style={styles.categoriaTexto}>{categoria}</AppText>)}
-                </View>
-            </View>
             <View>
                {/* Resultado de busca */}
                
                {traducao.length > 0 && (
                 <View>
+                    <View style={styles.translateActions}>
+                        {/* Ações da tradução */}
+                        <View>
+                            {categoria !== '' && (<AppText style={styles.categoriaTexto}>{categoria}</AppText>)}
+                        </View>
+                    </View>
                     <View style={styles.traducaoBox}>
                         <AppText style={styles.traducaoTexto}>{traducao[0].texto}</AppText>
                     </View>
