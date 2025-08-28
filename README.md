@@ -1,1 +1,1 @@
-# Aplicativo tradutor de línguas indígenas: Mundurku
+# Aplicativo tradutor de línguas indígenas: Mundurukú
