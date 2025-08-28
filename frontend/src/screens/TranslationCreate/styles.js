@@ -41,20 +41,7 @@ export default StyleSheet.create({
         alignItems: 'center',
         marginBottom: 10
     },
-
-    erro: {
-        backgroundColor: 'red',
-        padding: 15,
-        borderRadius: 5,
-        marginVertical: 10,
-        width: 250,
-        alignItems: 'center'
-    },
-
-    erro_text: {
-        color: '#fff',
-    },
-
+    
     divisor: {
         marginVertical: 15,
         width: '100%',

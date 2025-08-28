@@ -5,6 +5,7 @@ import { Picker } from '@react-native-picker/picker';
 import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api";
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import Erro from "../../components/Erro";
 
 type RootStackParamList = {
   TraslationCreate: {
@@ -140,11 +141,7 @@ export default function TraslationCreate(){
                         {traducao ? 'Editar Tradução' : 'Nova Tradução'}
                     </Text>
 
-                    {erro && (
-                        <View style={styles.erro} >
-                            <Text style={styles.erro_text} >{erro}</Text>
-                        </View>
-                    )} 
+                    {erro && <Erro texto={erro} />} 
 
                     <View style={styles.divisor} />
                     <Text style={styles.subtitle} >Categoria do discurso</Text>

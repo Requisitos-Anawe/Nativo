@@ -9,6 +9,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import api from "../../services/api";
 import BouncyCheckbox from "react-native-bouncy-checkbox";
 import DownloadFile from "../../components/DownloadFile";
+import Erro from "../../components/Erro";
 
 export default function UserCreate() {
     const [user, setUser] = useState<UserRequest>({
@@ -136,11 +137,7 @@ export default function UserCreate() {
 
                 </View>
 
-                {erro && (
-                    <View style={styles.erro} >
-                        <Text style={styles.erro_text} >{erro}</Text>
-                    </View>
-                )}
+                {erro && <Erro texto={erro} />}
 
                 <TouchableOpacity 
                     onPress={handleCreate} 

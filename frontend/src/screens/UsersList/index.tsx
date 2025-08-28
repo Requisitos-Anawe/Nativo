@@ -5,6 +5,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import { useEffect, useRef, useState } from "react";
 import api from "../../services/api";
 import { Picker } from "@react-native-picker/picker";
+import Erro from "../../components/Erro";
 
 export default function UsersList() {
     const [users, setUsers] = useState<UserInterface[]|null>(null);
@@ -99,11 +100,7 @@ export default function UsersList() {
                     <ActivityIndicator />
                 ) : (
                     <>
-                        {erro && (
-                            <View style={styles.erro} >
-                                <Text style={styles.erro_text} >{erro}</Text>
-                            </View>
-                        )}
+                        {erro && <Erro texto={erro} />}
 
                         { !users || users.length === 0 ? (
                             <View style={styles.caixaAviso}>

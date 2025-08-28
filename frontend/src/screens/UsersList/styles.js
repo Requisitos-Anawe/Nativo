@@ -41,20 +41,7 @@ export default StyleSheet.create({
     default: {
         display: 'none'
     },
-
-    erro: {
-        backgroundColor: 'red',
-        padding: 15,
-        borderRadius: 5,
-        marginVertical: 10,
-        width: '100%',
-        alignItems: 'center'
-    },
-
-    erro_text: {
-        color: '#fff',
-    },
-
+    
     caixaAviso: {
         backgroundColor: '#f0f0f0',
         borderLeftWidth: 4,

@@ -76,19 +76,6 @@ export default StyleSheet.create({
         marginBottom: 15
     },
 
-    erro: {
-        backgroundColor: 'red',
-        padding: 15,
-        borderRadius: 5,
-        marginVertical: 10,
-        width: 250,
-        alignItems: 'center'
-    },
-
-    erro_text: {
-        color: '#fff',
-    },
-
     checkbox: {
         color: '#FFF'
     },

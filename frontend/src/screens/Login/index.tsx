@@ -9,6 +9,7 @@ import {useAuth} from "../../contexts/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../navigation/AuthStack";
+import Erro from "../../components/Erro";
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
@@ -82,11 +83,7 @@ export default function Login() {
                     <Text style={{color:'#fff'}}>{carregando ? "Aguarde..." : "Entrar"}</Text>
                 </TouchableOpacity>
 
-                {erro && (
-                    <View style={styles.erro} >
-                        <Text style={styles.erro_text} >{erro}</Text>
-                    </View>
-                )}
+                {erro && <Erro texto={erro} />}
 
                 <TouchableOpacity onPress={() => navigation.navigate("Cadastro")}>
                     <Text style={styles.links}>Cadastre-se</Text>

@@ -4,6 +4,7 @@ import styles from "./styles";
 import { useEffect, useState } from "react";
 import api from "../../services/api";
 import Icon from "react-native-vector-icons/Ionicons";
+import Erro from "../../components/Erro";
 
 export default function ModTranslationList(){
     const [traducoes, setTraducoes] = useState<TraducaoInterface[]|null>(null);
@@ -77,12 +78,7 @@ export default function ModTranslationList(){
         <ScrollView>
             <SafeAreaView style={styles.container}>
 
-                {erro && (
-                    <View style={styles.erro} >
-                        <Text style={styles.erro_text} >{erro}</Text>
-                    </View>
-                )}
-
+                {erro && <Erro texto={erro} />}
                
                 <View style={styles.pages}> 
                     <TouchableOpacity disabled={paginaAtual === 1} onPress={() => mudarPagina(1)}>

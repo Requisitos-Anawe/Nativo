@@ -5,6 +5,7 @@ type Props = {
   children: ReactNode;
 };
 
+// Nao funciona em todas as telas
 const ScreenContainer = ({ children }: Props) => {
   return <ScrollView>
     <View style={styles.container}>{children}</View>

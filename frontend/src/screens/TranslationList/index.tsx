@@ -7,6 +7,7 @@ import api from "../../services/api"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import Icon from "react-native-vector-icons/Ionicons"
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
+import Erro from "../../components/Erro"
 
 export default function TraslationList(){
     const navigation = useNavigation();
@@ -122,11 +123,7 @@ export default function TraslationList(){
                     </TouchableOpacity>
                 </View>
 
-                {erro && (
-                    <View style={styles.erro} >
-                        <Text style={styles.erro_text} >{erro}</Text>
-                    </View>
-                )} 
+                {erro && <Erro texto={erro} />} 
 
                 <View style={styles.divisor} />
 
