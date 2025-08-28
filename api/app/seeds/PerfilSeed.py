@@ -4,10 +4,10 @@ import pytz
 
 def run():
     perfis = {
-        "1": "Padrão",
-        "2": "Administrador",
-        "3": "Professor",
-        "4": "Moderador"
+        "1": "padrão",
+        "2": "administrador",
+        "3": "professor",
+        "4": "moderador"
     }
 
     for perfil_id, descricao in perfis.items():

@@ -17,7 +17,7 @@ export default function UserTabs() {
         tabBarLabel: () => null,
         tabBarIcon: ({ color, size }) => {
           let iconName = 'home-outline';
-          if (route.name === 'Tradutor') iconName = 'text-outline';
+          if (route.name === 'Tradutor') iconName = 'language-outline';
           else if (route.name === 'Informations') iconName = 'information-circle-outline';
           return <Icon name={iconName} size={size} color={color} />;
         },

@@ -15,9 +15,9 @@ export default function UsersList() {
     const [perfilSelecionado, setPerfilSelecionado] = useState<PerfilInterface|null>(null);
     const [perfis, setPerfis] = useState<PerfilInterface[]|null>(null);
     
-    type Perfil = 'admin' | 'professor' | 'moderador';
+    type Perfil = 'administrador' | 'professor' | 'moderador';
     const perfilStyles: Record<Perfil, TextStyle> = {
-        admin: styles.admin,
+        administrador: styles.admin,
         professor: styles.professor,
         moderador: styles.moderador,
     };

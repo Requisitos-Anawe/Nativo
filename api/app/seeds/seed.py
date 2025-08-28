@@ -5,7 +5,7 @@ def main():
 
     DiscursoCategoriaSeed.run()
     PerfilSeed.run()
-    ReporteTipoSeed.run()
+    # ReporteTipoSeed.run()
     UsuarioSeed.run()
 
     print("Seed finalizado com sucesso.")

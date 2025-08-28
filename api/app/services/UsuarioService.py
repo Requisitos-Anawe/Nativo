@@ -10,7 +10,6 @@ def criar_usuario(data):
     doc_ref = db.collection(COLLECTION).document()
     
     usuario = {
-        'cpf': data.get('cpf'),
         'email': data.get('email'),
         'senha': data.get('senha'), 
         'data_nascimento': data.get('data_nascimento'),
@@ -66,11 +65,12 @@ def atualizar_usuario(usuario_id, novo_perfil_id):
 
     usuario_alvo = usuario_doc.to_dict()
     perfil_ref_alvo = usuario_alvo.get('perfil')
-    perfil_doc_alvo = perfil_ref_alvo.get()
-    descricao_alvo = perfil_doc_alvo.to_dict().get('descricao', '').lower()
-    # Se o usuário alvo é admin
-    if descricao_alvo == 'admin':
-        return jsonify({'erro': 'Não é permitido alterar o perfil de um administrador'}), 403
+    if isinstance(perfil_ref_alvo, firestore.DocumentReference):
+        perfil_doc_alvo = perfil_ref_alvo.get()
+        if perfil_doc_alvo.exists:
+            descricao_alvo = perfil_doc_alvo.to_dict().get('descricao', '').lower()
+            if descricao_alvo == 'admin':
+                return jsonify({'erro': 'Não é permitido alterar o perfil de um administrador'}), 403
     
     novo_perfil_ref = db.collection('perfil').document(novo_perfil_id)
     perfil_doc = novo_perfil_ref.get()
@@ -84,14 +84,3 @@ def atualizar_usuario(usuario_id, novo_perfil_id):
 
 def deletar_usuario(usuario_id):
     db.collection(COLLECTION).document(usuario_id).delete()
-
-# TODO: verificar viabilidade
-def get_perfil(usuario_id):
-    doc_ref = db.collection(COLLECTION).document(usuario_id)
-    doc = doc_ref.get()
-
-    if doc.exists:
-        data = doc.to_dict()
-        return data.get('perfil') 
-    else:
-        return None

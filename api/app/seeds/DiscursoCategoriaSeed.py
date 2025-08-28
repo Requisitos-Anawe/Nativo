@@ -4,26 +4,21 @@ import pytz
 
 def run():
     categorias = {
-        "1": "Saudações",
-        "2": "Apresentação pessoal",
-        "3": "Dia a dia",
-        "4": "Estudo e escola",
-        "5": "Trabalho",
-        "6": "Fofoca e conversa informal",
+        "1": "Apresentação",
+        "2": "Rotina e tempo",
+        "3": "Comida e bebida",
+        "4": "Localização",
+        "5": "Conversas básicas",
+        "6": "Aprendizado",
         "7": "Família",
         "8": "Clima e tempo",
         "9": "Alimentação",
-        "10": "Compras",
-        "11": "Saúde",
-        "12": "Transporte e locomoção",
-        "13": "Lazer e hobbies",
-        "14": "Emoções e sentimentos",
-        "15": "Relacionamentos",
-        "16": "Humor e piadas",
-        "17": "Tecnologia e internet",
-        "18": "Reclamações e opiniões",
-        "19": "Cultura e tradições",
-        "20": "Animais e natureza"
+        "10": "Saúde",
+        "11": "Transporte e locomoção",
+        "12": "Emoções e sentimentos",
+        "13": "Relacionamentos",
+        "14": "Animais e natureza",
+        "15": "Outros",
     }
 
 

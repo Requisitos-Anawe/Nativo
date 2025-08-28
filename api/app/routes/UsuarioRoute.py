@@ -23,6 +23,7 @@ def criar():
     return jsonify(resultado), 201
 
 @bp.route('/usuarios', methods=['GET'])
+@autenticar_jwt
 def listar():
     return jsonify(UsuarioService.listar_usuarios())
 
@@ -33,14 +34,6 @@ def buscar(usuario_id):
     if usuario:
         return jsonify(usuario)
     return jsonify({"erro": "Usuário não encontrado"}), 404
-
-@bp.route('/usuarios/<usuario_id>/perfil', methods=['GET'])
-@autenticar_jwt
-def buscar_perfil(usuario_id):
-    usuario = UsuarioService.get_perfil(usuario_id)
-    if usuario:
-        return jsonify(usuario)
-    return jsonify({"erro": "Não foi possível encontrar o perfil."}), 404
 
 @bp.route('/usuario/<usuario_id>/perfil', methods=['PUT'])
 @autenticar_jwt
@@ -53,9 +46,9 @@ def editar_perfil_usuario(usuario_id):
         return jsonify({'erro': 'ID do novo perfil não fornecido'}), 400
 
     try:
-        response = UsuarioService.atualizar_usuario(usuario_id, novo_perfil_id)
-        if(response):
-            return response
+        erro = UsuarioService.atualizar_usuario(usuario_id, novo_perfil_id)
+        if(erro):
+            return erro
         return jsonify({'mensagem': 'Perfil do usuário atualizado com sucesso'}), 200
 
     except Exception as e:

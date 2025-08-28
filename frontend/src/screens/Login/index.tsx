@@ -44,7 +44,7 @@ export default function Login() {
     return(
         <LinearGradient colors={['#003066', '#0060CC']} style={{flex:1}} start={{x:0.5,y:0}} end={{x:0.5,y:1}}>
             <SafeAreaView style={styles.container}>
-                <Text style={styles.title} >Login</Text>
+                <Text style={styles.title} >Entrar</Text>
 
                 <View style={styles.inputView} >
                     <Text style={styles.subtitle} >E-mail</Text>
@@ -91,8 +91,6 @@ export default function Login() {
                 <TouchableOpacity onPress={() => navigation.navigate("Cadastro")}>
                     <Text style={styles.links}>Cadastre-se</Text>
                 </TouchableOpacity>
-                
-                <Text style={styles.links} >Esqueci minha senha</Text>
             </SafeAreaView>
         </LinearGradient>
     )

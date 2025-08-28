@@ -18,7 +18,7 @@ export default function AppStack({perfil}: {perfil: string}) {
     case 'professor':
       TabsComponent = ProfessorTabs;
       break;
-    case 'admin':
+    case 'administrador':
       TabsComponent = AdminTabs;
       break;
     case 'moderador':
