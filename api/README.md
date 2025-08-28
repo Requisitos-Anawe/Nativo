@@ -403,6 +403,207 @@ Discurso não encontrado.
 
 ### Traducao
 
+#### **Buscar Tradução por ID**
+
+**Endpoint:** `GET /traducao/<traducao_id>`
+**Permissões:** Professor
+**Descrição:** Retorna a tradução e o discurso associado, incluindo idiomas e categoria.
+
+**Parâmetros da URL:**
+
+* `traducao_id` (string) — ID da tradução.
+
+**Exemplo de Requisição:**
+
+```http
+GET /traducao/abc123
+Authorization: Bearer <token_jwt>
+```
+
+**Exemplo de Resposta (200 OK):**
+
+```json
+{
+  "id": "abc123",
+  "texto": "Texto da tradução",
+  "usuario": "usuario_id",
+  "idioma": {
+    "id": "idioma_id",
+    "nome": "Português"
+  },
+  "discurso": {
+    "id": "discurso_id",
+    "texto": "Texto original do discurso",
+    "data_criacao": "2025-08-28T10:00:00",
+    "idioma": {
+      "id": "idioma_id",
+      "nome": "Munduruku"
+    },
+    "discurso_categoria": {
+      "id": "categoria_id",
+      "nome": "Religião"
+    },
+    "usuario": "usuario_id"
+  }
+}
+```
+
+---
+
+#### **Editar Tradução e Discurso (completo)**
+
+**Endpoint:** `PUT /traducao/discurso/edit-completo/<traducao_id>`
+**Permissões:** Professor
+**Descrição:** Permite atualizar o texto, idioma e categoria da tradução e do discurso. Apenas campos fornecidos são atualizados.
+
+**Parâmetros da URL:**
+
+* `traducao_id` (string) — ID da tradução a ser editada.
+
+**Corpo da Requisição (JSON):**
+
+```json
+{
+  "texto_traducao": "Novo texto da tradução",
+  "idioma_traducao_id": "novo_idioma_traducao_id",
+  "texto_discurso": "Novo texto do discurso",
+  "idioma_discurso_id": "novo_idioma_discurso_id",
+  "discurso_categoria_id": "nova_categoria_id"
+}
+```
+
+**Respostas:**
+
+* **200 OK:** Atualização realizada com sucesso.
+
+```json
+{"mensagem": "Tradução e discurso atualizados com sucesso"}
+```
+
+* **400 Bad Request:** Dados inválidos ou conflito de idiomas.
+* **500 Internal Server Error:** Erro inesperado.
+
+---
+
+#### **Listar Traduções de um Usuário**
+
+**Endpoint:** `POST /traducao/usuario/<usuario_id>`
+**Permissões:** Professor
+**Descrição:** Retorna todas traduções de um usuário, filtrando por texto do discurso e idioma.
+
+**Parâmetros da URL:**
+
+* `usuario_id` (string) — ID do usuário.
+
+**Corpo da Requisição (opcional):**
+
+```json
+{
+  "textoDiscurso": "palavra-chave",
+  "idiomaDiscurso": "idioma_id"
+}
+```
+
+**Resposta (200 OK):**
+
+```json
+[
+  {
+    "id": "traducao_id",
+    "texto": "Texto da tradução",
+    "discurso": "Texto do discurso",
+    "idioma": "Português",
+    "usuario": "usuario_id",
+    "data_criacao": "28/08/2025 10:00"
+  }
+]
+```
+
+---
+
+#### **Cadastrar Tradução**
+
+**Endpoint:** `POST /traducao/cadastrar`
+**Permissões:** Professor
+**Descrição:** Cadastra um novo discurso e tradução.
+
+**Corpo da Requisição (JSON):**
+
+```json
+{
+  "discurso_texto": "Texto do discurso",
+  "traducao_texto": "Texto da tradução",
+  "idioma_discurso_id": "id_idioma_discurso",
+  "idioma_traducao_id": "id_idioma_traducao",
+  "discurso_categoria_id": "id_categoria"
+}
+```
+
+**Respostas:**
+
+* **201 Created:** Tradução cadastrada com sucesso.
+* **400 Bad Request:** Campos obrigatórios ausentes ou idiomas iguais.
+* **500 Internal Server Error:** Erro ao cadastrar.
+
+---
+
+#### **Listar Traduções com Paginação**
+
+**Endpoint:** `GET /traducao`
+**Permissões:** Autenticado
+**Parâmetros da Query String (opcional):**
+
+* `pagina` (int, default=1)
+* `limite` (int, default=10)
+
+**Resposta (200 OK):**
+
+```json
+{
+  "total_paginas": 5,
+  "total_registros": 50,
+  "pagina": 1,
+  "limite": 10,
+  "traducoes": [
+    {
+      "id": "traducao_id",
+      "texto": "Texto da tradução",
+      "data_criacao": "28/08/2025 10:00",
+      "usuario": "Nome do usuário",
+      "idioma": {"id": "idioma_id", "nome": "Português"},
+      "discurso": {
+        "id": "discurso_id",
+        "texto": "Texto do discurso",
+        "data_criacao": "28/08/2025 09:00",
+        "idioma": {"id": "idioma_id", "nome": "Munduruku"},
+        "discurso_categoria": {"id": "categoria_id", "nome": "Religião"}
+      }
+    }
+  ]
+}
+```
+
+---
+
+#### **Apagar Tradução**
+
+**Endpoint:** `DELETE /traducao/<traducao_id>`
+**Permissões:** Autenticado
+**Parâmetros da URL:**
+
+* `traducao_id` (string) — ID da tradução.
+
+**Resposta (200 OK):**
+
+```json
+{"mensagem": "Tradução excluída com sucesso"}
+```
+
+**Erros:**
+
+* **404 Not Found:** Tradução não encontrada.
+* **500 Internal Server Error:** Erro inesperado ao excluir.
+
 ### Auth
 
 Este módulo fornece rotas para autenticação e cadastro de usuários.
