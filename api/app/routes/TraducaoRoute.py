@@ -235,8 +235,8 @@ def listar_tracudao_usuario(usuario_id):
 @verificar_professor
 def cadastrar_traducao():
     data = request.get_json()
-    texto_discurso = data.get("discurso_texto")
-    texto_traducao = data.get("traducao_texto")
+    texto_discurso = data.get("discurso_texto").lower()
+    texto_traducao = data.get("traducao_texto").lower()
     idioma_discurso_id = data.get("idioma_discurso_id")
     idioma_traducao_id = data.get("idioma_traducao_id")
     categoria_id = data.get("discurso_categoria_id")

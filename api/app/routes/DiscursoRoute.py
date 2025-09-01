@@ -17,7 +17,7 @@ def buscar_discurso():
     if not texto:
         return jsonify({"erro": "Campo 'texto' é obrigatório no corpo da requisição."}), 400
 
-    resultado, erro = DiscursoService.buscar_discurso_e_traducao_por_texto(texto,idioma)
+    resultado, erro = DiscursoService.buscar_discurso_e_traducao_por_texto(texto.lower(),idioma)
 
     if not resultado:
         return jsonify({"erro": erro}), 404
