@@ -20,3 +20,5 @@ def create_app():
     app.register_blueprint(perfil_bp, url_prefix="/api")
 
     return app
+
+app = create_app()
