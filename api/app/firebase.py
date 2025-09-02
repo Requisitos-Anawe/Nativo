@@ -10,6 +10,7 @@ if not cred_json:
     raise RuntimeError("A variável FIREBASE_KEY_JSON não está definida!")
 
 cred_dict = json.loads(cred_json)
+cred_dict["private_key"] = cred_dict["private_key"].replace("\\n", "\n")
 cred = credentials.Certificate(cred_dict)
 
 storage_bucket = os.getenv("FIREBASE_STORAGE_BUCKET")
