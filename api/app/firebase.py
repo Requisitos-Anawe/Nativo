@@ -1,11 +1,13 @@
 import firebase_admin
 import os
+import json
 from dotenv import load_dotenv
 from firebase_admin import credentials, firestore, storage
 
 load_dotenv()
-
-cred = credentials.Certificate('app/credentials/firebase_key.json')
+cred_json = os.environ.get("FIREBASE_KEY_JSON")
+cred_dict = json.loads(cred_json)
+cred = credentials.Certificate(cred_dict)
 
 storage_bucket = os.getenv("FIREBASE_STORAGE_BUCKET")
 
