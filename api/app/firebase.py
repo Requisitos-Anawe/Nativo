@@ -6,6 +6,9 @@ from firebase_admin import credentials, firestore, storage
 
 load_dotenv()
 cred_json = os.environ.get("FIREBASE_KEY_JSON")
+if not cred_json:
+    raise RuntimeError("A variável FIREBASE_KEY_JSON não está definida!")
+
 cred_dict = json.loads(cred_json)
 cred = credentials.Certificate(cred_dict)
 
