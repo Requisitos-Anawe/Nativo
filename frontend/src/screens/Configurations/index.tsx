@@ -18,7 +18,7 @@ export default function Configurations(){
 
             <Text style={styles.title} >Configurações</Text>
 
-            <TouchableOpacity onPress={() => DownloadFile('https://drive.google.com/uc?export=download&id=1V74rvGWG31ek6fx51rP64viIYK8vtvnk')}>
+            <TouchableOpacity onPress={() => DownloadFile('termo-uso','https://drive.google.com/uc?export=download&id=1V74rvGWG31ek6fx51rP64viIYK8vtvnk')}>
                 <Text style={styles.termo}>Baixar Termo de Uso e Políticas de Privacidade</Text>
             </TouchableOpacity>
             

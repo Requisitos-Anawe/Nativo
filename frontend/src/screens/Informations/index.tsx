@@ -10,7 +10,7 @@ export default function Informations() {
     <ScreenContainer>
       <Text style={styles.title} >Olá, bem vindo(a)</Text>
 
-      <TouchableOpacity onPress={() => DownloadFile('https://drive.google.com/uc?export=download&id=176jdwMj0g_sQptlPF0SDREApmtjs82Jl')}>
+      <TouchableOpacity onPress={() => DownloadFile('manual', 'https://drive.google.com/uc?export=download&id=176jdwMj0g_sQptlPF0SDREApmtjs82Jl')}>
         <Text style={styles.link}>Clique aqui para baixar o manual do aplicativo</Text>
       </TouchableOpacity>
 

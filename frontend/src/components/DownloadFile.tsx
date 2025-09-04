@@ -2,8 +2,8 @@
 import { Alert } from 'react-native';
 import RNFS from 'react-native-fs';
 
-export default async function DownloadFile(fileUrl: string) {
-    const filePath = `${RNFS.DownloadDirectoryPath}/termo-de-uso-tradutor.pdf`;
+export default async function DownloadFile(fileName:string, fileUrl: string) {
+    const filePath = `${RNFS.DownloadDirectoryPath}/${fileName}.pdf`;
 
     try {
         const downloadResult = await RNFS.downloadFile({
