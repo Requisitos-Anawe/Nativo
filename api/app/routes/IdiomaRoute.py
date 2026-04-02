@@ -1,6 +1,6 @@
 
 from flask import Blueprint, jsonify
-from app.services.firestore_utils import listar_documentos
+from app.services.FirestoreUtils import listar_documentos
 from app.middlewares.autenticar_jwt import autenticar_jwt
 
 bp = Blueprint('idiomas', __name__)

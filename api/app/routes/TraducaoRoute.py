@@ -1,5 +1,7 @@
 import math
 import pytz
+from app.services.DiscursoService import DiscursoService
+from app.services.TraducaoService import TraducaoService
 from app.middlewares.autenticar_jwt import autenticar_jwt
 from app.middlewares.verificar_professor import verificar_professor
 from datetime import datetime
@@ -10,6 +12,100 @@ from datetime import datetime
 bp = Blueprint("traducao", __name__)
 db = firestore.client()
 transaction = db.transaction()
+
+@bp.route('/traducao/<traducao_id>/com-discurso', methods=['PUT'])
+@autenticar_jwt
+@verificar_professor
+def editar_traducao_discurso(traducao_id):
+    """
+    Atualizar tradução e discurso
+    ---
+    tags:
+      - Tradução
+    summary: Atualiza uma tradução e seu discurso associado
+    security:
+      - Bearer: []
+    parameters:
+      - name: traducao_id
+        in: path
+        type: string
+        required: true
+        description: ID da tradução
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          required:
+            - traducao
+            - discurso_id
+          properties:
+            traducao:
+              type: object
+              required:
+                - discurso
+                - texto
+              properties:
+                discurso:
+                  type: string
+                  example: olá
+                texto:
+                  type: string
+                  example: hello
+            discurso_id:
+              type: string
+              example: Tujsjda823jndsa
+            discurso:
+              type: object
+              properties:
+                texto:
+                  type: string
+                  example: saudação informal
+    responses:
+      200:
+        description: Atualizado com sucesso
+      400:
+        description: Erro de validação
+      401:
+        description: Não autorizado
+      500:
+        description: Erro interno
+    """
+    dados = request.get_json()
+
+    dados_traducao = dados.get("traducao")
+    dados_discurso = dados.get("discurso")
+    discurso_id = dados.get("discurso_id")
+
+    erros = []
+
+    traducao = TraducaoService.buscar(traducao_id)
+    if not traducao:
+        return {"erro": "Tradução não encontrada"}, 404
+
+    discurso = DiscursoService.buscar_por_id(discurso_id)
+    if not discurso:
+        return {"erro": "Discurso não encontrado"}, 404
+    
+    if traducao["discurso_id"] != discurso_id:
+        return {"erro": "Discurso não pertence à tradução"}, 400
+
+    if dados_traducao:
+        try:
+            TraducaoService.atualizar(traducao_id, dados_traducao)
+        except Exception as e:
+            erros.append(f"Erro na tradução: {str(e)}")
+
+    if dados_discurso and discurso_id:
+        try:
+            DiscursoService.atualizar(discurso_id, dados_discurso)
+        except Exception as e:
+            erros.append(f"Erro no discurso: {str(e)}")
+
+    if erros:
+        return jsonify({"erros": erros}), 400
+
+    return jsonify({"mensagem": "Atualizado com sucesso"}), 200
 
 @bp.route('/traducao/<traducao_id>', methods=['GET'])
 @autenticar_jwt
