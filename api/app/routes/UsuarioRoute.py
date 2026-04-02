@@ -13,6 +13,26 @@ bp = Blueprint('usuarios', __name__)
 @bp.route('/usuarios', methods=['GET'])
 @autenticar_jwt
 def listar():
+    """
+    Listar Usuarios
+    ---
+    security:
+      - Bearer: []
+    tags:
+      - Usuários
+    parameters:
+        - name: limit
+          in: query
+          type: integer
+          required: false
+        - name: start_after
+          in: query
+          type: string
+          required: false
+    responses:
+      200:
+        description: Retorna lista de usuarios
+    """
     limit = request.args.get("limit", default=10, type=int)
     start_after = request.args.get("start_after")
     return jsonify(UsuarioService.listar_usuarios(limit, start_after))
@@ -20,6 +40,26 @@ def listar():
 @bp.route('/usuarios/<usuario_id>', methods=['GET'])
 @autenticar_jwt
 def buscar(usuario_id):
+    """
+    Buscar usuário por ID
+    ---
+    security:
+      - Bearer: []
+    tags:
+      - Usuários
+    summary: Retorna um usuário específico
+    parameters:
+      - name: usuario_id
+        in: path
+        type: string
+        required: true
+        description: ID do usuário
+    responses:
+      200:
+        description: Usuário encontrado
+      404:
+        description: Usuário não encontrado
+    """
     usuario = UsuarioService.buscar_usuario_por_id(usuario_id)
     if usuario:
         return jsonify(usuario)
@@ -29,6 +69,37 @@ def buscar(usuario_id):
 @autenticar_jwt
 @verificar_admin
 def editar_perfil_usuario(usuario_id):
+    """
+    Atualizar perfil do usuário
+    ---
+    security:
+      - Bearer: []
+    tags:
+      - Usuários
+    summary: Atualiza o perfil de um usuário
+    parameters:
+      - name: usuario_id
+        in: path
+        type: string
+        required: true
+        description: ID do usuário
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            perfil:
+              type: string
+              example: admin
+    responses:
+      200:
+        description: Perfil atualizado com sucesso
+      400:
+        description: Perfil não fornecido
+      500:
+        description: Erro interno ao atualizar perfil
+    """
     dados = request.get_json()
     perfil = dados.get('perfil')
     print(perfil)

@@ -45,6 +45,7 @@ def listar_usuarios(limit=10, start_after=None):
     for doc in docs:
         usuario = doc.to_dict()
         usuario["id"] = doc.id
+        usuario.pop('senha', None)
 
         usuarios.append(usuario)
         last_id = doc.id
