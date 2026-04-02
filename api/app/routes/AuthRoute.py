@@ -59,8 +59,6 @@ def cadastro():
     data_nascimento = data.get("data_nascimento")
     data_dt = datetime.fromisoformat(data_nascimento)
 
-    perfil_ref = db.collection("perfil").document("1")
-
     # VALIDACOES
     if not all([email, senha, nome, data_nascimento]):
         return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
@@ -91,7 +89,6 @@ def cadastro():
         "nome": nome,
         "data_nascimento": data_dt,
         "perfil": "padrão",
-        "perfil_id": perfil_ref,
         "data_criacao": firestore.SERVER_TIMESTAMP
     }
 

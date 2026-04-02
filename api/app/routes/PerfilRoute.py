@@ -1,7 +1,7 @@
 
 from flask import Blueprint, jsonify
+from app.services.firestore_utils import listar_documentos
 from app.middlewares.autenticar_jwt import autenticar_jwt
-from app.firebase import db
 
 bp = Blueprint('perfis', __name__)
 
@@ -21,15 +21,5 @@ def listar():
         200:
             description: Retorna lista de perfis
     """
-    docs = (
-        db.collection(COLLECTION)
-        .order_by("descricao")
-        .stream()
-    )
-
-    perfis = [
-        {**doc.to_dict(), "id": doc.id}
-        for doc in docs
-    ]
-    
+    perfis = listar_documentos(COLLECTION, "descricao")
     return jsonify(perfis)
