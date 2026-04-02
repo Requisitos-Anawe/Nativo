@@ -13,6 +13,19 @@ usuario_schema = UsuarioSchema()
 
 @bp.route("/auth/login", methods=["POST"])
 def login():
+    """
+    Fazer login
+    ---
+    tags:
+        - Auth
+    responses:
+        200:
+            description: Login bem-sucedido, retorna token JWT e informações do usuário
+        400:
+            description: Requisição malformada, campos obrigatórios ausentes
+        401:
+            description: Credenciais inválidas
+    """
     data = request.get_json()
     email = data.get("email")
     senha = data.get("senha")
@@ -50,6 +63,19 @@ def login():
 
 @bp.route("/auth/cadastro", methods=["POST"])
 def cadastro():
+    """
+    Fazer cadastro
+    ---
+    tags:
+        - Auth
+    responses:
+        200:
+            description: Cadastro bem-sucedido, retorna mensagem de sucesso
+        400:
+            description: Requisição malformada, campos obrigatórios ausentes ou dados inválidos
+        409:
+            description: Email já cadastrado
+    """
     data = request.get_json()
 
     email = data.get("email")
@@ -79,7 +105,7 @@ def cadastro():
 
     usuarios_ref = db.collection("usuario").where("email", "==", email).stream()
     if any(usuarios_ref):
-        return jsonify({"erro": "Email já cadastrado"}), 400
+        return jsonify({"erro": "Email já cadastrado"}), 409
     
     # CADASTRO
     senha_hash = bcrypt.hashpw(senha.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
