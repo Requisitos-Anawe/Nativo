@@ -1,3 +1,7 @@
 .venv
 app/credentials/firebase_key.json
 .env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
