@@ -22,31 +22,37 @@ def criar_usuario(data):
     usuario['id'] = doc_ref.id
     return usuario
 
-def listar_usuarios():
-    usuarios_ref = db.collection(COLLECTION)
-    docs = usuarios_ref.stream()
+def listar_usuarios(limit=10, start_after=None):
+    query = (
+        db.collection(COLLECTION)
+        .order_by("nome")
+        .limit(limit)
+    )
+
+    if start_after:
+        last_doc = (
+            db.collection(COLLECTION)
+            .document(start_after)
+            .get()
+        )
+        query = query.start_after(last_doc)
+
+    docs = query.stream()
 
     usuarios = []
+    last_id = None
+
     for doc in docs:
         usuario = doc.to_dict()
-        usuario['id'] = doc.id
-        usuario.pop('senha', None)
-
-        perfil_ref = usuario.get('perfil')
-        if isinstance(perfil_ref, firestore.DocumentReference):
-            perfil_doc = perfil_ref.get()
-            if perfil_doc.exists:
-                usuario['perfil'] = perfil_doc.to_dict()
-                usuario['perfil']['id'] = perfil_doc.id
-            else:
-                usuario['perfil'] = 'Perfil não encontrado'
-        else:
-            usuario['perfil'] = 'Perfil indefinido'
+        usuario["id"] = doc.id
 
         usuarios.append(usuario)
+        last_id = doc.id
 
-    usuarios.sort(key=lambda u: (u.get('nome') or '').strip().lower())
-    return usuarios
+    return {
+        "data": usuarios,
+        "next_cursor": last_id
+    }
 
 def buscar_usuario_por_id(usuario_id):
     doc = db.collection(COLLECTION).document(usuario_id).get()
@@ -57,28 +63,17 @@ def buscar_usuario_por_id(usuario_id):
         return usuario
     return None
 
-def atualizar_usuario(usuario_id, novo_perfil_id):
+def atualizar_usuario(usuario_id, novo_perfil):
     usuario_ref = db.collection('usuario').document(usuario_id)
     usuario_doc = usuario_ref.get()
     if not usuario_doc.exists:
         return jsonify({'erro': 'Usuário não encontrado'}), 404
 
-    usuario_alvo = usuario_doc.to_dict()
-    perfil_ref_alvo = usuario_alvo.get('perfil')
-    if isinstance(perfil_ref_alvo, firestore.DocumentReference):
-        perfil_doc_alvo = perfil_ref_alvo.get()
-        if perfil_doc_alvo.exists:
-            descricao_alvo = perfil_doc_alvo.to_dict().get('descricao', '').lower()
-            if descricao_alvo == 'admin':
-                return jsonify({'erro': 'Não é permitido alterar o perfil de um administrador'}), 403
-    
-    novo_perfil_ref = db.collection('perfil').document(novo_perfil_id)
-    perfil_doc = novo_perfil_ref.get()
-    if not perfil_doc.exists:
-        return jsonify({'erro': 'Perfil não encontrado'}), 404
+    if novo_perfil not in ['admin', 'padrão', 'professor', 'moderador']:
+        return jsonify({'erro': 'Perfil inválido'}), 400
 
     usuario_ref.update({
-        'perfil': novo_perfil_ref,
+        'perfil': novo_perfil,
         'data_atualizacao': datetime.now(pytz.timezone("America/Sao_Paulo"))
     })
 

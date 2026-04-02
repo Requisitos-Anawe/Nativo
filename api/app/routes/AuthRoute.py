@@ -37,10 +37,6 @@ def login():
         "exp": datetime.now(pytz.timezone("America/Sao_Paulo")) + timedelta(hours=12)
     }, os.getenv("JWT_SECRET"), algorithm="HS256")
 
-    perfil_ref = usuario_data.get("perfil")
-    perfil_doc = perfil_ref.get()
-    perfil_data = perfil_doc.to_dict() if perfil_doc.exists else {}
-
     return jsonify({
         "token": token,
         "usuario": {
@@ -48,7 +44,7 @@ def login():
             "nome": usuario_data.get("nome"),
             "email": usuario_data.get("email"),
             "data_nascimento": usuario_data.get('data_nascimento'),
-            "perfil": perfil_data.get('descricao'),
+            "perfil": usuario_data.get('perfil'),
         }
     }), 200
 
@@ -94,8 +90,9 @@ def cadastro():
         "senha": senha_hash,
         "nome": nome,
         "data_nascimento": data_dt,
-        "perfil": perfil_ref,
-        "criado_em": firestore.SERVER_TIMESTAMP
+        "perfil": "padrão",
+        "perfil_id": perfil_ref,
+        "data_criacao": firestore.SERVER_TIMESTAMP
     }
 
     db.collection("usuario").add(novo_usuario)

@@ -199,6 +199,7 @@ def listar_tracudao_usuario(usuario_id):
         query = query.where('texto', '>=', texto_discurso).where('texto', '<=', texto_discurso + '\uf8ff')
 
     query = query.order_by('data_criacao', direction=firestore.Query.DESCENDING)
+    query = query.limit(5)
 
     traducoes_docs = query.stream()
 

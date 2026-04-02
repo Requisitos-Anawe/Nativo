@@ -10,13 +10,15 @@ COLLECTION = 'idioma'
 @bp.route('/idiomas', methods=['GET'])
 @autenticar_jwt
 def listar():
-    idiomas_ref = db.collection(COLLECTION).order_by("nome")
-    docs = idiomas_ref.stream()
+    docs = (
+        db.collection(COLLECTION)
+        .order_by("descricao")
+        .stream()
+    )
 
-    idiomas = []
-    for doc in docs:
-        idioma = doc.to_dict()
-        idioma['id'] = doc.id
-        idiomas.append(idioma)
-     
+    idiomas = [
+        {**doc.to_dict(), "id": doc.id}
+        for doc in docs
+    ]
+    
     return jsonify(idiomas)

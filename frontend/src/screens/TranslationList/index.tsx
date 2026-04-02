@@ -28,6 +28,7 @@ export default function TraslationList(){
             const userString = await AsyncStorage.getItem('user');
             if(userString){
                 const user = JSON.parse(userString);
+                console.log(user.id,'textoDiscurso: ',textoDiscurso, 'idiomaDiscurso', idiomaDiscurso); 
                 const response = await api.post(`/traducao/usuario/${user.id}`, {
                     textoDiscurso: textoDiscurso.trim(),
                     idiomaDiscurso: idiomaDiscurso ? idiomaDiscurso.id : '',
@@ -53,7 +54,7 @@ export default function TraslationList(){
                 await handleSearch();
             } catch (error) {
                 const err = error as any;
-                setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
+                setErro(err.response?.data?.erro || "Aconteceu um erro, tente mais tarde.");
             } finally {
                 setCarregando(false);
             }
@@ -80,7 +81,7 @@ export default function TraslationList(){
             handleSearch();
         }catch(error){
             var err = error as any;
-            setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
+            setErro(err.response?.data?.erro || "Aconteceu um erro, tente mais tarde.");
         }finally{
             setCarregando(false);
         }

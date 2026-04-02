@@ -10,22 +10,12 @@ schema = UsuarioSchema()
 
 bp = Blueprint('usuarios', __name__)
 
-@bp.route('/usuarios', methods=['POST'])
-@autenticar_jwt
-def criar():
-    try:
-        dados = schema.load(request.json)
-    except ValidationErr as err:
-        return jsonify(err.messages), 400
-    
-    usuario = UsuarioService.criar_usuario(dados)
-    resultado = schema.dump(usuario) 
-    return jsonify(resultado), 201
-
 @bp.route('/usuarios', methods=['GET'])
 @autenticar_jwt
 def listar():
-    return jsonify(UsuarioService.listar_usuarios())
+    limit = request.args.get("limit", default=10, type=int)
+    start_after = request.args.get("start_after")
+    return jsonify(UsuarioService.listar_usuarios(limit, start_after))
 
 @bp.route('/usuarios/<usuario_id>', methods=['GET'])
 @autenticar_jwt
@@ -35,18 +25,19 @@ def buscar(usuario_id):
         return jsonify(usuario)
     return jsonify({"erro": "Usuário não encontrado"}), 404
 
-@bp.route('/usuario/<usuario_id>/perfil', methods=['PUT'])
+@bp.route('/usuarios/<usuario_id>/perfil', methods=['PUT'])
 @autenticar_jwt
 @verificar_admin
 def editar_perfil_usuario(usuario_id):
     dados = request.get_json()
-    novo_perfil_id = dados.get('perfil_id')
+    perfil = dados.get('perfil')
+    print(perfil)
 
-    if not novo_perfil_id:
-        return jsonify({'erro': 'ID do novo perfil não fornecido'}), 400
+    if not perfil:
+        return jsonify({'erro': 'Novo perfil não fornecido'}), 400
 
     try:
-        erro = UsuarioService.atualizar_usuario(usuario_id, novo_perfil_id)
+        erro = UsuarioService.atualizar_usuario(usuario_id, perfil)
         if(erro):
             return erro
         return jsonify({'mensagem': 'Perfil do usuário atualizado com sucesso'}), 200

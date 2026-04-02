@@ -10,13 +10,15 @@ COLLECTION = 'discurso_categoria'
 @bp.route('/categorias', methods=['GET'])
 @autenticar_jwt
 def listar():
-    categorias_ref = db.collection(COLLECTION).order_by("descricao")
-    docs = categorias_ref.stream()
+    docs = (
+        db.collection(COLLECTION)
+        .order_by("descricao")
+        .stream()
+    )
 
-    categorias = []
-    for doc in docs:
-        categoria = doc.to_dict()
-        categoria['id'] = doc.id
-        categorias.append(categoria)
-     
+    categorias = [
+        {**doc.to_dict(), "id": doc.id}
+        for doc in docs
+    ]
+    
     return jsonify(categorias)
