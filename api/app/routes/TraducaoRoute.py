@@ -79,6 +79,9 @@ def editar_traducao_discurso(traducao_id):
 
     erros = []
 
+    if dados_discurso['idioma'] == dados_traducao['idioma']:
+        return {"erro": "Os idiomas do discurso e da tradução devem ser diferentes."}, 400
+
     traducao = TraducaoService.buscar(traducao_id)
     if not traducao:
         return {"erro": "Tradução não encontrada"}, 404
@@ -135,8 +138,19 @@ def buscar_traducao(traducao_id):
     if not traducao_doc.exists:
         return jsonify({'erro': 'Tradução não encontrada'}), 404
 
+    discurso_ref = db.collection('discurso').document(traducao_doc.to_dict().get('discurso_id'))
+    discurso_doc = discurso_ref.get()
+    if discurso_doc.exists:
+        categoria = discurso_doc.to_dict().get('discurso_categoria')
+        idiomaDiscurso = discurso_doc.to_dict().get('idioma')
+
     traducao_data = traducao_doc.to_dict()
+    if categoria:
+        traducao_data['categoria'] = categoria
+    if idiomaDiscurso:
+        traducao_data['idiomaDiscurso'] = idiomaDiscurso
     traducao_data['id'] = traducao_doc.id
+
     return jsonify(traducao_data), 200
 
 @bp.route('/traducao/usuario/<usuario_id>', methods=['POST'])

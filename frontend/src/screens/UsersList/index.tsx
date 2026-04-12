@@ -7,18 +7,19 @@ import api from "../../services/api";
 import { Picker } from "@react-native-picker/picker";
 import Erro from "../../components/Erro";
 
+// TODO: adicionar paginação 
 export default function UsersList() {
     const [users, setUsers] = useState<UserInterface[]|null>(null);
     const [userEditando, setUserEditando] = useState<UserInterface|null>(null);
     const [carregando, setCarregando] = useState(true);
     const [visible, setVisible] = useState(false);
     const [erro, setErro] = useState('');
-    const [perfilSelecionado, setPerfilSelecionado] = useState<PerfilInterface|null>(null);
+    const [perfilSelecionado, setPerfilSelecionado] = useState('');
     const [perfis, setPerfis] = useState<PerfilInterface[]|null>(null);
     
-    type Perfil = 'administrador' | 'professor' | 'moderador';
+    type Perfil = 'admin' | 'professor' | 'moderador';
     const perfilStyles: Record<Perfil, TextStyle> = {
-        administrador: styles.admin,
+        admin: styles.admin,
         professor: styles.professor,
         moderador: styles.moderador,
     };
@@ -30,7 +31,7 @@ export default function UsersList() {
 
     const GetUsers = async () => {
         const response = await api.get('/usuarios');
-        setUsers(response.data);
+        setUsers(response.data.data);
     }
 
     const handleEdit = async (usuario_id: string) => {
@@ -38,7 +39,7 @@ export default function UsersList() {
             setCarregando(true);
 
             const UpdatePerfil = async () => {
-                const response = await api.put(`usuario/${usuario_id}/perfil`,{ perfil_id: perfilSelecionado?.id});
+                const response = await api.put(`usuarios/${usuario_id}/perfil`,{ perfil: perfilSelecionado});
                 GetUsers(); 
                 closeModal();
                 Alert.alert(response.data.mensagem);
@@ -61,7 +62,7 @@ export default function UsersList() {
         setUserEditando(user);
         setVisible(true);
             Animated.timing(slideAnim, {
-            toValue: screenHeight * 0.6, // altura final (modal vai até 40% da tela)
+            toValue: screenHeight * 0.6,
             duration: 300,
             useNativeDriver: false,
         }).start();
@@ -111,8 +112,8 @@ export default function UsersList() {
                                 <View style={styles.input} key={item.id}>
                                     <View >
                                         <Text style={styles.name}>{item.nome}</Text>
-                                        <Text style={perfilStyles[item.perfil.descricao as keyof typeof perfilStyles] || styles.default}>
-                                            {item.perfil.descricao} 
+                                        <Text style={perfilStyles[item.perfil as keyof typeof perfilStyles] || styles.default}>
+                                            {item.perfil} 
                                         </Text>
                                     </View>
                                     <TouchableOpacity onPress={() => openModal(item)} >
@@ -137,13 +138,11 @@ export default function UsersList() {
                                     <Text>Nível</Text>
                                     <View style={styles.pickerInput} >
                                         <Picker 
-                                            selectedValue={userEditando.perfil.id}
-                                            onValueChange={(item) => {
-                                                setPerfilSelecionado(perfis?.find((i) => i.id === item) || null);
-                                            }} 
+                                            selectedValue={userEditando.perfil}
+                                            onValueChange={(item) => {setPerfilSelecionado(item);}} 
                                         >
                                             {perfis?.map((item) => (
-                                                <Picker.Item key={item.id} label={item.descricao} value={item.id} />
+                                                <Picker.Item key={item.id} label={item.descricao} value={item.descricao} />
                                             ))}
                                         </Picker>
                                     </View>

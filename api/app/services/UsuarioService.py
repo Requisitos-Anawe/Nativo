@@ -52,7 +52,8 @@ def listar_usuarios(limit=10, start_after=None):
 
     return {
         "data": usuarios,
-        "next_cursor": last_id
+        "limit": limit,
+        "start_after": last_id
     }
 
 def buscar_usuario_por_id(usuario_id):
@@ -66,9 +67,6 @@ def buscar_usuario_por_id(usuario_id):
 
 def atualizar_usuario(usuario_id, novo_perfil):
     usuario_ref = db.collection('usuario').document(usuario_id)
-    usuario_doc = usuario_ref.get()
-    if not usuario_doc.exists:
-        return jsonify({'erro': 'Usuário não encontrado'}), 404
 
     if novo_perfil not in ['admin', 'padrão', 'professor', 'moderador']:
         return jsonify({'erro': 'Perfil inválido'}), 400

@@ -1,6 +1,6 @@
 from xml.dom import ValidationErr
 from app.firebase import bucket
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, g, request, jsonify
 from app.services import UsuarioService
 from app.schemas.UsuarioSchema import UsuarioSchema
 from app.middlewares.autenticar_jwt import autenticar_jwt
@@ -106,6 +106,16 @@ def editar_perfil_usuario(usuario_id):
 
     if not perfil:
         return jsonify({'erro': 'Novo perfil não fornecido'}), 400
+    
+    if usuario_id == g.usuario_id:
+        return jsonify({'erro': 'Usuário não pode editar seu próprio perfil'}), 400
+    
+    usuario_atual = UsuarioService.buscar_usuario_por_id(usuario_id)
+    if not usuario_atual:
+        return jsonify({'erro': 'Usuário não encontrado'}), 404
+
+    if usuario_atual['perfil'] == 'admin' and perfil != 'admin':
+        return jsonify({'erro': 'Usuário não pode remover o perfil de admin'}), 400
 
     try:
         erro = UsuarioService.atualizar_usuario(usuario_id, perfil)

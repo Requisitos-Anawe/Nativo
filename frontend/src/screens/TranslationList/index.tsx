@@ -6,14 +6,20 @@ import { useCallback, useEffect, useState } from "react"
 import api from "../../services/api"
 import AsyncStorage from "@react-native-async-storage/async-storage"
 import Icon from "react-native-vector-icons/Ionicons"
-import { useFocusEffect, useNavigation } from "@react-navigation/native"
+import { useFocusEffect, useNavigation, useRoute } from "@react-navigation/native"
+import { NativeStackNavigationProp } from "@react-navigation/native-stack"
 import Erro from "../../components/Erro"
 
-export default function TraslationList(){
-    const navigation = useNavigation();
+type RootStackParamList = {
+    AddTraducao: { traducao_id: string };
+    [key: string]: undefined | object;
+};
 
-    const [idiomaDiscurso, setIdiomaDiscurso] = useState<IdiomaInterface|null>(null);
-    const [textoDiscurso, setTextoDiscurso] = useState('');
+export default function TraslationList(){
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+    const [idiomaTraducao, setIdiomaTraducao] = useState<string>('');
+    const [textoTraducao, setTextoTraducao] = useState('');
     const [idiomas, setIdiomas] = useState<IdiomaInterface[]>([]);
     const [traducoes, setTraducoes] = useState<TraducaoResponse[]>([]);
 
@@ -28,12 +34,13 @@ export default function TraslationList(){
             const userString = await AsyncStorage.getItem('user');
             if(userString){
                 const user = JSON.parse(userString);
-                console.log(user.id,'textoDiscurso: ',textoDiscurso, 'idiomaDiscurso', idiomaDiscurso); 
-                const response = await api.post(`/traducao/usuario/${user.id}`, {
-                    textoDiscurso: textoDiscurso.trim(),
-                    idiomaDiscurso: idiomaDiscurso ? idiomaDiscurso.id : '',
-                });
-                setTraducoes(response.data);
+                const payload = {
+                    textoTraducao: textoTraducao.trim(),
+                    idiomaTraducao: idiomaTraducao,
+                }
+                const response = await api.post(`/traducao/usuario/${user.id}`, payload);
+                // TODO: paginacao
+                setTraducoes(response.data.traducoes);
             }else{
                 setErro('Não foi possível buscar as traduções.'); 
             }
@@ -61,8 +68,6 @@ export default function TraslationList(){
             };
 
             buscarDados();
-
-            // Não precisa de cleanup aqui
 
         }, [])
     );
@@ -95,23 +100,22 @@ export default function TraslationList(){
                 <Text style={styles.subtitle} >Filtros</Text>
                 <View style={styles.input} >
                     <Picker 
-                        selectedValue={idiomaDiscurso?.id || ''} 
-                        onValueChange={(itemValue) =>
-                            setIdiomaDiscurso(idiomas.find((i) => i.id === itemValue) || null)}
+                        selectedValue={idiomaTraducao ?? ''} 
+                        onValueChange={(itemValue) => setIdiomaTraducao(itemValue)}
                     >
                         <Picker.Item label="Selecione um idioma" value="" />
                         {idiomas.map((item) => (
-                            <Picker.Item key={item.id} label={item.nome} value={item.id} />
+                            <Picker.Item key={item.id} label={item.descricao} value={item.id} />
                         ))}
                     </Picker>
                 </View>
                 <View style={styles.input} >
                     <TextInput 
-                        value={textoDiscurso} 
-                        placeholder="Digite o discurso" 
+                        value={textoTraducao} 
+                        placeholder="Digite a tradução desejada" 
                         multiline 
                         style={{height: 55}} 
-                        onChangeText={setTextoDiscurso}
+                        onChangeText={setTextoTraducao}
                     ></TextInput>
                 </View>
                 <View style={{alignItems: 'flex-end'}}>
