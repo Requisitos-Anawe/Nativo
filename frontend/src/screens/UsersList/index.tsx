@@ -16,7 +16,12 @@ export default function UsersList() {
     const [erro, setErro] = useState('');
     const [perfilSelecionado, setPerfilSelecionado] = useState('');
     const [perfis, setPerfis] = useState<PerfilInterface[]|null>(null);
-    
+
+    const [limit] = useState(10);
+    const [pageCursors, setPageCursors] = useState<Array<string | null>>([null]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
+
     type Perfil = 'admin' | 'professor' | 'moderador';
     const perfilStyles: Record<Perfil, TextStyle> = {
         admin: styles.admin,
@@ -29,9 +34,43 @@ export default function UsersList() {
         setPerfis(response.data);
     }
 
-    const GetUsers = async () => {
-        const response = await api.get('/usuarios');
-        setUsers(response.data.data);
+    const fetchUsers = async (page = 1) => {
+        try {
+            setCarregando(true);
+            setErro('');
+
+            const cursor = pageCursors[page - 1];
+            const params: Record<string, any> = { limit };
+            if (cursor) {
+                params.start_after = cursor;
+            }
+
+            const response = await api.get('/usuarios', { params });
+            setUsers(response.data.data);
+            setNextCursor(response.data.start_after || null);
+
+            if (page === pageCursors.length && response.data.start_after) {
+                setPageCursors((prev) => [...prev, response.data.start_after]);
+            }
+            setCurrentPage(page);
+        } catch (error) {
+            var err = error as any;
+            setErro(err.response?.data?.erro || 'Não foi possível carregar os usuários.');
+        } finally {
+            setCarregando(false);
+        }
+    }
+
+    const handleNextPage = () => {
+        if (nextCursor) {
+            fetchUsers(currentPage + 1);
+        }
+    }
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            fetchUsers(currentPage - 1);
+        }
     }
 
     const handleEdit = async (usuario_id: string) => {
@@ -40,7 +79,7 @@ export default function UsersList() {
 
             const UpdatePerfil = async () => {
                 const response = await api.put(`usuarios/${usuario_id}/perfil`,{ perfil: perfilSelecionado});
-                GetUsers(); 
+                await fetchUsers(currentPage);
                 closeModal();
                 Alert.alert(response.data.mensagem);
             }
@@ -79,23 +118,45 @@ export default function UsersList() {
     };
 
     useEffect(() => {
-        try{
-            setCarregando(true);
-            GetUsers();
-            GetPerfis();
+        const initialize = async () => {
+            try {
+                setCarregando(true);
+                await GetPerfis();
+                await fetchUsers(1);
+            } catch (error) {
+                var err = error as any;
+                setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
+            } finally {
+                setCarregando(false);
+            }
+        };
 
-        }catch(error){
-            var err = error as any;
-            setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
-        }finally{
-            setCarregando(false);
-        }
-
+        initialize();
     }, []);
 
     return(
         <ScrollView>
             <SafeAreaView style={styles.container}>
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, paddingHorizontal: 8 }}>
+                    <TouchableOpacity
+                        onPress={handlePreviousPage}
+                        disabled={currentPage === 1 || carregando}
+                        style={[styles.minorButton, (currentPage === 1 || carregando) && { opacity: 0.5 }]}
+                    >
+                        <Text style={{ color: '#fff' }}> <Icon name="arrow-back" size={24} /> </Text>
+                    </TouchableOpacity>
+
+                    <Text style={{ color: '#333', fontWeight: 'bold' }}>Página {currentPage}</Text>
+
+                    <TouchableOpacity
+                        onPress={handleNextPage}
+                        disabled={carregando || !nextCursor || (users?.length ?? 0) < limit}
+                        style={[styles.minorButton, (carregando || !nextCursor || (users?.length ?? 0) < limit) && { opacity: 0.5 }]}
+                    >
+                        <Text style={{ color: '#fff' }}> <Icon name="arrow-forward" size={24} /> </Text>
+                    </TouchableOpacity>
+                </View>
 
                 {carregando ? (
                     <ActivityIndicator />
@@ -108,19 +169,21 @@ export default function UsersList() {
                                 <Text style={styles.textoAviso}>Nenhum usuário foi encontrado</Text>
                             </View>
                         ) : (
-                            users.map((item) => (
-                                <View style={styles.input} key={item.id}>
-                                    <View >
-                                        <Text style={styles.name}>{item.nome}</Text>
-                                        <Text style={perfilStyles[item.perfil as keyof typeof perfilStyles] || styles.default}>
-                                            {item.perfil} 
-                                        </Text>
+                            <>
+                                {users.map((item) => (
+                                    <View style={styles.input} key={item.id}>
+                                        <View >
+                                            <Text style={styles.name}>{item.nome}</Text>
+                                            <Text style={perfilStyles[item.perfil as keyof typeof perfilStyles] || styles.default}>
+                                                {item.perfil} 
+                                            </Text>
+                                        </View>
+                                        <TouchableOpacity onPress={() => openModal(item)} >
+                                            <Icon name="create-outline" size={24} />
+                                        </TouchableOpacity>
                                     </View>
-                                    <TouchableOpacity onPress={() => openModal(item)} >
-                                        <Icon name="create-outline" size={24} />
-                                    </TouchableOpacity>
-                                </View>
-                            ))
+                                ))}
+                            </>
                         )}
                         
                         {userEditando && visible && (
