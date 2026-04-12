@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://nativo.onrender.com/api', 
+  baseURL: 'https://nativo-hml.onrender.com/api', 
   timeout: 10000, 
   headers: {
     'Content-Type': 'application/json',
