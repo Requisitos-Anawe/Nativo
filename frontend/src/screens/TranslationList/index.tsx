@@ -25,22 +25,31 @@ export default function TraslationList(){
 
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState('');
+    
+    const [pagina, setPagina] = useState(1);
+    const [limite] = useState(5);
+    const [totalPaginas, setTotalPaginas] = useState(1);
+    const [totalRegistros, setTotalRegistros] = useState(0);
 
     const handleSearch = async () => {
         try{
             setErro('');
             setCarregando(true);
+            setPagina(1);  
 
             const userString = await AsyncStorage.getItem('user');
             if(userString){
                 const user = JSON.parse(userString);
                 const payload = {
                     textoTraducao: textoTraducao.trim(),
-                    idiomaTraducao: idiomaTraducao,
+                    idiomaTraducao: idiomaTraducao.toLowerCase(),
+                    limite: limite,
+                    pagina: 1, 
                 }
                 const response = await api.post(`/traducao/usuario/${user.id}`, payload);
-                // TODO: paginacao
                 setTraducoes(response.data.traducoes);
+                setTotalPaginas(response.data.total_paginas);
+                setTotalRegistros(response.data.total_registros);
             }else{
                 setErro('Não foi possível buscar as traduções.'); 
             }
@@ -52,25 +61,50 @@ export default function TraslationList(){
         }
     }
 
-    useFocusEffect(
-        useCallback(() => {
-            const buscarDados = async () => {
-            try {
-                setCarregando(true);
-                setErro('');
-                await handleSearch();
-            } catch (error) {
-                const err = error as any;
-                setErro(err.response?.data?.erro || "Aconteceu um erro, tente mais tarde.");
-            } finally {
-                setCarregando(false);
+    const irProximaPagina = async () => {
+        if (pagina < totalPaginas) {
+            setPagina(pagina + 1);
+        }
+    }
+
+    const irPaginaAnterior = async () => {
+        if (pagina > 1) {
+            setPagina(pagina - 1);
+        }
+    }
+
+    useEffect(() => {
+        buscarPaginaAtual();
+    }, [pagina]);
+
+    const buscarPaginaAtual = async () => {
+        try{
+            setErro('');
+            setCarregando(true);
+
+            const userString = await AsyncStorage.getItem('user');
+            if(userString){
+                const user = JSON.parse(userString);
+                const payload = {
+                    textoTraducao: textoTraducao.trim(),
+                    idiomaTraducao: idiomaTraducao,
+                    limite: limite,
+                    pagina: pagina,
+                }
+                const response = await api.post(`/traducao/usuario/${user.id}`, payload);
+                setTraducoes(response.data.traducoes);
+                setTotalPaginas(response.data.total_paginas);
+                setTotalRegistros(response.data.total_registros);
+            }else{
+                setErro('Não foi possível buscar as traduções.'); 
             }
-            };
-
-            buscarDados();
-
-        }, [])
-    );
+        }catch(error){
+            var err = error as any;
+            setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
+        }finally{
+            setCarregando(false);
+        }
+    }
 
     useEffect(() => {
         
@@ -83,7 +117,6 @@ export default function TraslationList(){
             setCarregando(true);
             setErro('');
             getIdiomas();
-            handleSearch();
         }catch(error){
             var err = error as any;
             setErro(err.response?.data?.erro || "Aconteceu um erro, tente mais tarde.");
@@ -105,7 +138,7 @@ export default function TraslationList(){
                     >
                         <Picker.Item label="Selecione um idioma" value="" />
                         {idiomas.map((item) => (
-                            <Picker.Item key={item.id} label={item.descricao} value={item.id} />
+                            <Picker.Item key={item.id} label={item.descricao} value={item.descricao} />
                         ))}
                     </Picker>
                 </View>
@@ -141,19 +174,49 @@ export default function TraslationList(){
                             <Text style={styles.textoAviso}>Nenhuma tradução foi encontrada.</Text>
                         </View>
                         ) : (
-                        traducoes.map((item) => (
-                            <View key={item.id} style={styles.traducaoBox}>
-                                <View style={{alignItems: "flex-end"}}>
-                                    <TouchableOpacity onPress={() => navigation.navigate('AddTraducao', { traducao_id: item.id })}>
-                                        <Icon name={"create-outline"} size={18} color="#000"/>
-                                    </TouchableOpacity>
+                        <>
+                            {/* Controles de paginação */}
+                            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginVertical: 20, paddingHorizontal: 10}}>
+                                <TouchableOpacity 
+                                    onPress={irPaginaAnterior} 
+                                    disabled={pagina === 1 || carregando}
+                                    style={[styles.minorButton, pagina === 1 && {opacity: 0.5}]}
+                                >
+                                    <Text style={{color:'#fff'}}> <Icon name={"arrow-back"} size={18} color="#fff"/> </Text>
+                                </TouchableOpacity>
+
+                                <View style={{alignItems: 'center'}}>
+                                    <Text style={{fontSize: 14, fontWeight: 'bold'}}>
+                                        Página {pagina} de {totalPaginas}
+                                    </Text>
+                                    <Text style={{fontSize: 12, color: '#666', marginTop: 4}}>
+                                        {totalRegistros} {totalRegistros === 1 ? 'registro' : 'registros'}
+                                    </Text>
                                 </View>
-                                <Text style={styles.boxTitle} >Discurso: <Text style={styles.discursoText} >{item.discurso}</Text> </Text>
-                                <View style={styles.divisor}/>
-                                <Text style={styles.boxTitle} >Tradução: <Text style={styles.discursoText} >{item.texto}</Text> </Text>
-                                <View style={styles.boxHour} ><Text style={styles.traducaoHour}>{item.data_criacao}</Text></View>
+
+                                <TouchableOpacity 
+                                    onPress={irProximaPagina} 
+                                    disabled={pagina === totalPaginas || carregando}
+                                    style={[styles.minorButton, pagina === totalPaginas && {opacity: 0.5}]}
+                                >
+                                    <Text style={{color:'#fff'}}> <Icon name={"arrow-forward"} size={18} color="#fff"/> </Text>
+                                </TouchableOpacity>
                             </View>
-                        ))
+
+                            {traducoes.map((item) => (
+                                <View key={item.id} style={styles.traducaoBox}>
+                                    <View style={{alignItems: "flex-end"}}>
+                                        <TouchableOpacity onPress={() => navigation.navigate('AddTraducao', { traducao_id: item.id })}>
+                                            <Icon name={"create-outline"} size={18} color="#000"/>
+                                        </TouchableOpacity>
+                                    </View>
+                                    <Text style={styles.boxTitle} >Discurso: <Text style={styles.discursoText} >{item.discurso}</Text> </Text>
+                                    <View style={styles.divisor}/>
+                                    <Text style={styles.boxTitle} >Tradução: <Text style={styles.discursoText} >{item.texto}</Text> </Text>
+                                    <View style={styles.boxHour} ><Text style={styles.traducaoHour}>{item.data_criacao}</Text></View>
+                                </View>
+                            ))}
+                        </>
                         )}
                     </>
                 )}

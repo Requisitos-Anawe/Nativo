@@ -82,7 +82,7 @@ export default function TraslationCreate(){
 
             return () => {
                 isActive = false;
-                navigation.setParams(undefined);
+                navigation.setParams({ traducao_id: null });
             };
         }, [traducao_id])
     );
@@ -96,9 +96,9 @@ export default function TraslationCreate(){
                 const payload = {
                     categoria: categoriaSelecionada,
                     discurso: textoDiscurso.trim(),
-                    idioma_discurso: idiomaDiscurso,
+                    idioma_discurso: idiomaDiscurso.toLowerCase(),
                     traducao: textoTraducao.trim(),
-                    idioma_traducao: idiomaTraducao
+                    idioma_traducao: idiomaTraducao.toLowerCase()
                 }
                 const response = await api.post('/traducao/cadastrar', payload)
                 if(response) Alert.alert('Tradução cadastrada com sucesso');
@@ -186,7 +186,7 @@ export default function TraslationCreate(){
                     <Text style={styles.subtitle} >Tradução</Text>
                     <View style={styles.input} >
                         <Picker 
-                            selectedValue={idiomas.filter(idi => idi.descricao.toLowerCase() === idiomaTraducao)[0]?.descricao}  
+                            selectedValue={idiomas.filter(idi => idi.descricao === idiomaTraducao)[0]?.descricao}  
                             onValueChange={(itemValue) => setIdiomaTraducao(itemValue)} 
                         >
                             {idiomas.map((item) => (
