@@ -77,6 +77,8 @@ class DiscursoService:
         resumo = {
             "discurso": traducao_data.get("texto"),
             "categoria": categoria_nome,
+            "imagem_url": traducao_data.get("imagem_url"),
+            "video_url": traducao_data.get("video_url"),
             "traducao": [ {"texto": discurso_data.get("texto")} ]
         }
 
@@ -95,7 +97,9 @@ class DiscursoService:
             trad_data = trad_doc.to_dict()
             
             traducoes.append({
-                "texto": trad_data.get("texto")
+                "texto": trad_data.get("texto"),
+                "imagem_url": trad_data.get("imagem_url"),
+                "video_url": trad_data.get("video_url")
             })
 
         return traducoes
