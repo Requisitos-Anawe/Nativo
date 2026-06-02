@@ -10,7 +10,11 @@ def upload_midia():
         return jsonify({"erro": "Nenhum arquivo enviado"}), 400
         
     file = request.files['file']
+    pasta_destino = request.form.get('pasta', 'geral')
     
+    pastas_permitidas = ['traducoes', 'perfis', 'comunidade']
+    if pasta_destino not in pastas_permitidas:
+        return jsonify({"erro": f"A pasta '{pasta_destino}' não é permitida"}), 400
     if file.filename == '':
         return jsonify({"erro": "Arquivo inválido"}), 400
 
@@ -18,7 +22,7 @@ def upload_midia():
         extensao = file.filename.split('.')[-1]
         nome_unico = f"{uuid.uuid4()}.{extensao}"
         
-        blob = bucket.blob(f"traducoes/{nome_unico}")
+        blob = bucket.blob(f"{pasta_destino}/{nome_unico}")
         
         blob.upload_from_file(file.stream, content_type=file.content_type)
         blob.make_public()
