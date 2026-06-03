@@ -1,11 +1,13 @@
 import math
 import pytz
+import uuid
 from app.middlewares.autenticar_jwt import autenticar_jwt
 from app.middlewares.verificar_professor import verificar_professor
 from datetime import datetime
 from flask import Blueprint, request, jsonify, g
 from firebase_admin import firestore
 from datetime import datetime
+from firebase_admin import storage
 
 bp = Blueprint("traducao", __name__)
 db = firestore.client()
@@ -80,7 +82,7 @@ def buscar_traducao(traducao_id):
 @autenticar_jwt
 @verificar_professor
 def editar_traducao_discurso(traducao_id):
-    dados = request.get_json()
+    dados = request.form
 
     novo_texto_traducao = dados.get('texto_traducao')
     novo_idioma_traducao_id = dados.get('idioma_traducao_id')
@@ -88,11 +90,16 @@ def editar_traducao_discurso(traducao_id):
     novo_idioma_discurso_id = dados.get('idioma_discurso_id')
     nova_categoria_id = dados.get('discurso_categoria_id')
 
+    novo_video_url = dados.get('video_url')
+    nova_imagem_url = dados.get('imagem_url')
+    novo_audio_url = dados.get('audio_url')
+
     if not (novo_texto_traducao or 
             novo_idioma_traducao_id or 
             novo_texto_discurso or 
             novo_idioma_discurso_id or 
-            nova_categoria_id):
+            nova_categoria_id or
+            novo_video_url or nova_imagem_url or novo_audio_url):
         return jsonify({'erro': 'Nenhum dado fornecido para atualização'}), 400
 
     db = firestore.client()
@@ -146,6 +153,14 @@ def editar_traducao_discurso(traducao_id):
             update_traducao['texto'] = novo_texto_traducao
         if novo_idioma_traducao_ref:
             update_traducao['idioma'] = novo_idioma_traducao_ref
+
+        if nova_imagem_url:
+            update_traducao['imagem_url'] = nova_imagem_url
+        if novo_video_url:
+            update_traducao['video_url'] = novo_video_url
+        if novo_audio_url:
+            update_traducao['audio_url'] = novo_audio_url
+
         if update_traducao:
             update_traducao['data_atualizacao'] = datetime.now(pytz.timezone("America/Sao_Paulo"))
             transaction.update(traducao_ref, update_traducao)
@@ -234,13 +249,16 @@ def listar_tracudao_usuario(usuario_id):
 @autenticar_jwt
 @verificar_professor
 def cadastrar_traducao():
-    data = request.get_json()
+    data = request.form 
     texto_discurso = data.get("discurso_texto").lower()
     texto_traducao = data.get("traducao_texto").lower()
     idioma_discurso_id = data.get("idioma_discurso_id")
     idioma_traducao_id = data.get("idioma_traducao_id")
     categoria_id = data.get("discurso_categoria_id")
 
+    foto = request.files.get('foto')
+    video = request.files.get('video')
+    audio = request.files.get('audio')
     if not all([texto_discurso, texto_traducao, idioma_discurso_id, idioma_traducao_id, categoria_id]):
         return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
     
@@ -248,18 +266,45 @@ def cadastrar_traducao():
         return jsonify({"erro": "Os idiomas devem ser diferentes."}), 400
 
     try:
-        # Extrair apenas o ID do documento (depois da barra)
+        bucket = storage.bucket()
+
+        foto_url = None
+        video_url = None
+        audio_url = None
+
+        # fazer upload da Foto 
+        if foto and foto.filename != "":
+            blob_foto = bucket.blob(f"fotos/{uuid.uuid4()}_{foto.filename}")
+            blob_foto.upload_from_file(foto, content_type=foto.content_type)
+            blob_foto.make_public()
+            foto_url = blob_foto.public_url 
+
+        # 2. Upload do Vídeo
+        if video and video.filename != "":
+            blob_name = f"traducoes/videos/{uuid.uuid4()}_{video.filename}"
+            blob = bucket.blob(blob_name)
+            blob.upload_from_file(video, content_type=video.content_type)
+            blob.make_public()
+            video_url = blob.public_url
+
+        # 3. Upload do Áudio 
+        if audio and audio.filename != "":
+            blob_name = f"traducoes/audios/{uuid.uuid4()}_{audio.filename}"
+            blob = bucket.blob(blob_name)
+            blob.upload_from_file(audio, content_type=audio.content_type)
+            blob.make_public()
+            audio_url = blob.public_url
+
+        # Processamento das Referências do Firestore
         idioma_discurso_doc_id = idioma_discurso_id.split("/")[-1]
         idioma_traducao_doc_id = idioma_traducao_id.split("/")[-1]
         categoria_doc_id = categoria_id.split("/")[-1]
 
-        # Referências
         idioma_discurso_ref = db.collection("idioma").document(idioma_discurso_doc_id)
         idioma_traducao_ref = db.collection("idioma").document(idioma_traducao_doc_id)
         categoria_ref = db.collection("discurso_categoria").document(categoria_doc_id)
         usuario_ref = db.collection("usuario").document(g.usuario_id)
 
-        # Verifica se já existe um discurso com mesmo texto e mesmo idioma
         discursos_duplicados = db.collection("discurso") \
             .where("texto", "==", texto_discurso) \
             .where("idioma", "==", idioma_discurso_ref) \
@@ -269,7 +314,6 @@ def cadastrar_traducao():
         if discurso_existente:
             discurso_ref = db.collection("discurso").document(discurso_existente.id)
         else:
-            # Criar novo discurso
             discurso_ref = db.collection("discurso").document()
             discurso_data = {
                 "texto": texto_discurso,
@@ -280,19 +324,26 @@ def cadastrar_traducao():
             }
             discurso_ref.set(discurso_data)
 
-        # Criar tradução
+        # criar tradução guardando apenas as strings das URLs públicas geradas acima
         traducao_data = {
             "texto": texto_traducao,
             "data_criacao": datetime.now(pytz.timezone("America/Sao_Paulo")),
             "idioma": idioma_traducao_ref,
             "discurso": discurso_ref,
-            "usuario": usuario_ref
+            "usuario": usuario_ref,
+            "imagem_url": foto_url,  
+            "video_url": video_url,   
+            "audio_url": audio_url
         }
         db.collection("traducao").document().set(traducao_data)
 
         return jsonify({"mensagem": "Tradução cadastrada com sucesso"}), 201
 
     except Exception as e:
+        print("====== ERRO CRÍTICO NO CADASTRO ======")
+        import traceback
+        traceback.print_exc() 
+        print("======================================")
         return jsonify({"erro": f"Erro ao cadastrar: {str(e)}"}), 500
 
 @bp.route("/traducao", methods=["GET"])
@@ -357,7 +408,10 @@ def listar_traducoes():
                         'id': discurso_data.get('discurso_categoria').id,
                         **categoria_data
                     } if categoria_data else None,
-                }
+                },
+                'imagem_url': traducao_data.get('imagem_url'),
+                'video_url': traducao_data.get('video_url'),
+                'audio_url': traducao_data.get('audio_url')
             })
 
         return jsonify({
