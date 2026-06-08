@@ -8,11 +8,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import Icon from "react-native-vector-icons/Ionicons"
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import Erro from "../../components/Erro"
+import { VideoPlayer } from "../../components/VideoPlayer"
+import { AudioPlayer } from "../../components/AudioPlayer"
+import { FotoPlayer } from "../../components/FotoPlayer"
 
-export default function TraslationList(){
+export default function TraslationList() {
     const navigation = useNavigation();
 
-    const [idiomaDiscurso, setIdiomaDiscurso] = useState<IdiomaInterface|null>(null);
+    const [idiomaDiscurso, setIdiomaDiscurso] = useState<IdiomaInterface | null>(null);
     const [textoDiscurso, setTextoDiscurso] = useState('');
     const [idiomas, setIdiomas] = useState<IdiomaInterface[]>([]);
     const [traducoes, setTraducoes] = useState<TraducaoResponse[]>([]);
@@ -21,25 +24,25 @@ export default function TraslationList(){
     const [erro, setErro] = useState('');
 
     const handleSearch = async () => {
-        try{
+        try {
             setErro('');
             setCarregando(true);
 
             const userString = await AsyncStorage.getItem('user');
-            if(userString){
+            if (userString) {
                 const user = JSON.parse(userString);
                 const response = await api.post(`/traducao/usuario/${user.id}`, {
                     textoDiscurso: textoDiscurso.trim(),
                     idiomaDiscurso: idiomaDiscurso ? idiomaDiscurso.id : '',
                 });
                 setTraducoes(response.data);
-            }else{
-                setErro('Não foi possível buscar as traduções.'); 
+            } else {
+                setErro('Não foi possível buscar as traduções.');
             }
-        }catch(error){
+        } catch (error) {
             var err = error as any;
             setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
-        }finally{
+        } finally {
             setCarregando(false);
         }
     }
@@ -47,16 +50,16 @@ export default function TraslationList(){
     useFocusEffect(
         useCallback(() => {
             const buscarDados = async () => {
-            try {
-                setCarregando(true);
-                setErro('');
-                await handleSearch();
-            } catch (error) {
-                const err = error as any;
-                setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
-            } finally {
-                setCarregando(false);
-            }
+                try {
+                    setCarregando(true);
+                    setErro('');
+                    await handleSearch();
+                } catch (error) {
+                    const err = error as any;
+                    setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
+                } finally {
+                    setCarregando(false);
+                }
             };
 
             buscarDados();
@@ -67,21 +70,21 @@ export default function TraslationList(){
     );
 
     useEffect(() => {
-        
+
         const getIdiomas = async () => {
             const response = await api.get(`/idiomas`);
             setIdiomas(response.data);
         }
 
-        try{
+        try {
             setCarregando(true);
             setErro('');
             getIdiomas();
             handleSearch();
-        }catch(error){
+        } catch (error) {
             var err = error as any;
             setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
-        }finally{
+        } finally {
             setCarregando(false);
         }
 
@@ -90,11 +93,11 @@ export default function TraslationList(){
     return (
         <ScrollView>
             <SafeAreaView style={styles.container} >
-                
+
                 <Text style={styles.subtitle} >Filtros</Text>
                 <View style={styles.input} >
-                    <Picker 
-                        selectedValue={idiomaDiscurso?.id || ''} 
+                    <Picker
+                        selectedValue={idiomaDiscurso?.id || ''}
                         onValueChange={(itemValue) =>
                             setIdiomaDiscurso(idiomas.find((i) => i.id === itemValue) || null)}
                     >
@@ -105,25 +108,25 @@ export default function TraslationList(){
                     </Picker>
                 </View>
                 <View style={styles.input} >
-                    <TextInput 
-                        value={textoDiscurso} 
-                        placeholder="Digite o discurso" 
-                        multiline 
-                        style={{height: 55}} 
+                    <TextInput
+                        value={textoDiscurso}
+                        placeholder="Digite o discurso"
+                        multiline
+                        style={{ height: 55 }}
                         onChangeText={setTextoDiscurso}
                     ></TextInput>
                 </View>
-                <View style={{alignItems: 'flex-end'}}>
-                    <TouchableOpacity 
-                        onPress={handleSearch} 
+                <View style={{ alignItems: 'flex-end' }}>
+                    <TouchableOpacity
+                        onPress={handleSearch}
                         disabled={carregando}
                         style={styles.button}
                     >
-                        <Text style={{color:'#fff'}}>{carregando ? "Aguarde..." : "Buscar"}</Text>
+                        <Text style={{ color: '#fff' }}>{carregando ? "Aguarde..." : "Buscar"}</Text>
                     </TouchableOpacity>
                 </View>
 
-                {erro && <Erro texto={erro} />} 
+                {erro && <Erro texto={erro} />}
 
                 <View style={styles.divisor} />
 
@@ -132,23 +135,46 @@ export default function TraslationList(){
                 ) : (
                     <>
                         {traducoes.length === 0 ? (
-                        <View style={styles.caixaAviso}>
-                            <Text style={styles.textoAviso}>Nenhuma tradução foi encontrada.</Text>
-                        </View>
-                        ) : (
-                        traducoes.map((item) => (
-                            <View key={item.id} style={styles.traducaoBox}>
-                                <View style={{alignItems: "flex-end"}}>
-                                    <TouchableOpacity onPress={() => navigation.navigate('AddTraducao', { traducao_id: item.id })}>
-                                        <Icon name={"create-outline"} size={18} color="#000"/>
-                                    </TouchableOpacity>
-                                </View>
-                                <Text style={styles.boxTitle} >Discurso: <Text style={styles.discursoText} >{item.discurso}</Text> </Text>
-                                <View style={styles.divisor}/>
-                                <Text style={styles.boxTitle} >Tradução: <Text style={styles.discursoText} >{item.texto}</Text> </Text>
-                                <View style={styles.boxHour} ><Text style={styles.traducaoHour}>{item.data_criacao}</Text></View>
+                            <View style={styles.caixaAviso}>
+                                <Text style={styles.textoAviso}>Nenhuma tradução foi encontrada.</Text>
                             </View>
-                        ))
+                        ) : (
+                            traducoes.map((item) => (
+                                <View key={item.id} style={styles.traducaoBox}>
+                                    <View style={{ alignItems: "flex-end" }}>
+                                        <TouchableOpacity onPress={() => (navigation as any).navigate('AddTraducao', { traducao_id: item.id })}>
+                                            <Icon name={"create-outline"} size={18} color="#000" />
+                                        </TouchableOpacity>
+                                    </View>
+                                    <Text style={styles.boxTitle} >Discurso: <Text style={styles.discursoText} >{item.discurso}</Text> </Text>
+                                    <View style={styles.divisor} />
+                                    <Text style={styles.boxTitle} >Tradução: <Text style={styles.discursoText} >{item.texto}</Text> </Text>
+                                    <View style={styles.boxHour} ><Text style={styles.traducaoHour}>{item.data_criacao}</Text></View>
+                                    {(item.imagem_url || item.video_url || item.audio_url) && (
+                                        <View style={{ marginTop: 12, paddingTop: 12, borderTopWidth: 1, borderTopColor: '#eee' }}>
+
+                                            {item.imagem_url && (
+                                                <FotoPlayer
+                                                    uri={item.imagem_url}
+                                                    height={150}
+                                                />
+                                            )}
+                                            {item.audio_url && (
+                                                <AudioPlayer
+                                                    uri={item.audio_url}
+                                                    name="Áudio do Discurso"
+                                                />
+                                            )}
+                                            {item.video_url && (
+                                                <VideoPlayer
+                                                    uri={item.video_url}
+                                                    height={180}
+                                                />
+                                            )}
+                                        </View>
+                                    )}
+                                </View>
+                            ))
                         )}
                     </>
                 )}

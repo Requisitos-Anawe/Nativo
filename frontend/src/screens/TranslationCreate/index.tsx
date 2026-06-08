@@ -8,6 +8,9 @@ import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navig
 import Erro from "../../components/Erro";
 import { launchImageLibrary } from 'react-native-image-picker';
 import { pick } from '@react-native-documents/picker';
+import { VideoPlayer } from "../../components/VideoPlayer";
+import { AudioPlayer } from "../../components/AudioPlayer";
+import { FotoPlayer } from "../../components/FotoPlayer";
 
 type RootStackParamList = {
     TraslationCreate: {
@@ -274,24 +277,37 @@ export default function TraslationCreate() {
 
                     {/* Botão para Foto */}
                     <TouchableOpacity style={styles.input} onPress={selecionarFoto}>
-                        <Text style={{ color: '#333' }}>
-                            {foto ? `Foto: ${foto.name}` : "Selecionar Foto (Imagem)"}
-                        </Text>
+                        <Text style={{ color: '#333' }}>{foto ? `Alterar Foto` : "Selecionar Foto (Imagem)"}</Text>
                     </TouchableOpacity>
+                    {foto && (
+                        <FotoPlayer
+                            uri={foto.uri}
+                            onExcluir={() => setFoto(null)}
+                        />
+                    )}
 
-                    {/* Botão para Áudio */}
+                    {/* Botão e Preview de ÁUDIO */}
                     <TouchableOpacity style={styles.input} onPress={selecionarAudio}>
-                        <Text style={{ color: '#333' }}>
-                            {audio ? `Áudio: ${audio.name}` : "Selecionar Áudio"}
-                        </Text>
+                        <Text style={{ color: '#333' }}>{audio ? `Alterar Áudio` : "Selecionar Áudio"}</Text>
                     </TouchableOpacity>
+                    {audio && (
+                        <AudioPlayer
+                            uri={audio.uri}
+                            name={audio.name || "Áudio da Tradução"}
+                            onExcluir={() => setAudio(null)}
+                        />
+                    )}
 
-                    {/* Botão para Vídeo */}
+                    {/* Botão e Preview de VÍDEO */}
                     <TouchableOpacity style={styles.input} onPress={selecionarVideo}>
-                        <Text style={{ color: '#333' }}>
-                            {video ? `Vídeo: ${video.name}` : "Selecionar Vídeo"}
-                        </Text>
+                        <Text style={{ color: '#333' }}>{video ? `Alterar Vídeo` : "Selecionar Vídeo"}</Text>
                     </TouchableOpacity>
+                    {video && (
+                        <VideoPlayer
+                            uri={video.uri}
+                            onExcluir={() => setVideo(null)}
+                        />
+                    )}
                     <View style={styles.divisor} />
 
                     <TouchableOpacity
