@@ -13,6 +13,19 @@ usuario_schema = UsuarioSchema()
 
 @bp.route("/auth/login", methods=["POST"])
 def login():
+    """
+    Fazer login
+    ---
+    tags:
+        - Auth
+    responses:
+        200:
+            description: Login bem-sucedido, retorna token JWT e informações do usuário
+        400:
+            description: Requisição malformada, campos obrigatórios ausentes
+        401:
+            description: Credenciais inválidas
+    """
     data = request.get_json()
     email = data.get("email")
     senha = data.get("senha")
@@ -37,10 +50,6 @@ def login():
         "exp": datetime.now(pytz.timezone("America/Sao_Paulo")) + timedelta(hours=12)
     }, os.getenv("JWT_SECRET"), algorithm="HS256")
 
-    perfil_ref = usuario_data.get("perfil")
-    perfil_doc = perfil_ref.get()
-    perfil_data = perfil_doc.to_dict() if perfil_doc.exists else {}
-
     return jsonify({
         "token": token,
         "usuario": {
@@ -48,12 +57,25 @@ def login():
             "nome": usuario_data.get("nome"),
             "email": usuario_data.get("email"),
             "data_nascimento": usuario_data.get('data_nascimento'),
-            "perfil": perfil_data.get('descricao'),
+            "perfil": usuario_data.get('perfil'),
         }
     }), 200
 
 @bp.route("/auth/cadastro", methods=["POST"])
 def cadastro():
+    """
+    Fazer cadastro
+    ---
+    tags:
+        - Auth
+    responses:
+        200:
+            description: Cadastro bem-sucedido, retorna mensagem de sucesso
+        400:
+            description: Requisição malformada, campos obrigatórios ausentes ou dados inválidos
+        409:
+            description: Email já cadastrado
+    """
     data = request.get_json()
 
     email = data.get("email")
@@ -62,8 +84,6 @@ def cadastro():
     
     data_nascimento = data.get("data_nascimento")
     data_dt = datetime.fromisoformat(data_nascimento)
-
-    perfil_ref = db.collection("perfil").document("1")
 
     # VALIDACOES
     if not all([email, senha, nome, data_nascimento]):
@@ -85,7 +105,7 @@ def cadastro():
 
     usuarios_ref = db.collection("usuario").where("email", "==", email).stream()
     if any(usuarios_ref):
-        return jsonify({"erro": "Email já cadastrado"}), 400
+        return jsonify({"erro": "Email já cadastrado"}), 409
     
     # CADASTRO
     senha_hash = bcrypt.hashpw(senha.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
@@ -94,8 +114,8 @@ def cadastro():
         "senha": senha_hash,
         "nome": nome,
         "data_nascimento": data_dt,
-        "perfil": perfil_ref,
-        "criado_em": firestore.SERVER_TIMESTAMP
+        "perfil": "padrão",
+        "data_criacao": firestore.SERVER_TIMESTAMP
     }
 
     db.collection("usuario").add(novo_usuario)

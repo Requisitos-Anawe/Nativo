@@ -1,4 +1,8 @@
+import os
+
 from flask import Flask
+from flasgger import Swagger
+
 from app.routes.UsuarioRoute import bp as usuarios_bp
 from app.routes.DiscursoRoute import bp as discurso_bp
 from app.routes.AuthRoute import bp as auth_bp
@@ -10,6 +14,22 @@ from app.routes.UploadRoute import bp as upload_bp
 
 def create_app():
     app = Flask(__name__)
+    if os.getenv("FLASK_ENV") == "development":
+        Swagger(app, template={
+            "swagger": "2.0",
+            "info": {
+                "title": "Nativo API",
+                "version": "1.0"
+            },
+            "securityDefinitions": {
+                "Bearer": {
+                    "type": "apiKey",
+                    "name": "Authorization",
+                    "in": "header",
+                    "description": "Digite: Bearer <seu_token>"
+                }
+            }
+        })
 
     # Registra rotas
     app.register_blueprint(usuarios_bp, url_prefix="/api")

@@ -18,16 +18,8 @@ def verificar_professor(f):
             return jsonify({'erro': 'Usuário não encontrado'}), 404
 
         usuario = usuario_doc.to_dict()
-        perfil_ref = usuario.get('perfil')
 
-        if not perfil_ref:
-            return jsonify({'erro': 'Perfil não atribuído ao usuário'}), 400
-
-        perfil_doc = perfil_ref.get()
-        if not perfil_doc.exists:
-            return jsonify({'erro': 'Perfil não encontrado'}), 404
-
-        if perfil_doc.to_dict().get('descricao', '').lower() != 'professor':
+        if usuario.get('perfil', '').lower() != 'professor':
             return jsonify({'erro': 'Apenas usuários com perfil professor podem acessar'}), 403
 
         return f(*args, **kwargs)

@@ -7,18 +7,24 @@ import api from "../../services/api";
 import { Picker } from "@react-native-picker/picker";
 import Erro from "../../components/Erro";
 
+// TODO: adicionar paginação 
 export default function UsersList() {
     const [users, setUsers] = useState<UserInterface[]|null>(null);
     const [userEditando, setUserEditando] = useState<UserInterface|null>(null);
     const [carregando, setCarregando] = useState(true);
     const [visible, setVisible] = useState(false);
     const [erro, setErro] = useState('');
-    const [perfilSelecionado, setPerfilSelecionado] = useState<PerfilInterface|null>(null);
+    const [perfilSelecionado, setPerfilSelecionado] = useState('');
     const [perfis, setPerfis] = useState<PerfilInterface[]|null>(null);
-    
-    type Perfil = 'administrador' | 'professor' | 'moderador';
+
+    const [limit] = useState(10);
+    const [pageCursors, setPageCursors] = useState<Array<string | null>>([null]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [nextCursor, setNextCursor] = useState<string | null>(null);
+
+    type Perfil = 'admin' | 'professor' | 'moderador';
     const perfilStyles: Record<Perfil, TextStyle> = {
-        administrador: styles.admin,
+        admin: styles.admin,
         professor: styles.professor,
         moderador: styles.moderador,
     };
@@ -28,9 +34,43 @@ export default function UsersList() {
         setPerfis(response.data);
     }
 
-    const GetUsers = async () => {
-        const response = await api.get('/usuarios');
-        setUsers(response.data);
+    const fetchUsers = async (page = 1) => {
+        try {
+            setCarregando(true);
+            setErro('');
+
+            const cursor = pageCursors[page - 1];
+            const params: Record<string, any> = { limit };
+            if (cursor) {
+                params.start_after = cursor;
+            }
+
+            const response = await api.get('/usuarios', { params });
+            setUsers(response.data.data);
+            setNextCursor(response.data.start_after || null);
+
+            if (page === pageCursors.length && response.data.start_after) {
+                setPageCursors((prev) => [...prev, response.data.start_after]);
+            }
+            setCurrentPage(page);
+        } catch (error) {
+            var err = error as any;
+            setErro(err.response?.data?.erro || 'Não foi possível carregar os usuários.');
+        } finally {
+            setCarregando(false);
+        }
+    }
+
+    const handleNextPage = () => {
+        if (nextCursor) {
+            fetchUsers(currentPage + 1);
+        }
+    }
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            fetchUsers(currentPage - 1);
+        }
     }
 
     const handleEdit = async (usuario_id: string) => {
@@ -38,8 +78,8 @@ export default function UsersList() {
             setCarregando(true);
 
             const UpdatePerfil = async () => {
-                const response = await api.put(`usuario/${usuario_id}/perfil`,{ perfil_id: perfilSelecionado?.id});
-                GetUsers(); 
+                const response = await api.put(`usuarios/${usuario_id}/perfil`,{ perfil: perfilSelecionado});
+                await fetchUsers(currentPage);
                 closeModal();
                 Alert.alert(response.data.mensagem);
             }
@@ -61,7 +101,7 @@ export default function UsersList() {
         setUserEditando(user);
         setVisible(true);
             Animated.timing(slideAnim, {
-            toValue: screenHeight * 0.6, // altura final (modal vai até 40% da tela)
+            toValue: screenHeight * 0.6,
             duration: 300,
             useNativeDriver: false,
         }).start();
@@ -78,23 +118,45 @@ export default function UsersList() {
     };
 
     useEffect(() => {
-        try{
-            setCarregando(true);
-            GetUsers();
-            GetPerfis();
+        const initialize = async () => {
+            try {
+                setCarregando(true);
+                await GetPerfis();
+                await fetchUsers(1);
+            } catch (error) {
+                var err = error as any;
+                setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
+            } finally {
+                setCarregando(false);
+            }
+        };
 
-        }catch(error){
-            var err = error as any;
-            setErro(err.response?.data?.erro || "Aconteceu um erro desconhecido, tente mais tarde.");
-        }finally{
-            setCarregando(false);
-        }
-
+        initialize();
     }, []);
 
     return(
         <ScrollView>
             <SafeAreaView style={styles.container}>
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 16, paddingHorizontal: 8 }}>
+                    <TouchableOpacity
+                        onPress={handlePreviousPage}
+                        disabled={currentPage === 1 || carregando}
+                        style={[styles.minorButton, (currentPage === 1 || carregando) && { opacity: 0.5 }]}
+                    >
+                        <Text style={{ color: '#fff' }}> <Icon name="arrow-back" size={24} /> </Text>
+                    </TouchableOpacity>
+
+                    <Text style={{ color: '#333', fontWeight: 'bold' }}>Página {currentPage}</Text>
+
+                    <TouchableOpacity
+                        onPress={handleNextPage}
+                        disabled={carregando || !nextCursor || (users?.length ?? 0) < limit}
+                        style={[styles.minorButton, (carregando || !nextCursor || (users?.length ?? 0) < limit) && { opacity: 0.5 }]}
+                    >
+                        <Text style={{ color: '#fff' }}> <Icon name="arrow-forward" size={24} /> </Text>
+                    </TouchableOpacity>
+                </View>
 
                 {carregando ? (
                     <ActivityIndicator />
@@ -107,19 +169,21 @@ export default function UsersList() {
                                 <Text style={styles.textoAviso}>Nenhum usuário foi encontrado</Text>
                             </View>
                         ) : (
-                            users.map((item) => (
-                                <View style={styles.input} key={item.id}>
-                                    <View >
-                                        <Text style={styles.name}>{item.nome}</Text>
-                                        <Text style={perfilStyles[item.perfil.descricao as keyof typeof perfilStyles] || styles.default}>
-                                            {item.perfil.descricao} 
-                                        </Text>
+                            <>
+                                {users.map((item) => (
+                                    <View style={styles.input} key={item.id}>
+                                        <View >
+                                            <Text style={styles.name}>{item.nome}</Text>
+                                            <Text style={perfilStyles[item.perfil as keyof typeof perfilStyles] || styles.default}>
+                                                {item.perfil} 
+                                            </Text>
+                                        </View>
+                                        <TouchableOpacity onPress={() => openModal(item)} >
+                                            <Icon name="create-outline" size={24} />
+                                        </TouchableOpacity>
                                     </View>
-                                    <TouchableOpacity onPress={() => openModal(item)} >
-                                        <Icon name="create-outline" size={24} />
-                                    </TouchableOpacity>
-                                </View>
-                            ))
+                                ))}
+                            </>
                         )}
                         
                         {userEditando && visible && (
@@ -137,13 +201,11 @@ export default function UsersList() {
                                     <Text>Nível</Text>
                                     <View style={styles.pickerInput} >
                                         <Picker 
-                                            selectedValue={userEditando.perfil.id}
-                                            onValueChange={(item) => {
-                                                setPerfilSelecionado(perfis?.find((i) => i.id === item) || null);
-                                            }} 
+                                            selectedValue={userEditando.perfil}
+                                            onValueChange={(item) => {setPerfilSelecionado(item);}} 
                                         >
                                             {perfis?.map((item) => (
-                                                <Picker.Item key={item.id} label={item.descricao} value={item.id} />
+                                                <Picker.Item key={item.id} label={item.descricao} value={item.descricao} />
                                             ))}
                                         </Picker>
                                     </View>
