@@ -45,3 +45,6 @@ def run():
         db.collection("usuario").add(user)
 
     print("Usuários adicionados com sucesso.")
+
+if __name__ == '__main__':
+    run()

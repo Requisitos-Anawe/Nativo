@@ -1,13 +1,19 @@
-import { Text, View, TextInput, TouchableOpacity, Alert } from "react-native";
+import { Text, View, TextInput, TouchableOpacity, Alert, ScrollView } from "react-native";
 import styles from "./styles";
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useState } from "react";
 import api from '../../services/api';
 import AppText from '../../components/AppText';
 import Clipboard from '@react-native-clipboard/clipboard';
+import { FotoPlayer } from '../../components/FotoPlayer';
+import { AudioPlayer } from '../../components/AudioPlayer';
+import { VideoPlayer } from '../../components/VideoPlayer';
 
 type Traducao = {
   texto: string;
+  imagem_url?: string;
+  audio_url?: string;
+  video_url?: string;
 };
 
 
@@ -17,8 +23,8 @@ function Home(){
     const [traducao, setTraducao] = useState<Traducao[]>([]);
     const [carregando, setCarregando] = useState(false);
 
-    const copiarParaClipboard = () => {
-        Clipboard.setString(traducao[0].texto);
+    const copiarParaClipboard = (texto: string) => {
+        Clipboard.setString(texto);
     };
 
 
@@ -43,6 +49,7 @@ function Home(){
     
     return(
         <SafeAreaView style={styles.container}>
+            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
             
             <View>
                {/* Digitar discurso */}
@@ -71,26 +78,45 @@ function Home(){
                {traducao.length > 0 && (
                 <View>
                     <View style={styles.translateActions}>
-                        {/* Ações da tradução */}
                         <View>
                             {categoria !== '' && (<AppText style={styles.categoriaTexto}>{categoria}</AppText>)}
                         </View>
                     </View>
-                    <View style={styles.traducaoBox}>
-                        <AppText style={styles.traducaoTexto}>{traducao[0].texto}</AppText>
-                    </View>
-                    <TouchableOpacity 
-                        style={styles.copy}
-                        onPress={copiarParaClipboard}
-                    >
-                        <Text style={styles.copyText}>Copiar</Text>
-                    </TouchableOpacity>
+                    {traducao.map((trad, index) => (
+                        <View key={index}>
+                            <View style={styles.traducaoBox}>
+                                <AppText style={styles.traducaoTexto}>{trad.texto}</AppText>
+                            </View>
+                            <TouchableOpacity 
+                                style={styles.copy}
+                                onPress={() => copiarParaClipboard(trad.texto)}
+                            >
+                                <Text style={styles.copyText}>Copiar</Text>
+                            </TouchableOpacity>
+
+                            {trad.imagem_url && (
+                                <FotoPlayer uri={trad.imagem_url} />
+                            )}
+                            
+                            {trad.audio_url && (
+                                <AudioPlayer uri={trad.audio_url} name="Áudio da Tradução" />
+                            )}
+                            
+                            {trad.video_url && (
+                                <VideoPlayer uri={trad.video_url} />
+                            )}
+                            
+                            {index < traducao.length - 1 && (
+                                <View style={styles.divisor} />
+                            )}
+                        </View>
+                    ))}
                 </View>
                 )}
 
                 
             </View>
-            
+            </ScrollView>
         </SafeAreaView>
     )
 }

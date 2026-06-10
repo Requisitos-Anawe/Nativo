@@ -290,7 +290,18 @@ def cadastrar_traducao():
     idioma_discurso = data.get("idioma_discurso")
     idioma_traducao = data.get("idioma_traducao")
     categoria = data.get("categoria")
+    discurso = data.get("discurso")
+    traducao = data.get("traducao")
+    idioma_discurso = data.get("idioma_discurso")
+    idioma_traducao = data.get("idioma_traducao")
+    categoria = data.get("categoria")
 
+    # --- ADICIONE ESTES PRINTS AQUI ---
+    print("=== DADOS RECEBIDOS DO APP ===")
+    print("FORM:", request.form)
+    print("FILES:", request.files)
+    print(f"Campos -> discurso: '{discurso}', traducao: '{traducao}', idiomaD: '{idioma_discurso}', idiomaT: '{idioma_traducao}', categoria: '{categoria}'")
+    print("==============================")
     if not all([discurso, traducao, idioma_discurso, idioma_traducao, categoria]):
         return jsonify({"erro": "Todos os campos de texto são obrigatórios"}), 400
     

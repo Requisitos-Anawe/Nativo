@@ -24,7 +24,7 @@ export default function TraslationCreate() {
     const [traducao, setTraducao] = useState<any>(); // any temporário para suportar a nova estrutura da develop
     const [categorias, setCategorias] = useState<CategoriaInterface[]>([]);
     const [idiomas, setIdiomas] = useState<IdiomaInterface[]>([]);
-    
+
     // Estados unificados usando as strings da develop
     const [categoriaSelecionada, setCategoriaSelecionada] = useState('');
     const [idiomaTraducao, setIdiomaTraducao] = useState('');
@@ -137,7 +137,7 @@ export default function TraslationCreate() {
             formData.append("idioma_discurso", idiomaDiscurso.toLowerCase());
             formData.append("traducao", textoTraducao.trim());
             formData.append("idioma_traducao", idiomaTraducao.toLowerCase());
-            
+
             // Tratamento das Mídias
             if (foto) {
                 formData.append("foto", {
@@ -162,7 +162,13 @@ export default function TraslationCreate() {
             }
 
             const config = {
-                headers: { 'Content-Type': 'multipart/form-data' },
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'multipart/form-data'
+                },
+                transformRequest: (data: FormData) => {
+                    return data;
+                },
             };
 
             if (!traducao) {
@@ -206,9 +212,9 @@ export default function TraslationCreate() {
                     <View style={styles.divisor} />
                     <Text style={styles.subtitle} >Categoria do discurso</Text>
                     <View style={styles.input} >
-                        <Picker 
-                            selectedValue={categorias.filter(cat => cat.descricao.toLowerCase() === categoriaSelecionada.toLowerCase())[0]?.descricao || categoriaSelecionada} 
-                            onValueChange={(item) => { setCategoriaSelecionada(item)}} 
+                        <Picker
+                            selectedValue={categorias.filter(cat => cat.descricao.toLowerCase() === categoriaSelecionada.toLowerCase())[0]?.descricao || categoriaSelecionada}
+                            onValueChange={(item) => { setCategoriaSelecionada(item) }}
                         >
                             {categorias.map((item) => (
                                 <Picker.Item key={item.id} label={item.descricao} value={item.descricao} />
@@ -219,9 +225,9 @@ export default function TraslationCreate() {
 
                     <Text style={styles.subtitle} >Discurso</Text>
                     <View style={styles.input} >
-                        <Picker 
-                            selectedValue={idiomas.filter(idi => idi.descricao === idiomaDiscurso)[0]?.descricao || idiomaDiscurso}  
-                            onValueChange={(itemValue) => setIdiomaDiscurso(itemValue)} 
+                        <Picker
+                            selectedValue={idiomas.filter(idi => idi.descricao === idiomaDiscurso)[0]?.descricao || idiomaDiscurso}
+                            onValueChange={(itemValue) => setIdiomaDiscurso(itemValue)}
                         >
                             {idiomas.map((item) => (
                                 <Picker.Item key={item.id} label={item.descricao} value={item.descricao} />
@@ -242,9 +248,9 @@ export default function TraslationCreate() {
 
                     <Text style={styles.subtitle} >Tradução</Text>
                     <View style={styles.input} >
-                        <Picker 
-                            selectedValue={idiomas.filter(idi => idi.descricao === idiomaTraducao)[0]?.descricao || idiomaTraducao}  
-                            onValueChange={(itemValue) => setIdiomaTraducao(itemValue)} 
+                        <Picker
+                            selectedValue={idiomas.filter(idi => idi.descricao === idiomaTraducao)[0]?.descricao || idiomaTraducao}
+                            onValueChange={(itemValue) => setIdiomaTraducao(itemValue)}
                         >
                             {idiomas.map((item) => (
                                 <Picker.Item key={item.id} label={item.descricao} value={item.descricao} />
@@ -252,11 +258,11 @@ export default function TraslationCreate() {
                         </Picker>
                     </View>
                     <View style={styles.input} >
-                        <TextInput 
-                            value={textoTraducao} 
-                            placeholder="Digite a tradução" 
-                            multiline 
-                            style={{height: 120, textAlign: 'left', textAlignVertical: 'top'}} 
+                        <TextInput
+                            value={textoTraducao}
+                            placeholder="Digite a tradução"
+                            multiline
+                            style={{ height: 120, textAlign: 'left', textAlignVertical: 'top' }}
                             onChangeText={setTextoTraducao}
                         ></TextInput>
                     </View>
