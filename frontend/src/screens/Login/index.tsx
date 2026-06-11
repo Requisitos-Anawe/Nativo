@@ -1,25 +1,26 @@
-import { SafeAreaView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from "./styles";
 import { useState } from "react";
 import api from "../../services/api";
-import LinearGradient from "react-native-linear-gradient";
 import Icon from 'react-native-vector-icons/Ionicons';
-import {useAuth} from "../../contexts/AuthContext";
+import { useAuth } from "../../contexts/AuthContext";
 import { useNavigation } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../navigation/AuthStack";
 import Erro from "../../components/Erro";
+import IndigenaVector from '../../../assets/images/IndigenaVetorizada.svg';
+import FolhaVector from '../../../assets/images/FolhaVetorizada.svg';
 
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
 export default function Login() {
-    const [showPassword, setShowPassword] = useState(false); 
-    const [email, setEmail] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [cpf, setCpf] = useState('');
     const [password, setPassword] = useState('');
     const [carregando, setCarregando] = useState(false);
     const [erro, setErro] = useState('');
-    
+
     const { setUser } = useAuth();
     const navigation = useNavigation<Navigation>();
 
@@ -28,7 +29,7 @@ export default function Login() {
             setCarregando(true);
             setErro('');
             const response = await api.post(`/auth/login`, {
-                email,
+                email: cpf,
                 senha: password,
             });
             setUser(response.data.usuario);
@@ -42,53 +43,89 @@ export default function Login() {
         }
     };
 
-    return(
-        <LinearGradient colors={['#003066', '#0060CC']} style={{flex:1}} start={{x:0.5,y:0}} end={{x:0.5,y:1}}>
-            <SafeAreaView style={styles.container}>
-                <Text style={styles.title} >Entrar</Text>
-
-                <View style={styles.inputView} >
-                    <Text style={styles.subtitle} >E-mail</Text>
-                    <TextInput
-                        value={email}
-                        style={styles.input}
-                        onChangeText={setEmail}
-                    />
-
-                    <Text style={styles.subtitle} >Senha</Text>
-                    
-                    <View style={styles.passwordContainer}>
-                        <TextInput
-                            value={password}
-                            style={[{flex: 1}]}
-                            onChangeText={setPassword}
-                            secureTextEntry={!showPassword}
-                        />
-                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                            <Icon 
-                                name={showPassword ? "eye-off" : "eye"} 
-                                size={24} 
-                                color="#000" 
-                            />
-                        </TouchableOpacity>
-                    </View>
-
+    return (
+        <View style={styles.container}>
+            <View style={styles.topSection}>
+                <View style={styles.leafTopLeft}>
+                    <FolhaVector width={250} height={250} />
+                </View>
+                <View style={styles.leafMiddleRight}>
+                    <FolhaVector width={200} height={200} />
                 </View>
 
-                <TouchableOpacity 
-                    onPress={handleLogin} 
+                <Text style={styles.olaText}>Olá!</Text>
+
+                <View style={styles.indigenaWrapper}>
+                    <IndigenaVector width={200} height={200} />
+                </View>
+            </View>
+
+            <View style={styles.bottomCard}>
+                <Text style={styles.loginTitle}>LOGIN</Text>
+
+                <View style={styles.inputContainer}>
+                    <Icon name="id-card-outline" size={20} color="#093624" style={styles.inputIcon} />
+                    <TextInput
+                        value={cpf}
+                        style={styles.input}
+                        onChangeText={setCpf}
+                        placeholder="CPF"
+                        placeholderTextColor="#7a7a7a"
+                        keyboardType="numeric"
+                    />
+                </View>
+
+                <View style={styles.inputContainer}>
+                    <Icon name="key-outline" size={20} color="#093624" style={styles.inputIcon} />
+                    <TextInput
+                        value={password}
+                        style={styles.input}
+                        onChangeText={setPassword}
+                        placeholder="Senha"
+                        placeholderTextColor="#7a7a7a"
+                        secureTextEntry={!showPassword}
+                    />
+                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                        <Icon
+                            name={showPassword ? "eye-off-outline" : "eye-outline"}
+                            size={20}
+                            color="#000"
+                        />
+                    </TouchableOpacity>
+                </View>
+
+                <TouchableOpacity style={styles.forgotPassword}>
+                    <Text style={styles.forgotPasswordText}>Esqueceu sua senha?</Text>
+                </TouchableOpacity>
+
+                {erro ? <Erro texto={erro} /> : null}
+
+                <TouchableOpacity
+                    onPress={handleLogin}
                     disabled={carregando}
                     style={styles.button}
                 >
-                    <Text style={{color:'#fff'}}>{carregando ? "Aguarde..." : "Entrar"}</Text>
+                    <Text style={styles.buttonText}>{carregando ? "Aguarde..." : "Entrar"}</Text>
                 </TouchableOpacity>
 
-                {erro && <Erro texto={erro} />}
+                <View style={styles.dividerContainer}>
+                    <View style={styles.divider} />
+                    <Text style={styles.dividerText}>ou continue com</Text>
+                    <View style={styles.divider} />
+                </View>
 
-                <TouchableOpacity onPress={() => navigation.navigate("Cadastro")}>
-                    <Text style={styles.links}>Cadastre-se</Text>
+                <TouchableOpacity style={styles.googleButton}>
+                    <Icon name="logo-google" size={20} color="#DB4437" style={styles.googleIcon} />
+                    <Text style={styles.googleButtonText}>Sign in with Google</Text>
                 </TouchableOpacity>
-            </SafeAreaView>
-        </LinearGradient>
+
+                <View style={styles.registerContainer}>
+                    <Text style={styles.noAccountText}>Não possui conta? </Text>
+                    <TouchableOpacity onPress={() => navigation.navigate("Cadastro")}>
+                        <Text style={styles.registerText}>Cadastro</Text>
+                    </TouchableOpacity>
+                </View>
+            </View>
+        </View>
     )
 }
