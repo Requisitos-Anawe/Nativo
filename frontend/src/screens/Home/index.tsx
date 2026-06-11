@@ -9,6 +9,7 @@ import { FotoPlayer } from '../../components/FotoPlayer';
 import { AudioPlayer } from '../../components/AudioPlayer';
 import { VideoPlayer } from '../../components/VideoPlayer';
 import { useAuth } from "../../contexts/AuthContext";
+import { ModalAdicionarMidia } from "../../components/AddMidia";
 
 type Traducao = {
     id: string;
@@ -31,9 +32,7 @@ function Home() {
 
     const { user } = useAuth();
 
-    const perfilUsuario = user?.perfil || '';
-
-    const temPermissaoEdicao = perfilUsuario === 'professor' || perfilUsuario === 'administrador';
+    const temPermissaoEdicao = user?.perfil === 'professor' || user?.perfil === 'administrador';
     const handleTraduzir = async () => {
         try {
             setCarregando(true);
@@ -106,6 +105,10 @@ function Home() {
         );
     };
 
+    const [modalVisible, setModalVisible] = useState(false);
+    const [idParaMidia, setIdParaMidia] = useState('');
+    const [traducaoSelecionada, setTraducaoSelecionada] = useState<Traducao | null>(null);
+
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -119,7 +122,7 @@ function Home() {
                         placeholder="Escreva aqui..."
                         multiline
                     />
-                    
+
                 </View>
                 <View style={styles.actions}>
                     {/* Botão de traduzir */}
@@ -175,6 +178,21 @@ function Home() {
                                         </View>
                                     )}
 
+                                    {temPermissaoEdicao && (
+                                        <TouchableOpacity
+                                            style={{ backgroundColor: '#28a745', padding: 10, borderRadius: 5, marginTop: 10 }}
+                                            onPress={() => {
+                                                setIdParaMidia(trad.id);
+                                                setTraducaoSelecionada(trad);
+                                                setModalVisible(true);
+                                            }}
+                                        >
+                                            <Text style={{ color: '#fff', textAlign: 'center', fontWeight: 'bold' }}>
+                                                + Adicionar Mídia
+                                            </Text>
+                                        </TouchableOpacity>
+                                    )}
+
                                     {index < traducao.length - 1 && (
                                         <View style={styles.divisor} />
                                     )}
@@ -186,6 +204,15 @@ function Home() {
 
                 </View>
             </ScrollView>
+            {temPermissaoEdicao && (
+                <ModalAdicionarMidia
+                    visible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    traducaoId={idParaMidia}
+                    onSucesso={handleTraduzir}
+                    traducao={traducaoSelecionada}
+                />
+            )}
         </SafeAreaView>
     )
 }
