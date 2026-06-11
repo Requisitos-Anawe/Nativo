@@ -10,7 +10,7 @@ interface VideoPlayerProps {
 }
 
 export const VideoPlayer = ({ uri, width = '100%', height = 220, onExcluir }: VideoPlayerProps) => (
-  <View style={{ width, height, marginBottom: 16, position: 'relative', borderRadius: 8, overflow: 'hidden', backgroundColor: '#000' }}>
+  <View style={{ width, height, marginBottom: 6, marginTop: 20, position: 'relative', borderRadius: 8, overflow: 'hidden', backgroundColor: '#000' }}>
     <Video source={{ uri }} style={{ width: '100%', height: '100%' }} controls={true} paused={true} resizeMode="contain" />
     {onExcluir && (
       <TouchableOpacity 

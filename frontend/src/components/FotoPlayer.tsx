@@ -9,7 +9,7 @@ interface FotoPlayerProps {
 }
 
 export const FotoPlayer = ({ uri, width = '100%', height = 200, onExcluir }: FotoPlayerProps) => (
-  <View style={{ width, height, marginBottom: 16, position: 'relative', borderRadius: 8, overflow: 'hidden', backgroundColor: '#eee' }}>
+  <View style={{ width, height, marginBottom: 6, marginTop: 20, position: 'relative', borderRadius: 8, overflow: 'hidden', backgroundColor: '#eee' }}>
     <Image source={{ uri }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
     {onExcluir && (
       <TouchableOpacity 
