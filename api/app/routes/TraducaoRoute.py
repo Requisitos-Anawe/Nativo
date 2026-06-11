@@ -5,6 +5,8 @@ from app.services.DiscursoService import DiscursoService
 from app.services.TraducaoService import TraducaoService
 from app.middlewares.autenticar_jwt import autenticar_jwt
 from app.middlewares.verificar_professor import verificar_professor
+from app.middlewares.verificar_professor_admin import verificar_professor_admin
+from urllib.parse import urlparse, unquote
 from datetime import datetime
 from flask import Blueprint, request, jsonify, g
 from firebase_admin import firestore, storage
@@ -296,12 +298,6 @@ def cadastrar_traducao():
     idioma_traducao = data.get("idioma_traducao")
     categoria = data.get("categoria")
 
-    # --- ADICIONE ESTES PRINTS AQUI ---
-    print("=== DADOS RECEBIDOS DO APP ===")
-    print("FORM:", request.form)
-    print("FILES:", request.files)
-    print(f"Campos -> discurso: '{discurso}', traducao: '{traducao}', idiomaD: '{idioma_discurso}', idiomaT: '{idioma_traducao}', categoria: '{categoria}'")
-    print("==============================")
     if not all([discurso, traducao, idioma_discurso, idioma_traducao, categoria]):
         return jsonify({"erro": "Todos os campos de texto são obrigatórios"}), 400
     
@@ -499,3 +495,60 @@ def apagar_traducao(traducao_id):
 
     except Exception as e:
         return jsonify({"erro": f"Erro ao excluir tradução: {str(e)}"}), 500
+
+
+@bp.route('/traducao/<traducao_id>/remover-midia', methods=['PUT'])
+@autenticar_jwt
+@verificar_professor_admin
+def remover_midia(traducao_id):
+    body = request.get_json()
+    if not body:
+        return jsonify({"erro": "Corpo da requisição vazio"}), 400
+
+    tipo_midia = body.get('tipo_midia')
+    apagar_servidor = body.get('apagar_servidor', False)
+
+    if tipo_midia not in ['imagem_url', 'audio_url', 'video_url']:
+        return jsonify({"erro": "Tipo de mídia inválido"}), 400
+
+    doc_ref = db.collection("traducao").document(traducao_id)
+    doc = doc_ref.get()
+
+    if not doc.exists:
+        return jsonify({"erro": "Tradução não encontrada"}), 404
+
+    #LOGICA DE EXCLUSÃO PERMANENTE
+    if apagar_servidor:
+        url_midia = doc.to_dict().get(tipo_midia)
+        if url_midia:
+            try:
+                bucket = storage.bucket()
+                parsed_url = urlparse(url_midia)
+                caminho_blob = unquote(parsed_url.path) 
+                prefixo_bucket = f"/{bucket.name}/"
+                if caminho_blob.startswith(prefixo_bucket):
+                    caminho_blob = caminho_blob.replace(prefixo_bucket, "", 1)
+                elif caminho_blob.startswith("/"):
+                    caminho_blob = caminho_blob.lstrip("/")
+                
+                #aponta para o arquivo no Storage
+                blob = bucket.blob(caminho_blob)
+                
+                if blob.exists():
+                    blob.delete()
+                    print(f"Arquivo apagado fisicamente do Storage: {caminho_blob}")
+                else:
+                    print("O arquivo não foi encontrado no Storage, mas será desvinculado do banco.")
+                    
+            except Exception as e:
+                
+                return jsonify({"erro": f"Falha ao apagar arquivo do Storage: {str(e)}"}), 500
+    #LOGICA DE DESVINCULAR
+    try:
+        # Define o campo da mídia específica como nulo no banco de dados
+        doc_ref.update({
+            tipo_midia: None 
+        })
+        return jsonify({"mensagem": "Mídia removida com sucesso da tradução!"}), 200
+    except Exception as e:
+        return jsonify({"erro": f"Erro ao atualizar a tradução no banco: {str(e)}"}), 500

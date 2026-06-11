@@ -88,6 +88,7 @@ class DiscursoService:
             trad_data = trad_doc.to_dict()
             
             traducoes.append({
+                "id": trad_doc.id,
                 "texto": trad_data.get("texto"),
                 "imagem_url": trad_data.get("imagem_url", None),
                 "video_url": trad_data.get("video_url", None),
