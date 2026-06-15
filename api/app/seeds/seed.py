@@ -1,4 +1,5 @@
-from app.seeds import DiscursoCategoriaSeed, ReporteTipoSeed, UsuarioSeed, IdiomaSeed
+
+from app.seeds import IdiomaSeed, DiscursoCategoriaSeed, PerfilSeed, ReporteTipoSeed, UsuarioSeed
 
 def main():
     print("Iniciando seed do banco de dados...")
@@ -7,6 +8,9 @@ def main():
     IdiomaSeed.run()
     # ReporteTipoSeed.run()
     UsuarioSeed.run()
+    IdiomaSeed.run()
+    PerfilSeed.run()
+
 
     print("Seed finalizado com sucesso.")
 

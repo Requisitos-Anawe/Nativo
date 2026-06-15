@@ -1,13 +1,15 @@
 import math
 import pytz
+import uuid
 from app.services.DiscursoService import DiscursoService
 from app.services.TraducaoService import TraducaoService
 from app.middlewares.autenticar_jwt import autenticar_jwt
 from app.middlewares.verificar_professor import verificar_professor
+from app.middlewares.verificar_professor_admin import verificar_professor_admin
+from urllib.parse import urlparse, unquote
 from datetime import datetime
 from flask import Blueprint, request, jsonify, g
-from firebase_admin import firestore
-from datetime import datetime
+from firebase_admin import firestore, storage
 
 bp = Blueprint("traducao", __name__)
 db = firestore.client()
@@ -18,49 +20,13 @@ transaction = db.transaction()
 @verificar_professor
 def editar_traducao_discurso(traducao_id):
     """
-    Atualizar tradução e discurso
+    Atualizar tradução e discurso com suporte a multimídia
     ---
     tags:
       - Tradução
-    summary: Atualiza uma tradução e seu discurso associado
+    summary: Atualiza uma tradução, seu discurso associado e arquivos de mídia
     security:
       - Bearer: []
-    parameters:
-      - name: traducao_id
-        in: path
-        type: string
-        required: true
-        description: ID da tradução
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          required:
-            - traducao
-            - discurso_id
-          properties:
-            traducao:
-              type: object
-              required:
-                - discurso
-                - texto
-              properties:
-                discurso:
-                  type: string
-                  example: olá
-                texto:
-                  type: string
-                  example: hello
-            discurso_id:
-              type: string
-              example: Tujsjda823jndsa
-            discurso:
-              type: object
-              properties:
-                texto:
-                  type: string
-                  example: saudação informal
     responses:
       200:
         description: Atualizado com sucesso
@@ -71,35 +37,79 @@ def editar_traducao_discurso(traducao_id):
       500:
         description: Erro interno
     """
-    dados = request.get_json()
+    # Usando request.form para suportar o FormData do React Native
+    dados = request.form
+    
+    texto_discurso = dados.get("discurso")
+    texto_traducao = dados.get("traducao")
+    idioma_discurso = dados.get("idioma_discurso")
+    idioma_traducao = dados.get("idioma_traducao")
+    categoria = dados.get("categoria")
 
-    dados_traducao = dados.get("traducao")
-    dados_discurso = dados.get("discurso")
-    discurso_id = dados.get("discurso_id")
+    # Formatando strings se existirem
+    if texto_discurso: texto_discurso = texto_discurso.lower().strip()
+    if texto_traducao: texto_traducao = texto_traducao.lower().strip()
+    if idioma_discurso: idioma_discurso = idioma_discurso.lower().strip()
+    if idioma_traducao: idioma_traducao = idioma_traducao.lower().strip()
+    if categoria: categoria = categoria.lower().strip()
 
-    erros = []
-
-    if dados_discurso['idioma'] == dados_traducao['idioma']:
+    if idioma_discurso and idioma_traducao and idioma_discurso == idioma_traducao:
         return {"erro": "Os idiomas do discurso e da tradução devem ser diferentes."}, 400
 
     traducao = TraducaoService.buscar(traducao_id)
     if not traducao:
         return {"erro": "Tradução não encontrada"}, 404
 
-    discurso = DiscursoService.buscar_por_id(discurso_id)
-    if not discurso:
-        return {"erro": "Discurso não encontrado"}, 404
-    
-    if traducao["discurso_id"] != discurso_id:
-        return {"erro": "Discurso não pertence à tradução"}, 400
+    discurso_id = traducao.get("discurso_id")
+    if not discurso_id:
+        return {"erro": "Discurso vinculado não encontrado"}, 404
 
+    dados_traducao = {}
+    if texto_traducao: dados_traducao["texto"] = texto_traducao
+    if idioma_traducao: dados_traducao["idioma"] = idioma_traducao
+    if texto_discurso: dados_traducao["discurso"] = texto_discurso
+
+    dados_discurso = {}
+    if texto_discurso: dados_discurso["texto"] = texto_discurso
+    if idioma_discurso: dados_discurso["idioma"] = idioma_discurso
+    if categoria: dados_discurso["discurso_categoria"] = categoria
+
+    # Recuperando arquivos de multimídia
+    foto = request.files.get('foto')
+    video = request.files.get('video')
+    audio = request.files.get('audio')
+
+    try:
+        bucket = storage.bucket()
+        if foto and foto.filename != "":
+            blob_foto = bucket.blob(f"fotos/{uuid.uuid4()}_{foto.filename}")
+            blob_foto.upload_from_file(foto, content_type=foto.content_type)
+            blob_foto.make_public()
+            dados_traducao['imagem_url'] = blob_foto.public_url 
+
+        if video and video.filename != "":
+            blob_video = bucket.blob(f"traducoes/videos/{uuid.uuid4()}_{video.filename}")
+            blob_video.upload_from_file(video, content_type=video.content_type)
+            blob_video.make_public()
+            dados_traducao['video_url'] = blob_video.public_url
+
+        if audio and audio.filename != "":
+            blob_audio = bucket.blob(f"traducoes/audios/{uuid.uuid4()}_{audio.filename}")
+            blob_audio.upload_from_file(audio, content_type=audio.content_type)
+            blob_audio.make_public()
+            dados_traducao['audio_url'] = blob_audio.public_url
+    except Exception as e:
+        return jsonify({"erro": f"Erro no upload de arquivos: {str(e)}"}), 500
+
+    erros = []
+    
     if dados_traducao:
         try:
             TraducaoService.atualizar(traducao_id, dados_traducao)
         except Exception as e:
             erros.append(f"Erro na tradução: {str(e)}")
 
-    if dados_discurso and discurso_id:
+    if dados_discurso:
         try:
             DiscursoService.atualizar(discurso_id, dados_discurso)
         except Exception as e:
@@ -140,6 +150,9 @@ def buscar_traducao(traducao_id):
 
     discurso_ref = db.collection('discurso').document(traducao_doc.to_dict().get('discurso_id'))
     discurso_doc = discurso_ref.get()
+    
+    categoria = None
+    idiomaDiscurso = None
     if discurso_doc.exists:
         categoria = discurso_doc.to_dict().get('discurso_categoria')
         idiomaDiscurso = discurso_doc.to_dict().get('idioma')
@@ -256,39 +269,12 @@ def listar_traducao_usuario(usuario_id):
 @verificar_professor
 def cadastrar_traducao():
     """
-    Cadastrar nova tradução
+    Cadastrar nova tradução com multimídia
     ---
     security:
         - Bearer: []    
     tags:
         - Tradução
-    parameters:
-        - name: body          
-          in: body
-          schema:
-            type: object
-            required:
-              - discurso
-              - traducao
-              - idioma_discurso
-              - idioma_traducao
-              - categoria
-            properties:
-              discurso:
-                type: string
-                example: "Olá, como vai você?"
-              traducao:
-                type: string
-                example: "Hello, how are you?"
-              idioma_discurso:
-                type: string
-                example: "português"
-              idioma_traducao:
-                type: string
-                example: "inglês"
-              categoria:
-                type: string
-                example: "saudações"
     responses:
         201:
             description: Tradução cadastrada com sucesso    
@@ -299,20 +285,61 @@ def cadastrar_traducao():
     """
     usuario_id = g.get('usuario_id')
 
-    data = request.get_json()
-    discurso = data.get("discurso").lower()
-    traducao = data.get("traducao").lower()
-    idioma_discurso = data.get("idioma_discurso").lower()
-    idioma_traducao = data.get("idioma_traducao").lower()
-    categoria = data.get("categoria").lower()
+    # Voltando a usar request.form para permitir os arquivos do frontend
+    data = request.form
+    discurso = data.get("discurso")
+    traducao = data.get("traducao")
+    idioma_discurso = data.get("idioma_discurso")
+    idioma_traducao = data.get("idioma_traducao")
+    categoria = data.get("categoria")
+    discurso = data.get("discurso")
+    traducao = data.get("traducao")
+    idioma_discurso = data.get("idioma_discurso")
+    idioma_traducao = data.get("idioma_traducao")
+    categoria = data.get("categoria")
 
     if not all([discurso, traducao, idioma_discurso, idioma_traducao, categoria]):
-        return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
+        return jsonify({"erro": "Todos os campos de texto são obrigatórios"}), 400
     
+    discurso = discurso.lower().strip()
+    traducao = traducao.lower().strip()
+    idioma_discurso = idioma_discurso.lower().strip()
+    idioma_traducao = idioma_traducao.lower().strip()
+    categoria = categoria.lower().strip()
+
     if (idioma_discurso == idioma_traducao):
         return jsonify({"erro": "Os idiomas devem ser diferentes."}), 400
 
+    # Recupera os arquivos
+    foto = request.files.get('foto')
+    video = request.files.get('video')
+    audio = request.files.get('audio')
+
     try:
+        bucket = storage.bucket()
+        foto_url = None
+        video_url = None
+        audio_url = None
+
+        if foto and foto.filename != "":
+            blob_foto = bucket.blob(f"fotos/{uuid.uuid4()}_{foto.filename}")
+            blob_foto.upload_from_file(foto, content_type=foto.content_type)
+            blob_foto.make_public()
+            foto_url = blob_foto.public_url 
+
+        if video and video.filename != "":
+            blob_video = bucket.blob(f"traducoes/videos/{uuid.uuid4()}_{video.filename}")
+            blob_video.upload_from_file(video, content_type=video.content_type)
+            blob_video.make_public()
+            video_url = blob_video.public_url
+
+        if audio and audio.filename != "":
+            blob_audio = bucket.blob(f"traducoes/audios/{uuid.uuid4()}_{audio.filename}")
+            blob_audio.upload_from_file(audio, content_type=audio.content_type)
+            blob_audio.make_public()
+            audio_url = blob_audio.public_url
+
+        # Processamento do Discurso (Achatado como na develop)
         discursos_duplicados = db.collection("discurso") \
             .where("texto", "==", discurso) \
             .where("idioma", "==", idioma_discurso) \
@@ -331,20 +358,27 @@ def cadastrar_traducao():
             }
             discurso_ref.set(discurso_data)
 
-        # Criar tradução
+        # Criar tradução com as URLs de mídia inseridas
         traducao_data = {
             "texto": traducao,
             "data_criacao": datetime.now(pytz.timezone("America/Sao_Paulo")),
             "idioma": idioma_traducao,
             "discurso": discurso,
             "usuario_id": usuario_id,
-            "discurso_id": discurso_ref.id
+            "discurso_id": discurso_ref.id,
+            "imagem_url": foto_url,  
+            "video_url": video_url,   
+            "audio_url": audio_url
         }
         db.collection("traducao").document().set(traducao_data)
 
         return jsonify({"mensagem": "Tradução cadastrada com sucesso"}), 201
 
     except Exception as e:
+        print("====== ERRO CRÍTICO NO CADASTRO ======")
+        import traceback
+        traceback.print_exc() 
+        print("======================================")
         return jsonify({"erro": f"Erro ao cadastrar: {str(e)}"}), 500
 
 @bp.route("/traducao", methods=["GET"])
@@ -400,6 +434,7 @@ def listar_traducoes():
             usuario_id = traducao_data.get('usuario_id')
             usuario = db.collection('usuario').document(usuario_id).get() if usuario_id else None
 
+            # Garantindo que as mídias da sua branch também retornem
             resultados.append({
                 "id": doc.id,
                 "texto": traducao_data.get('texto'),
@@ -407,7 +442,10 @@ def listar_traducoes():
                 "idioma": traducao_data.get('idioma'),
                 "discurso": traducao_data.get('discurso'),
                 "discurso_id": traducao_data.get('discurso_id'),
-                'usuario': usuario.get('nome') if usuario and usuario.exists else None
+                'usuario': usuario.get('nome') if usuario and usuario.exists else None,
+                'imagem_url': traducao_data.get('imagem_url'),
+                'video_url': traducao_data.get('video_url'),
+                'audio_url': traducao_data.get('audio_url')
             })
 
         return jsonify({
@@ -457,3 +495,66 @@ def apagar_traducao(traducao_id):
 
     except Exception as e:
         return jsonify({"erro": f"Erro ao excluir tradução: {str(e)}"}), 500
+
+
+@bp.route('/traducao/<traducao_id>/remover-midia', methods=['PUT'])
+@autenticar_jwt
+@verificar_professor_admin
+def remover_midia(traducao_id):
+    body = request.get_json()
+    print(f"DEBUG: O que o Flask recebeu? {body}")
+    if not body:
+        return jsonify({"erro": "Corpo da requisição vazio"}), 400
+
+    tipo_midia = body.get('tipo_midia')
+    apagar_servidor = body.get('apagar_servidor', False)
+
+    if tipo_midia not in ['imagem_url', 'audio_url', 'video_url']:
+        return jsonify({"erro": "Tipo de mídia inválido"}), 400
+
+    doc_ref = db.collection("traducao").document(traducao_id)
+    doc = doc_ref.get()
+
+    if not doc.exists:
+        return jsonify({"erro": "Tradução não encontrada"}), 404
+
+    #LOGICA DE EXCLUSÃO PERMANENTE
+    url_midia = doc.to_dict().get(tipo_midia)
+    if apagar_servidor and url_midia:
+        try:
+            bucket = storage.bucket()
+            parsed_url = urlparse(url_midia)
+            caminho_blob = unquote(parsed_url.path).lstrip("/")
+            blob = bucket.blob(caminho_blob)
+            if blob.exists():
+                blob.delete()
+            
+            todas_traducoes = db.collection("traducao").stream()
+            
+            batch = db.batch()
+            contador = 0
+            
+            for doc_check in todas_traducoes:
+                dados = doc_check.to_dict()
+                valor_no_banco = dados.get(tipo_midia)
+                if valor_no_banco == url_midia:
+                    print(f"DEBUG: Encontrado match no documento: {doc_check.id}")
+                    ref = db.collection("traducao").document(doc_check.id)
+                    batch.update(ref, { tipo_midia: None })
+                    contador += 1
+            
+            if contador > 0:
+                batch.commit()
+            return jsonify({"mensagem": f"Mídia apagada e removida de {contador} tradução(ões)!"}), 200
+                    
+        except Exception as e:
+            return jsonify({"erro": f"Falha ao apagar arquivo do Storage: {str(e)}"}), 500
+    #LOGICA DE DESVINCULAR
+    try:
+        # Define o campo da mídia específica como nulo no banco de dados
+        doc_ref.update({
+            tipo_midia: None 
+        })
+        return jsonify({"mensagem": "Mídia removida com sucesso da tradução!"}), 200
+    except Exception as e:
+        return jsonify({"erro": f"Erro ao atualizar a tradução no banco: {str(e)}"}), 500
