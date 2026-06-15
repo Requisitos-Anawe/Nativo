@@ -14,6 +14,12 @@ from app.schemas.AtividadeSchema import (
 
 COLLECTION = "atividade"
 
+# PENDÊNCIA DE PR:
+# Definir este valor depois de teste de carga com usuários simultâneos,
+# latência alvo de 300ms e conectividade de 100kbps.
+# Quando definido, o backend passará a persistir max_alunos automaticamente.
+MAX_ALUNOS_SIMULTANEOS = None
+
 logger = logging.getLogger(__name__)
 audit_logger = logging.getLogger("audit.atividades")
 
@@ -90,6 +96,21 @@ def _validar_patch(payload):
     return schema_patch.load(payload)
 
 
+def _aplicar_max_alunos_constante(dados):
+    """
+    max_alunos não é informado pelo professor.
+
+    Enquanto o valor oficial estiver pendente, o campo não é persistido.
+    Quando MAX_ALUNOS_SIMULTANEOS for definido pela equipe técnica, ele será salvo automaticamente.
+    """
+    dados.pop("max_alunos", None)
+
+    if MAX_ALUNOS_SIMULTANEOS is not None:
+        dados["max_alunos"] = MAX_ALUNOS_SIMULTANEOS
+
+    return dados
+
+
 def _validar_usuario_professor(usuario_id):
     usuario_ref = _usuario_ref(usuario_id)
     usuario_doc = usuario_ref.get()
@@ -150,6 +171,15 @@ def _deduplicar_refs(refs):
 
 
 def _montar_professores_refs(professor_id, professores_ids=None, refs_obrigatorias=None):
+    """
+    Monta a lista de professores associados.
+
+    Regras:
+    - o professor autenticado sempre entra;
+    - professores_ids representa professores adicionais enviados pelo cliente;
+    - refs_obrigatorias preserva criador/professor legado em updates;
+    - todos precisam existir e possuir perfil professor.
+    """
     ids = [professor_id]
 
     if professores_ids:
@@ -290,6 +320,7 @@ def buscar_atividade(atividade_id, professor_id):
 def criar_atividade(payload, professor_id):
     dados = _validar_put(payload)
     professores_ids = dados.pop("professores_ids", None)
+    dados = _aplicar_max_alunos_constante(dados)
 
     agora = _agora()
     doc_ref = db.collection(COLLECTION).document()
@@ -308,10 +339,11 @@ def criar_atividade(payload, professor_id):
     doc_ref.set(dados_firestore)
 
     audit_logger.info(
-        "atividade_criada professor_id=%s atividade_id=%s professores=%s",
+        "atividade_criada professor_id=%s atividade_id=%s professores=%s questoes=%s",
         professor_id,
         doc_ref.id,
         [professor.id for professor in professores_refs],
+        len(dados_firestore.get("questoes", [])),
     )
 
     return {
@@ -323,6 +355,7 @@ def criar_atividade(payload, professor_id):
 def editar_atividade_put(atividade_id, payload, professor_id):
     dados_validados = _validar_put(payload)
     professores_ids = dados_validados.pop("professores_ids", None)
+    dados_validados = _aplicar_max_alunos_constante(dados_validados)
 
     doc_ref = db.collection(COLLECTION).document(atividade_id)
     transaction = db.transaction()
@@ -375,6 +408,7 @@ def editar_atividade_patch(atividade_id, payload, professor_id):
     dados_validados = _validar_patch(payload)
     professores_ids_enviados = "professores_ids" in dados_validados
     professores_ids = dados_validados.pop("professores_ids", None)
+    dados_validados = _aplicar_max_alunos_constante(dados_validados)
 
     doc_ref = db.collection(COLLECTION).document(atividade_id)
     transaction = db.transaction()
@@ -412,7 +446,7 @@ def editar_atividade_patch(atividade_id, payload, professor_id):
         professor_id,
         atividade_id,
         list(dados_validados.keys()) + (["professores_ids"] if professores_ids_enviados else []),
-        )
+    )
 
     return {
         "mensagem": "Atividade atualizada com sucesso",

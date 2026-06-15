@@ -8,42 +8,21 @@ CAMPOS_PROTEGIDOS = {
     "usuario_criador",
     "data_criacao",
     "data_atualizacao",
+    "max_alunos",
 }
 
 
-class BaseAtividadeSchema(Schema):
-    """
-    Schema fechado para atividade educacional.
-
-    Campos aceitos pelo cliente:
-    - titulo: obrigatório no POST/PUT;
-    - enunciado: obrigatório no POST/PUT;
-    - alternativas: obrigatório no POST/PUT, mínimo 2;
-    - descricao: opcional;
-    - max_alunos: opcional;
-    - professores_ids: opcional, lista de IDs de professores adicionais.
-    """
-
+class QuestaoSchema(Schema):
     class Meta:
         unknown = RAISE
-
-    titulo = fields.Str(
-        required=True,
-        validate=validate.Length(min=1, max=120),
-        error_messages={
-            "required": "Título é obrigatório.",
-            "invalid": "Título deve ser texto.",
-            "null": "Título não pode ser nulo.",
-        },
-    )
 
     enunciado = fields.Str(
         required=True,
         validate=validate.Length(min=1, max=1000),
         error_messages={
-            "required": "Enunciado é obrigatório.",
-            "invalid": "Enunciado deve ser texto.",
-            "null": "Enunciado não pode ser nulo.",
+            "required": "Enunciado da questão é obrigatório.",
+            "invalid": "Enunciado da questão deve ser texto.",
+            "null": "Enunciado da questão não pode ser nulo.",
         },
     )
 
@@ -64,21 +43,103 @@ class BaseAtividadeSchema(Schema):
         },
     )
 
+    alternativa_correta = fields.Int(
+        required=True,
+        validate=validate.Range(min=0, max=9),
+        error_messages={
+            "required": "Alternativa correta é obrigatória.",
+            "invalid": "Alternativa correta deve ser um índice inteiro.",
+            "null": "Alternativa correta não pode ser nula.",
+        },
+    )
+
+    @pre_load
+    def normalizar_questao(self, data, **kwargs):
+        if not isinstance(data, dict):
+            return data
+
+        normalizado = dict(data)
+
+        enunciado = normalizado.get("enunciado")
+        if isinstance(enunciado, str):
+            normalizado["enunciado"] = enunciado.strip()
+
+        alternativas = normalizado.get("alternativas")
+        if isinstance(alternativas, list):
+            normalizado["alternativas"] = [
+                item.strip() if isinstance(item, str) else item
+                for item in alternativas
+            ]
+
+        return normalizado
+
+    @validates_schema
+    def validar_questao(self, data, **kwargs):
+        alternativas = data.get("alternativas") or []
+        alternativa_correta = data.get("alternativa_correta")
+
+        alternativas_normalizadas = [
+            alternativa.strip().lower()
+            for alternativa in alternativas
+            if isinstance(alternativa, str)
+        ]
+
+        if len(alternativas_normalizadas) != len(set(alternativas_normalizadas)):
+            raise ValidationError({
+                "alternativas": ["As alternativas não podem conter textos duplicados."]
+            })
+
+        if alternativa_correta is not None and alternativa_correta >= len(alternativas):
+            raise ValidationError({
+                "alternativa_correta": [
+                    "Alternativa correta deve apontar para uma alternativa existente."
+                ]
+            })
+
+
+class BaseAtividadeSchema(Schema):
+    """
+    Schema fechado para atividade educacional com múltiplas questões.
+
+    Campos aceitos pelo cliente:
+    - titulo: obrigatório no POST/PUT;
+    - questoes: obrigatório no POST/PUT;
+    - descricao: opcional;
+    - professores_ids: opcional, lista de IDs de professores adicionais.
+
+    O campo max_alunos é técnico e será definido pela equipe técnica depois de teste de carga.
+    """
+
+    class Meta:
+        unknown = RAISE
+
+    titulo = fields.Str(
+        required=True,
+        validate=validate.Length(min=1, max=120),
+        error_messages={
+            "required": "Título é obrigatório.",
+            "invalid": "Título deve ser texto.",
+            "null": "Título não pode ser nulo.",
+        },
+    )
+
+    questoes = fields.List(
+        fields.Nested(QuestaoSchema),
+        required=True,
+        validate=validate.Length(min=1, max=30),
+        error_messages={
+            "required": "A atividade deve conter ao menos uma questão.",
+            "invalid": "Questões devem ser enviadas em uma lista.",
+            "null": "Questões não podem ser nulas.",
+        },
+    )
+
     descricao = fields.Str(
         required=False,
         allow_none=True,
         validate=validate.Length(max=1000),
         error_messages={
             "invalid": "Descrição deve ser texto.",
-        },
-    )
-
-    max_alunos = fields.Int(
-        required=False,
-        allow_none=True,
-        validate=validate.Range(min=1, max=500),
-        error_messages={
-            "invalid": "Máximo de alunos deve ser um número inteiro.",
         },
     )
 
@@ -105,20 +166,13 @@ class BaseAtividadeSchema(Schema):
 
         normalizado = dict(data)
 
-        for campo in ["titulo", "enunciado", "descricao"]:
+        for campo in ["titulo", "descricao"]:
             valor = normalizado.get(campo)
             if isinstance(valor, str):
                 normalizado[campo] = valor.strip()
 
         if normalizado.get("descricao") == "":
             normalizado["descricao"] = None
-
-        alternativas = normalizado.get("alternativas")
-        if isinstance(alternativas, list):
-            normalizado["alternativas"] = [
-                item.strip() if isinstance(item, str) else item
-                for item in alternativas
-            ]
 
         professores_ids = normalizado.get("professores_ids")
         if isinstance(professores_ids, list):
@@ -131,22 +185,6 @@ class BaseAtividadeSchema(Schema):
 
     @validates_schema
     def validar_regras_de_negocio(self, data, **kwargs):
-        alternativas = data.get("alternativas")
-
-        if alternativas is not None:
-            alternativas_normalizadas = [
-                alternativa.strip().lower()
-                for alternativa in alternativas
-                if isinstance(alternativa, str)
-            ]
-
-            if len(alternativas_normalizadas) != len(set(alternativas_normalizadas)):
-                raise ValidationError({
-                    "alternativas": [
-                        "As alternativas não podem conter textos duplicados."
-                    ]
-                })
-
         professores_ids = data.get("professores_ids")
 
         if professores_ids is not None:
@@ -165,20 +203,12 @@ class BaseAtividadeSchema(Schema):
 
 
 class AtividadeSchema(BaseAtividadeSchema):
-    """
-    Schema usado em POST e PUT.
-
-    Exige todos os campos obrigatórios da atividade.
-    """
+    """Schema usado em POST e PUT."""
     pass
 
 
 class AtividadePatchSchema(BaseAtividadeSchema):
-    """
-    Schema usado em PATCH.
-
-    Todos os campos são opcionais, mas se enviados continuam sendo validados.
-    """
+    """Schema usado em PATCH. Todos os campos são opcionais."""
 
     titulo = fields.Str(
         required=False,
@@ -190,30 +220,14 @@ class AtividadePatchSchema(BaseAtividadeSchema):
         },
     )
 
-    enunciado = fields.Str(
+    questoes = fields.List(
+        fields.Nested(QuestaoSchema),
         required=False,
-        validate=validate.Length(min=1, max=1000),
+        validate=validate.Length(min=1, max=30),
         allow_none=False,
         error_messages={
-            "invalid": "Enunciado deve ser texto.",
-            "null": "Enunciado não pode ser nulo.",
-        },
-    )
-
-    alternativas = fields.List(
-        fields.Str(
-            validate=validate.Length(min=1, max=300),
-            error_messages={
-                "invalid": "Cada alternativa deve ser texto.",
-                "null": "Alternativas não podem conter valores nulos.",
-            },
-        ),
-        required=False,
-        validate=validate.Length(min=2, max=10),
-        allow_none=False,
-        error_messages={
-            "invalid": "Alternativas devem ser uma lista.",
-            "null": "Alternativas não podem ser nulas.",
+            "invalid": "Questões devem ser enviadas em uma lista.",
+            "null": "Questões não podem ser nulas.",
         },
     )
 
@@ -223,15 +237,6 @@ class AtividadePatchSchema(BaseAtividadeSchema):
         validate=validate.Length(max=1000),
         error_messages={
             "invalid": "Descrição deve ser texto.",
-        },
-    )
-
-    max_alunos = fields.Int(
-        required=False,
-        allow_none=True,
-        validate=validate.Range(min=1, max=500),
-        error_messages={
-            "invalid": "Máximo de alunos deve ser um número inteiro.",
         },
     )
 

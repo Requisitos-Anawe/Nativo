@@ -18,7 +18,7 @@ from app.services.AtividadeService import (
 bp = Blueprint("atividades", __name__)
 logger = logging.getLogger(__name__)
 
-MAX_PAYLOAD_BYTES = 32 * 1024
+MAX_PAYLOAD_BYTES = 64 * 1024
 
 
 def _json_body():
