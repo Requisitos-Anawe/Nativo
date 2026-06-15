@@ -8,6 +8,7 @@ from app.routes.IdiomaRoute import bp as idioma_bp
 from app.routes.CategoriaRoute import bp as categoria_bp
 from app.routes.PerfilRoute import bp as perfil_bp
 from app.routes.AtividadeRoute import bp as atividade_bp
+from app.routes.PraticaAtividadeRoute import bp as pratica_atividade_bp
 
 
 def create_app():
@@ -21,5 +22,6 @@ def create_app():
     app.register_blueprint(categoria_bp, url_prefix="/api")
     app.register_blueprint(perfil_bp, url_prefix="/api")
     app.register_blueprint(atividade_bp, url_prefix="/api")
+    app.register_blueprint(pratica_atividade_bp, url_prefix="/api")
 
     return app

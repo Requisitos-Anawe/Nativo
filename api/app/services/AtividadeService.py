@@ -329,6 +329,7 @@ def criar_atividade(payload, professor_id):
 
     dados_firestore = {
         **dados,
+        "liberada": True,
         "professor_associado": professor_ref,
         "professores_associados": professores_refs,
         "usuario_criador": professor_ref,
