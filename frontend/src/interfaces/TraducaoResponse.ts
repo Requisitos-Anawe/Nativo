@@ -5,4 +5,7 @@ interface TraducaoResponse {
     idioma: string,
     usuario: string,
     data_criacao: string
+    imagem_url?: string
+    video_url?: string
+    audio_url?: string
 }

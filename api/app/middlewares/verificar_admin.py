@@ -11,14 +11,7 @@ def verificar_admin(f):
         if not usuario_doc.exists:
             return jsonify({'erro': 'Usuário não encontrado'}), 404
 
-        usuario = usuario_doc.to_dict()
-        perfil_ref = usuario.get('perfil')
-        if not perfil_ref:
-            return jsonify({'erro': 'Perfil do usuário não encontrado'}), 403
-
-        perfil_doc = perfil_ref.get()
-        perfil = perfil_doc.to_dict()
-        descricao = perfil.get('descricao', '').lower()
+        descricao = usuario_doc.get('perfil').lower()
 
         if descricao not in ['admin', 'administrador']:
             return jsonify({'erro': 'Acesso negado: apenas administradores'}), 403
