@@ -6,6 +6,8 @@ import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api";
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import Erro from "../../components/Erro";
+import type {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
+import type {ProfessorTabParamList} from '../../navigation/NavigationTypes';
 
 type RootStackParamList = {
   TraslationCreate: {
@@ -26,7 +28,8 @@ export default function TraslationCreate(){
     const [textoTraducao, setTextoTraducao] = useState('');
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState('');
-    const navigation = useNavigation();
+    const navigation =
+        useNavigation<BottomTabNavigationProp<ProfessorTabParamList, 'AddTraducao'>>();
 
     useFocusEffect(
         useCallback(() => {

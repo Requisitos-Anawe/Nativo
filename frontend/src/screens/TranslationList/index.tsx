@@ -8,9 +8,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage"
 import Icon from "react-native-vector-icons/Ionicons"
 import { useFocusEffect, useNavigation } from "@react-navigation/native"
 import Erro from "../../components/Erro"
+import type {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
+import type {ProfessorTabParamList} from '../../navigation/NavigationTypes';
 
 export default function TraslationList(){
-    const navigation = useNavigation();
+    const navigation =
+        useNavigation<BottomTabNavigationProp<ProfessorTabParamList>>();
 
     const [idiomaDiscurso, setIdiomaDiscurso] = useState<IdiomaInterface|null>(null);
     const [textoDiscurso, setTextoDiscurso] = useState('');
