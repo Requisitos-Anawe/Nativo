@@ -7,9 +7,6 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 
-import IndigenaVetorizada from '../../../assets/images/IndigenaVetorizada.svg';
-import FolhaVetorizada from '../../../assets/images/FolhaVetorizada.svg';
-
 import { FotoPlayer } from '../../components/FotoPlayer';
 import { AudioPlayer } from '../../components/AudioPlayer';
 import { VideoPlayer } from '../../components/VideoPlayer';
@@ -30,7 +27,7 @@ function Home() {
     const [categoria, setCategoria] = useState('');
     const [traducao, setTraducao] = useState<Traducao[]>([]);
     const [carregando, setCarregando] = useState(false);
-    
+
     const navigation = useNavigation();
     const isFocused = useIsFocused();
     const { user } = useAuth();
@@ -56,7 +53,7 @@ function Home() {
     const temPermissaoEdicao = user?.perfil === 'professor' || user?.perfil === 'administrador';
     const handleTraduzir = async () => {
         if (!texto.trim()) return;
-        
+
         try {
             setCarregando(true);
             setTraducao([])
@@ -135,16 +132,16 @@ function Home() {
     return (
         <SafeAreaView style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
-                
+
                 {/* Seletores de Idioma */}
                 <View style={styles.languageContainer}>
                     <View style={styles.languageDropdown}>
                         <Text style={styles.languageText}>De</Text>
                         <Icon name="chevron-down" size={16} color="#000" />
                     </View>
-                    
+
                     <Icon name="swap-horizontal" size={20} color="#000" />
-                    
+
                     <View style={styles.languageDropdown}>
                         <Text style={styles.languageText}>Para</Text>
                         <Icon name="chevron-down" size={16} color="#000" />
@@ -170,9 +167,9 @@ function Home() {
 
                 {/* Botão Traduzir */}
                 <View style={styles.actions}>
-                   <TouchableOpacity 
+                    <TouchableOpacity
                         style={styles.button}
-                        onPress={handleTraduzir} 
+                        onPress={handleTraduzir}
                         disabled={carregando}
                     >
                         <Text style={styles.textButton}>{carregando ? "Traduzindo..." : "Traduzir"}</Text>
@@ -187,13 +184,13 @@ function Home() {
                         </Text>
                     </View>
                 )}
-                
+
                 {traducao.map((trad, index) => (
                     <View key={trad.id || index} style={[styles.outputContainer, { marginBottom: index === traducao.length - 1 ? 30 : 15 }]}>
                         <Text style={[styles.outputText, { color: '#333' }]}>
                             {trad.texto}
                         </Text>
-                        
+
                         <View style={styles.outputActions}>
                             <TouchableOpacity onPress={() => copiarParaClipboard(trad.texto)}>
                                 <Icon name="copy-outline" size={22} color="#000" />
@@ -242,20 +239,10 @@ function Home() {
                     </View>
                 ))}
 
-                {/* Gráficos da parte inferior */}
-                <View style={styles.graphicsContainer}>
-                    <View style={styles.graphicBoxRed}>
-                        <IndigenaVetorizada width={80} height={80} />
-                    </View>
-                    <View style={styles.graphicBoxGreen}>
-                        <FolhaVetorizada width={80} height={80} />
-                    </View>
-                </View>
-
             </ScrollView>
 
             {/* Botão Info Flutuante */}
-            <TouchableOpacity 
+            <TouchableOpacity
                 style={styles.infoButton}
                 onPress={() => navigation.navigate('Informations' as never)}
             >

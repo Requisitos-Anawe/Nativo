@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import styles from './styles';
+import { useAuth } from "../../contexts/AuthContext";
 
 // Imagens
 import IndigenaVetorizada from '../../../assets/images/IndigenaVetorizada.svg';
@@ -13,6 +14,7 @@ export default function Perfil() {
     const insets = useSafeAreaInsets();
     const navigation = useNavigation();
     const isFocused = useIsFocused();
+    const { user } = useAuth();
 
     useLayoutEffect(() => {
         if (isFocused) {
@@ -42,8 +44,8 @@ export default function Perfil() {
                     </TouchableOpacity>
                 </View>
 
-                <Text style={styles.userName}>Nome do Usuário</Text>
-                <Text style={styles.userEmail}>usuário@gmail.com</Text>
+                <Text style={styles.userName}>{user?.nome || 'Nome do Usuário'}</Text>
+                <Text style={styles.userEmail}>{user?.email || 'usuário@gmail.com'}</Text>
             </View>
 
             <ScrollView

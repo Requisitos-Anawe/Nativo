@@ -5,8 +5,8 @@ import { BottomTabBarProps, createBottomTabNavigator } from '@react-navigation/b
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Icon from "react-native-vector-icons/Ionicons";
 
-import Home from "../screens/Home";
-import Perfil from "../screens/Perfil";
+import HomeStack from "./HomeStack";
+import PerfilStack from "./PerfilStack";
 
 const { width } = Dimensions.get('window');
 
@@ -176,8 +176,8 @@ export default function UserTabs() {
         },
       })}
     >
-      <Tab.Screen name="Tradutor" component={Home} />
-      <Tab.Screen name="Perfil" component={Perfil} />
+      <Tab.Screen name="Tradutor" component={HomeStack} />
+      <Tab.Screen name="Perfil" component={PerfilStack} />
     </Tab.Navigator>
   );
 }
