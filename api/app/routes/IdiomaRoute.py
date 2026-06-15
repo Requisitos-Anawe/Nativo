@@ -1,7 +1,7 @@
 
 from flask import Blueprint, jsonify
+from app.services.FirestoreUtils import listar_documentos
 from app.middlewares.autenticar_jwt import autenticar_jwt
-from app.firebase import db
 
 bp = Blueprint('idiomas', __name__)
 
@@ -10,13 +10,16 @@ COLLECTION = 'idioma'
 @bp.route('/idiomas', methods=['GET'])
 @autenticar_jwt
 def listar():
-    idiomas_ref = db.collection(COLLECTION).order_by("nome")
-    docs = idiomas_ref.stream()
-
-    idiomas = []
-    for doc in docs:
-        idioma = doc.to_dict()
-        idioma['id'] = doc.id
-        idiomas.append(idioma)
-     
+    """
+    Listar idiomas
+    ---
+    security:
+      - Bearer: []
+    tags:
+        - Idiomas
+    responses:
+        200:
+            description: Retorna lista de idiomas
+    """
+    idiomas = listar_documentos(COLLECTION, "descricao")
     return jsonify(idiomas)

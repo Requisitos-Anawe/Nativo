@@ -323,3 +323,7 @@ fabric.properties
 !/gradle/wrapper/gradle-wrapper.jar
 
 # End of https://www.toptal.com/developers/gitignore/api/androidstudio,flask,firebase,venv
+__pycache__/
+*.pyc
+*.pyo
+*.pyd

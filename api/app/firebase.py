@@ -5,7 +5,12 @@ from dotenv import load_dotenv
 from firebase_admin import credentials, firestore, storage
 
 load_dotenv()
-cred_json = os.environ.get("FIREBASE_KEY_JSON")
+if os.getenv("FLASK_DEBUG") == "1":
+    cred_json = os.environ.get("FIREBASE_KEY_JSON_HML")
+    print("####### AMBIENTE DE DESENVOLVIMENTO #######")
+else:
+    cred_json = os.environ.get("FIREBASE_KEY_JSON")
+
 if not cred_json:
     raise RuntimeError("A variável FIREBASE_KEY_JSON não está definida!")
 

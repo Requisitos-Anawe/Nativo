@@ -4,90 +4,83 @@ from google.cloud.firestore_v1.base_query import FieldFilter
 class DiscursoService:
 
     @staticmethod
+    def buscar_por_id(discurso_id):
+        doc = db.collection("discurso").document(discurso_id).get()
+        if doc.exists:
+            return {"id": doc.id, **doc.to_dict()}
+        return None
+
+    @staticmethod
+    def atualizar(discurso_id, dados_discurso):
+        try:
+            discurso_ref = db.collection("discurso").document(discurso_id)
+            discurso_ref.update(dados_discurso)
+            return {"id": discurso_id, **dados_discurso}, None
+        except Exception as e:
+            return None, f"Erro ao atualizar discurso: {str(e)}"
+
+    @staticmethod
     def buscar_discurso_e_traducao_por_texto(texto_busca, idioma_discurso=None):
-        query = db.collection("discurso")
-        collection = query
-        idioma_doc = None
+        collection = db.collection("discurso")
 
         if idioma_discurso:
-            idioma_docs = db.collection("idioma").where("nome", "==", idioma_discurso).stream()
-            idioma_doc = next(idioma_docs, None)
-            if not idioma_doc:
-                return None, "Idioma informado não existe."
-            collection = collection.where("idioma", "==", idioma_doc.reference)
+            collection = collection.where("idioma", "==", idioma_discurso)
 
         discursos_query = collection.where(filter=FieldFilter("texto", "==", texto_busca)).stream()
         discurso_doc = next(discursos_query, None)
 
         if not discurso_doc:
-            outras_traducoes = DiscursoService.busca_discurso_nas_traducoes(texto_busca,idioma_doc)
+            outras_traducoes = DiscursoService.busca_discurso_nas_traducoes(texto_busca,idioma_discurso)
             if not outras_traducoes:
                 return None, "Discurso não encontrado."
             else:
                 return outras_traducoes, None
 
-        # se achar o discurso busca a categoria do mesmo
-        discurso_data = discurso_doc.to_dict()
-        categoria_nome = DiscursoService.get_categoria(discurso_data.get("discurso_categoria"))
-
-        # acha traducao do discurso
         traducoes = DiscursoService.busca_traducoes(discurso_doc.id)
 
         if not traducoes:
             return None, "Tradução não encontrada"
 
         resultados = {
-            "discurso": discurso_data.get("texto"),
-            "categoria": categoria_nome,
+            "discurso": discurso_doc.get("texto"),
+            "categoria": discurso_doc.get("discurso_categoria"),
             "traducao": traducoes
         }
 
         return resultados, None
-    
-    @staticmethod
-    def get_categoria(categoria_ref):
-        if categoria_ref:
-            categoria_doc = categoria_ref.get()
-            if categoria_doc.exists:
-                return categoria_doc.to_dict().get("descricao")
-        else:
-            return "Não foi possível encontrar a categoria"
 
     # busca alternativa do texto nas traducoes
     @staticmethod
-    def busca_discurso_nas_traducoes(texto_busca,idioma_doc):
+    def busca_discurso_nas_traducoes(texto_busca,idioma):
         query = db.collection("traducao")
-        if idioma_doc:
-            query = query.where("idioma", "==", idioma_doc.reference)
+        if idioma:
+            query = query.where("idioma", "==", idioma)
         traducao_query = query.where(filter=FieldFilter("texto", "==", texto_busca)).stream()
         traducao_doc = next(traducao_query, None)
-
         if not traducao_doc:
             return None
         
         traducao_data = traducao_doc.to_dict()
 
         # retorna o discurso correspondente + categoria
-        discurso_ref = traducao_data.get("discurso")
-        discurso_doc = discurso_ref.get()
+        discurso_doc = db.collection("discurso").document(traducao_data.get("discurso_id")).get()
         if discurso_doc.exists:
             discurso_data = discurso_doc.to_dict()
-            categoria_nome = DiscursoService.get_categoria(discurso_data.get("discurso_categoria"))
             
         resumo = {
             "discurso": traducao_data.get("texto"),
-            "categoria": categoria_nome,
+            "categoria": discurso_doc.get("discurso_categoria"),
+            "imagem_url": traducao_data.get("imagem_url", None),
+            "video_url": traducao_data.get("video_url", None),
+            "audio_url": traducao_data.get("audio_url", None),
             "traducao": [ {"texto": discurso_data.get("texto")} ]
         }
 
         return resumo
 
-    
     @staticmethod
     def busca_traducoes(discurso_id):
-        traducao_query = db.collection("traducao").where(filter=FieldFilter(
-            "discurso", "==", db.document(f"discurso/{discurso_id}")
-        )).stream()
+        traducao_query = db.collection("traducao").where("discurso_id", "==", discurso_id).stream()
 
         # para cada traducao retorna texto
         traducoes = []
@@ -95,7 +88,11 @@ class DiscursoService:
             trad_data = trad_doc.to_dict()
             
             traducoes.append({
-                "texto": trad_data.get("texto")
+                "id": trad_doc.id,
+                "texto": trad_data.get("texto"),
+                "imagem_url": trad_data.get("imagem_url", None),
+                "video_url": trad_data.get("video_url", None),
+                "audio_url": trad_data.get("audio_url", None)
             })
 
         return traducoes

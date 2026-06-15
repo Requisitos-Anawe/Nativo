@@ -1,303 +1,411 @@
 import math
 import pytz
+import uuid
+from app.services.DiscursoService import DiscursoService
+from app.services.TraducaoService import TraducaoService
 from app.middlewares.autenticar_jwt import autenticar_jwt
 from app.middlewares.verificar_professor import verificar_professor
+from app.middlewares.verificar_professor_admin import verificar_professor_admin
+from urllib.parse import urlparse, unquote
 from datetime import datetime
 from flask import Blueprint, request, jsonify, g
-from firebase_admin import firestore
-from datetime import datetime
+from firebase_admin import firestore, storage
 
 bp = Blueprint("traducao", __name__)
 db = firestore.client()
 transaction = db.transaction()
 
+@bp.route('/traducao/<traducao_id>/com-discurso', methods=['PUT'])
+@autenticar_jwt
+@verificar_professor
+def editar_traducao_discurso(traducao_id):
+    """
+    Atualizar tradução e discurso com suporte a multimídia
+    ---
+    tags:
+      - Tradução
+    summary: Atualiza uma tradução, seu discurso associado e arquivos de mídia
+    security:
+      - Bearer: []
+    responses:
+      200:
+        description: Atualizado com sucesso
+      400:
+        description: Erro de validação
+      401:
+        description: Não autorizado
+      500:
+        description: Erro interno
+    """
+    # Usando request.form para suportar o FormData do React Native
+    dados = request.form
+    
+    texto_discurso = dados.get("discurso")
+    texto_traducao = dados.get("traducao")
+    idioma_discurso = dados.get("idioma_discurso")
+    idioma_traducao = dados.get("idioma_traducao")
+    categoria = dados.get("categoria")
+
+    # Formatando strings se existirem
+    if texto_discurso: texto_discurso = texto_discurso.lower().strip()
+    if texto_traducao: texto_traducao = texto_traducao.lower().strip()
+    if idioma_discurso: idioma_discurso = idioma_discurso.lower().strip()
+    if idioma_traducao: idioma_traducao = idioma_traducao.lower().strip()
+    if categoria: categoria = categoria.lower().strip()
+
+    if idioma_discurso and idioma_traducao and idioma_discurso == idioma_traducao:
+        return {"erro": "Os idiomas do discurso e da tradução devem ser diferentes."}, 400
+
+    traducao = TraducaoService.buscar(traducao_id)
+    if not traducao:
+        return {"erro": "Tradução não encontrada"}, 404
+
+    discurso_id = traducao.get("discurso_id")
+    if not discurso_id:
+        return {"erro": "Discurso vinculado não encontrado"}, 404
+
+    dados_traducao = {}
+    if texto_traducao: dados_traducao["texto"] = texto_traducao
+    if idioma_traducao: dados_traducao["idioma"] = idioma_traducao
+    if texto_discurso: dados_traducao["discurso"] = texto_discurso
+
+    dados_discurso = {}
+    if texto_discurso: dados_discurso["texto"] = texto_discurso
+    if idioma_discurso: dados_discurso["idioma"] = idioma_discurso
+    if categoria: dados_discurso["discurso_categoria"] = categoria
+
+    # Recuperando arquivos de multimídia
+    foto = request.files.get('foto')
+    video = request.files.get('video')
+    audio = request.files.get('audio')
+
+    try:
+        bucket = storage.bucket()
+        if foto and foto.filename != "":
+            blob_foto = bucket.blob(f"fotos/{uuid.uuid4()}_{foto.filename}")
+            blob_foto.upload_from_file(foto, content_type=foto.content_type)
+            blob_foto.make_public()
+            dados_traducao['imagem_url'] = blob_foto.public_url 
+
+        if video and video.filename != "":
+            blob_video = bucket.blob(f"traducoes/videos/{uuid.uuid4()}_{video.filename}")
+            blob_video.upload_from_file(video, content_type=video.content_type)
+            blob_video.make_public()
+            dados_traducao['video_url'] = blob_video.public_url
+
+        if audio and audio.filename != "":
+            blob_audio = bucket.blob(f"traducoes/audios/{uuid.uuid4()}_{audio.filename}")
+            blob_audio.upload_from_file(audio, content_type=audio.content_type)
+            blob_audio.make_public()
+            dados_traducao['audio_url'] = blob_audio.public_url
+    except Exception as e:
+        return jsonify({"erro": f"Erro no upload de arquivos: {str(e)}"}), 500
+
+    erros = []
+    
+    if dados_traducao:
+        try:
+            TraducaoService.atualizar(traducao_id, dados_traducao)
+        except Exception as e:
+            erros.append(f"Erro na tradução: {str(e)}")
+
+    if dados_discurso:
+        try:
+            DiscursoService.atualizar(discurso_id, dados_discurso)
+        except Exception as e:
+            erros.append(f"Erro no discurso: {str(e)}")
+
+    if erros:
+        return jsonify({"erros": erros}), 400
+
+    return jsonify({"mensagem": "Atualizado com sucesso"}), 200
+
 @bp.route('/traducao/<traducao_id>', methods=['GET'])
 @autenticar_jwt
 @verificar_professor
 def buscar_traducao(traducao_id):
+    """
+    Buscar tradução por ID
+    ---
+    security:
+        - Bearer: []
+    tags:
+        - Tradução
+    parameters:
+        - name: traducao_id
+          in: path
+          type: string
+          required: true
+    responses:
+        200:
+            description: Retorna tradução encontrada
+        404:
+            description: Tradução não encontrada
+        500:
+            description: Erro interno
+    """
     traducao_doc = db.collection('traducao').document(traducao_id).get()
     if not traducao_doc.exists:
         return jsonify({'erro': 'Tradução não encontrada'}), 404
 
+    discurso_ref = db.collection('discurso').document(traducao_doc.to_dict().get('discurso_id'))
+    discurso_doc = discurso_ref.get()
+    
+    categoria = None
+    idiomaDiscurso = None
+    if discurso_doc.exists:
+        categoria = discurso_doc.to_dict().get('discurso_categoria')
+        idiomaDiscurso = discurso_doc.to_dict().get('idioma')
+
     traducao_data = traducao_doc.to_dict()
+    if categoria:
+        traducao_data['categoria'] = categoria
+    if idiomaDiscurso:
+        traducao_data['idiomaDiscurso'] = idiomaDiscurso
     traducao_data['id'] = traducao_doc.id
 
-    # Substituir campos DocumentReference por IDs
-    traducao_data['usuario'] = traducao_data['usuario'].id if traducao_data.get('usuario') else None
-
-    # Buscar idioma associado (traducao)
-    idioma_traducao_ref = db.collection('idioma').document(traducao_data['idioma'].id)
-    idioma_traducao_doc = idioma_traducao_ref.get()
-    if(idioma_traducao_doc):
-        traducao_data['idioma'] = idioma_traducao_doc.to_dict()
-        traducao_data['idioma']['id'] = idioma_traducao_doc.id
-    else:
-        return jsonify({'erro': 'Não foi possível encontrar o idioma da tradução'}), 404
-
-    # Buscar discurso associado
-    discurso_ref = traducao_data.get('discurso')
-    if discurso_ref:
-        discurso_doc = discurso_ref.get()
-        if discurso_doc.exists:
-            discurso_data = discurso_doc.to_dict()
-            discurso_data['id'] = discurso_doc.id
-
-            # Substituir DocumentReference em discurso
-            discurso_data['usuario'] = discurso_data['usuario'].id if discurso_data.get('usuario') else None
-
-            # Buscar categoria associada
-            categoria_ref = discurso_data.get('discurso_categoria')
-            if categoria_ref:
-                categoria_doc = categoria_ref.get()
-                if categoria_doc.exists:
-                    categoria_data = categoria_doc.to_dict()
-                    categoria_data['id'] = categoria_doc.id
-                    discurso_data['discurso_categoria'] = categoria_data
-                else:
-                    discurso_data['discurso_categoria'] = None
-            
-            # Buscar idioma associado (discurso)
-            idioma_discurso_ref = discurso_data.get('idioma')
-            if idioma_discurso_ref:
-                idioma_discurso_doc = idioma_discurso_ref.get()
-                if idioma_discurso_doc.exists:
-                    idioma_discurso_data = idioma_discurso_doc.to_dict()
-                    idioma_discurso_data['id'] = idioma_discurso_doc.id
-                    discurso_data['idioma'] = idioma_discurso_data
-                else:
-                    discurso_data['idioma'] = None
-
-            traducao_data['discurso'] = discurso_data
-        else:
-            traducao_data['discurso'] = None
-    else:
-        traducao_data['discurso'] = None
-
     return jsonify(traducao_data), 200
-    
-# TODO: Apenas o autor da traducao ou moderador pode alterar
-@bp.route('/traducao/discurso/edit-completo/<traducao_id>', methods=['PUT'])
-@autenticar_jwt
-@verificar_professor
-def editar_traducao_discurso(traducao_id):
-    dados = request.get_json()
 
-    novo_texto_traducao = dados.get('texto_traducao')
-    novo_idioma_traducao_id = dados.get('idioma_traducao_id')
-    novo_texto_discurso = dados.get('texto_discurso')
-    novo_idioma_discurso_id = dados.get('idioma_discurso_id')
-    nova_categoria_id = dados.get('discurso_categoria_id')
-
-    if not (novo_texto_traducao or 
-            novo_idioma_traducao_id or 
-            novo_texto_discurso or 
-            novo_idioma_discurso_id or 
-            nova_categoria_id):
-        return jsonify({'erro': 'Nenhum dado fornecido para atualização'}), 400
-
-    db = firestore.client()
-    transaction = db.transaction()
-
-    @firestore.transactional
-    def atualizar_in_transaction(transaction, traducao_ref):
-        # Todas as leituras devem acontecer antes de qualquer escrita
-        traducao_doc = traducao_ref.get(transaction=transaction)
-        if not traducao_doc.exists:
-            raise ValueError("Tradução não encontrada")
-
-        traducao_data = traducao_doc.to_dict()
-        discurso_ref = traducao_data.get('discurso')
-        discurso_doc = discurso_ref.get(transaction=transaction)
-
-        if not discurso_doc.exists:
-            raise ValueError("Discurso vinculado não encontrado")
-
-        update_traducao = {}
-        update_discurso = {}
-
-        # Leituras adicionais de idioma/categoria
-        novo_idioma_traducao_ref = None
-        if novo_idioma_traducao_id:
-            novo_idioma_traducao_ref = db.collection('idioma').document(novo_idioma_traducao_id)
-            idioma_doc = novo_idioma_traducao_ref.get(transaction=transaction)
-            if not idioma_doc.exists:
-                raise ValueError("Idioma de tradução não encontrado")
-
-            idioma_discurso_ref = discurso_doc.to_dict().get('idioma')
-            if idioma_discurso_ref.id == novo_idioma_traducao_ref.id:
-                raise ValueError("Idioma da tradução não pode ser igual ao do discurso")
-
-        novo_idioma_discurso_ref = None
-        if novo_idioma_discurso_id:
-            novo_idioma_discurso_ref = db.collection('idioma').document(novo_idioma_discurso_id)
-            idioma_doc = novo_idioma_discurso_ref.get(transaction=transaction)
-            if not idioma_doc.exists:
-                raise ValueError("Idioma do discurso não encontrado")
-
-        categoria_ref = None
-        if nova_categoria_id:
-            categoria_ref = db.collection('discurso_categoria').document(nova_categoria_id)
-            categoria_doc = categoria_ref.get(transaction=transaction)
-            if not categoria_doc.exists:
-                raise ValueError("Categoria do discurso não encontrada")
-
-        # Só agora podemos fazer updates
-        if novo_texto_traducao:
-            update_traducao['texto'] = novo_texto_traducao
-        if novo_idioma_traducao_ref:
-            update_traducao['idioma'] = novo_idioma_traducao_ref
-        if update_traducao:
-            update_traducao['data_atualizacao'] = datetime.now(pytz.timezone("America/Sao_Paulo"))
-            transaction.update(traducao_ref, update_traducao)
-
-        if novo_texto_discurso:
-            update_discurso['texto'] = novo_texto_discurso
-        if novo_idioma_discurso_ref:
-            update_discurso['idioma'] = novo_idioma_discurso_ref
-        if categoria_ref:
-            update_discurso['discurso_categoria'] = categoria_ref
-        if update_discurso:
-            update_discurso['data_atualizacao'] = datetime.now(pytz.timezone("America/Sao_Paulo"))
-            transaction.update(discurso_ref, update_discurso)
-
-
-    traducao_ref = db.collection('traducao').document(traducao_id)
-
-    try:
-        atualizar_in_transaction(transaction, traducao_ref)
-    except ValueError as e:
-        return jsonify({'erro': str(e)}), 400
-    except Exception as e:
-        return jsonify({'erro': f'Erro inesperado: {str(e)}'}), 500
-
-    return jsonify({'mensagem': 'Tradução e discurso atualizados com sucesso'}), 200
-
-# Busca traducoes cadastradas por um usuario especifico
 @bp.route('/traducao/usuario/<usuario_id>', methods=['POST'])
 @autenticar_jwt
 @verificar_professor
-def listar_tracudao_usuario(usuario_id):
-    filtros = request.get_json()
-    texto_discurso = filtros.get('textoDiscurso')
-    idioma_discurso = filtros.get('idiomaDiscurso')
+def listar_traducao_usuario(usuario_id):
+    """
+    Listar traduções de um usuário específico
+    ---
+    security:
+        - Bearer: []
+    tags:
+        - Tradução
+    parameters:
+        - name: usuario_id
+          in: path
+          type: string
+          required: true
+        - name: body
+          in: body          
+          required: false
+          schema:
+              type: object
+              properties:
+                textoTraducao:
+                    type: string
+                    example: "ajo"
+                idiomaTraducao:
+                    type: string
+                    example: "munduruku"
+                limite:
+                    type: integer
+                    example: 5
+                pagina:
+                    type: integer
+                    example: 1
+    responses:
+        200:
+            description: Retorna lista de traduções do usuário com paginação
+        400:
+            description: Requisição malformada ou dados inválidos
+        404:
+            description: Usuário não encontrado
+        500:
+            description: Erro interno
+    """
+    filtros = request.get_json() or {}
+    texto_traducao = filtros.get('textoTraducao')
+    idioma_traducao = filtros.get('idiomaTraducao')
+    limite = int(filtros.get('limite', 5))  
+    pagina = int(filtros.get('pagina', 1))
 
-    # Buscar usuário
+    if pagina < 1:
+        pagina = 1
+    if limite < 1:
+        limite = 5
+
+    offset = (pagina - 1) * limite
+
     usuario_ref = db.collection('usuario').document(usuario_id)
     usuario_doc = usuario_ref.get()
 
     if not usuario_doc.exists:
         return jsonify({'erro': 'Usuário não encontrado'}), 404
-    
-    # Busca traduções vinculadas ao usuário
-    query = db.collection('traducao').where('usuario', '==', usuario_ref)
 
-    if idioma_discurso:
-        idioma_ref = db.collection('idioma').document(idioma_discurso)
-        query = query.where('idioma', '==', idioma_ref)
+    base_query = db.collection('traducao').where('usuario_id', '==', usuario_id)
 
-    if texto_discurso and texto_discurso.strip():
-        query = query.where('texto', '>=', texto_discurso).where('texto', '<=', texto_discurso + '\uf8ff')
+    if idioma_traducao:
+        base_query = base_query.where('idioma', '==', idioma_traducao)
 
-    query = query.order_by('data_criacao', direction=firestore.Query.DESCENDING)
+    if texto_traducao and texto_traducao.strip():
+        base_query = base_query.where('texto', '>=', texto_traducao).where('texto', '<=', texto_traducao + '\uf8ff')
 
+    try:
+        count_result = base_query.count().get()
+        total_traducoes = count_result[0][0].value if count_result else 0
+    except Exception:
+        total_traducoes = 0
+
+    total_paginas = math.ceil(total_traducoes / limite) if limite else 1
+
+    query = base_query.order_by('data_criacao', direction=firestore.Query.DESCENDING).offset(offset).limit(limite)
     traducoes_docs = query.stream()
 
     traducoes = []
     for doc in traducoes_docs:
         dados = doc.to_dict()
         dados['id'] = doc.id
-
-        # Busca texto do discurso
-        discurso_ref = dados.get('discurso')
-        if discurso_ref:
-            discurso_doc = discurso_ref.get()
-            if discurso_doc.exists:
-                dados['discurso'] = discurso_doc.to_dict().get('texto')
-
-        # Busca nome do idioma
-        idioma_ref = dados.get('idioma')
-        if idioma_ref:
-            idioma_doc = idioma_ref.get()
-            if idioma_doc.exists:
-                dados['idioma'] = idioma_doc.to_dict().get('nome')
-
-        if 'usuario' in dados and hasattr(dados['usuario'], 'id'):
-            dados['usuario'] = dados['usuario'].id
-
-        dados['data_criacao'] = dados.get('data_criacao').strftime("%d/%m/%Y %H:%M")
-
+        data_criacao = dados.get('data_criacao')
+        dados['data_criacao'] = data_criacao.strftime("%d/%m/%Y %H:%M") if isinstance(data_criacao, datetime) else None
         traducoes.append(dados)
 
-    return jsonify(traducoes), 200
+    return jsonify({
+        'pagina': pagina,
+        'limite': limite,
+        'total_paginas': total_paginas,
+        'total_registros': total_traducoes,
+        'traducoes': traducoes
+    }), 200
 
 @bp.route("/traducao/cadastrar", methods=["POST"])
 @autenticar_jwt
 @verificar_professor
 def cadastrar_traducao():
-    data = request.get_json()
-    texto_discurso = data.get("discurso_texto").lower()
-    texto_traducao = data.get("traducao_texto").lower()
-    idioma_discurso_id = data.get("idioma_discurso_id")
-    idioma_traducao_id = data.get("idioma_traducao_id")
-    categoria_id = data.get("discurso_categoria_id")
+    """
+    Cadastrar nova tradução com multimídia
+    ---
+    security:
+        - Bearer: []    
+    tags:
+        - Tradução
+    responses:
+        201:
+            description: Tradução cadastrada com sucesso    
+        400:
+            description: Requisição malformada, campos obrigatórios ausentes ou dados inválidos
+        500:    
+            description: Erro interno
+    """
+    usuario_id = g.get('usuario_id')
 
-    if not all([texto_discurso, texto_traducao, idioma_discurso_id, idioma_traducao_id, categoria_id]):
-        return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
+    # Voltando a usar request.form para permitir os arquivos do frontend
+    data = request.form
+    discurso = data.get("discurso")
+    traducao = data.get("traducao")
+    idioma_discurso = data.get("idioma_discurso")
+    idioma_traducao = data.get("idioma_traducao")
+    categoria = data.get("categoria")
+    discurso = data.get("discurso")
+    traducao = data.get("traducao")
+    idioma_discurso = data.get("idioma_discurso")
+    idioma_traducao = data.get("idioma_traducao")
+    categoria = data.get("categoria")
+
+    if not all([discurso, traducao, idioma_discurso, idioma_traducao, categoria]):
+        return jsonify({"erro": "Todos os campos de texto são obrigatórios"}), 400
     
-    if (idioma_discurso_id == idioma_traducao_id):
+    discurso = discurso.lower().strip()
+    traducao = traducao.lower().strip()
+    idioma_discurso = idioma_discurso.lower().strip()
+    idioma_traducao = idioma_traducao.lower().strip()
+    categoria = categoria.lower().strip()
+
+    if (idioma_discurso == idioma_traducao):
         return jsonify({"erro": "Os idiomas devem ser diferentes."}), 400
 
+    # Recupera os arquivos
+    foto = request.files.get('foto')
+    video = request.files.get('video')
+    audio = request.files.get('audio')
+
     try:
-        # Extrair apenas o ID do documento (depois da barra)
-        idioma_discurso_doc_id = idioma_discurso_id.split("/")[-1]
-        idioma_traducao_doc_id = idioma_traducao_id.split("/")[-1]
-        categoria_doc_id = categoria_id.split("/")[-1]
+        bucket = storage.bucket()
+        foto_url = None
+        video_url = None
+        audio_url = None
 
-        # Referências
-        idioma_discurso_ref = db.collection("idioma").document(idioma_discurso_doc_id)
-        idioma_traducao_ref = db.collection("idioma").document(idioma_traducao_doc_id)
-        categoria_ref = db.collection("discurso_categoria").document(categoria_doc_id)
-        usuario_ref = db.collection("usuario").document(g.usuario_id)
+        if foto and foto.filename != "":
+            blob_foto = bucket.blob(f"fotos/{uuid.uuid4()}_{foto.filename}")
+            blob_foto.upload_from_file(foto, content_type=foto.content_type)
+            blob_foto.make_public()
+            foto_url = blob_foto.public_url 
 
-        # Verifica se já existe um discurso com mesmo texto e mesmo idioma
+        if video and video.filename != "":
+            blob_video = bucket.blob(f"traducoes/videos/{uuid.uuid4()}_{video.filename}")
+            blob_video.upload_from_file(video, content_type=video.content_type)
+            blob_video.make_public()
+            video_url = blob_video.public_url
+
+        if audio and audio.filename != "":
+            blob_audio = bucket.blob(f"traducoes/audios/{uuid.uuid4()}_{audio.filename}")
+            blob_audio.upload_from_file(audio, content_type=audio.content_type)
+            blob_audio.make_public()
+            audio_url = blob_audio.public_url
+
+        # Processamento do Discurso (Achatado como na develop)
         discursos_duplicados = db.collection("discurso") \
-            .where("texto", "==", texto_discurso) \
-            .where("idioma", "==", idioma_discurso_ref) \
+            .where("texto", "==", discurso) \
+            .where("idioma", "==", idioma_discurso) \
             .stream()
         discurso_existente = next(discursos_duplicados, None)
 
         if discurso_existente:
             discurso_ref = db.collection("discurso").document(discurso_existente.id)
         else:
-            # Criar novo discurso
             discurso_ref = db.collection("discurso").document()
             discurso_data = {
-                "texto": texto_discurso,
+                "texto": discurso,
                 "data_criacao": datetime.now(pytz.timezone("America/Sao_Paulo")),
-                "idioma": idioma_discurso_ref,
-                "discurso_categoria": categoria_ref,
-                "usuario": usuario_ref
+                "idioma": idioma_discurso,
+                "discurso_categoria": categoria,
             }
             discurso_ref.set(discurso_data)
 
-        # Criar tradução
+        # Criar tradução com as URLs de mídia inseridas
         traducao_data = {
-            "texto": texto_traducao,
+            "texto": traducao,
             "data_criacao": datetime.now(pytz.timezone("America/Sao_Paulo")),
-            "idioma": idioma_traducao_ref,
-            "discurso": discurso_ref,
-            "usuario": usuario_ref
+            "idioma": idioma_traducao,
+            "discurso": discurso,
+            "usuario_id": usuario_id,
+            "discurso_id": discurso_ref.id,
+            "imagem_url": foto_url,  
+            "video_url": video_url,   
+            "audio_url": audio_url
         }
         db.collection("traducao").document().set(traducao_data)
 
         return jsonify({"mensagem": "Tradução cadastrada com sucesso"}), 201
 
     except Exception as e:
+        print("====== ERRO CRÍTICO NO CADASTRO ======")
+        import traceback
+        traceback.print_exc() 
+        print("======================================")
         return jsonify({"erro": f"Erro ao cadastrar: {str(e)}"}), 500
 
 @bp.route("/traducao", methods=["GET"])
 @autenticar_jwt
 def listar_traducoes():
+    """
+    Listar traduções
+    ---
+    security:
+        - Bearer: []
+    tags:
+        - Tradução
+    parameters:
+        - name: pagina
+          in: query
+          type: integer
+          required: false
+        - name: limite
+          in: query
+          type: integer
+          required: false
+    responses:
+        200: 
+            description: Retorna lista de traduções com paginação
+        500:
+            description: Erro interno
+    """
     try:
         pagina = int(request.args.get('pagina', 1))
         limite = int(request.args.get('limite', 10))
@@ -321,43 +429,23 @@ def listar_traducoes():
 
         for doc in traducoes_docs:
             traducao_data = doc.to_dict()
-            discurso_ref = traducao_data.get('discurso')
-            idioma_ref = traducao_data.get('idioma')
-            usuario_ref = traducao_data.get('usuario')
-
             data_criacao = traducao_data.get('data_criacao')
             data_criacao_formatada = data_criacao.strftime("%d/%m/%Y %H:%M") if isinstance(data_criacao, datetime) else None
+            usuario_id = traducao_data.get('usuario_id')
+            usuario = db.collection('usuario').document(usuario_id).get() if usuario_id else None
 
-            discurso_doc = discurso_ref.get() if discurso_ref else None
-            idioma_doc = idioma_ref.get() if idioma_ref else None
-            usuario_doc = usuario_ref.get() if usuario_ref else None
-
-            discurso_data = discurso_doc.to_dict() if discurso_doc and discurso_doc.exists else {}
-            idioma_data_discurso = discurso_data.get('idioma').get().to_dict() if discurso_data.get('idioma') else {}
-            categoria_data = discurso_data.get('discurso_categoria').get().to_dict() if discurso_data.get('discurso_categoria') else {}
-
+            # Garantindo que as mídias da sua branch também retornem
             resultados.append({
-                'id': doc.id,
-                'texto': traducao_data.get('texto'),
-                'data_criacao': data_criacao_formatada,
-                'usuario': usuario_doc.to_dict().get('nome') if usuario_doc and usuario_doc.exists else None,
-                'idioma': {
-                    'id': idioma_ref.id,
-                    **idioma_doc.to_dict()
-                } if idioma_doc else None,
-                'discurso': {
-                    'id': discurso_ref.id,
-                    'data_criacao': discurso_data.get('data_criacao'),
-                    'texto': discurso_data.get('texto'),
-                    'idioma': {
-                        'id': discurso_data.get('idioma').id,
-                        **idioma_data_discurso
-                    } if idioma_data_discurso else None,
-                    'discurso_categoria': {
-                        'id': discurso_data.get('discurso_categoria').id,
-                        **categoria_data
-                    } if categoria_data else None,
-                }
+                "id": doc.id,
+                "texto": traducao_data.get('texto'),
+                "data_criacao": data_criacao_formatada,
+                "idioma": traducao_data.get('idioma'),
+                "discurso": traducao_data.get('discurso'),
+                "discurso_id": traducao_data.get('discurso_id'),
+                'usuario': usuario.get('nome') if usuario and usuario.exists else None,
+                'imagem_url': traducao_data.get('imagem_url'),
+                'video_url': traducao_data.get('video_url'),
+                'audio_url': traducao_data.get('audio_url')
             })
 
         return jsonify({
@@ -374,6 +462,26 @@ def listar_traducoes():
 @bp.route("/traducao/<traducao_id>", methods=["DELETE"])
 @autenticar_jwt
 def apagar_traducao(traducao_id):
+    """
+    Excluir tradução
+    ---
+    security:
+        - Bearer: []
+    tags:
+        - Tradução
+    parameters:
+        - name: traducao_id
+          in: path
+          type: string
+          required: true
+    responses:
+        200:
+            description: Tradução excluída com sucesso
+        404:
+            description: Tradução não encontrada
+        500:
+            description: Erro interno
+    """
     try:
         traducao_ref = db.collection("traducao").document(traducao_id)
         doc = traducao_ref.get()
@@ -387,3 +495,66 @@ def apagar_traducao(traducao_id):
 
     except Exception as e:
         return jsonify({"erro": f"Erro ao excluir tradução: {str(e)}"}), 500
+
+
+@bp.route('/traducao/<traducao_id>/remover-midia', methods=['PUT'])
+@autenticar_jwt
+@verificar_professor_admin
+def remover_midia(traducao_id):
+    body = request.get_json()
+    print(f"DEBUG: O que o Flask recebeu? {body}")
+    if not body:
+        return jsonify({"erro": "Corpo da requisição vazio"}), 400
+
+    tipo_midia = body.get('tipo_midia')
+    apagar_servidor = body.get('apagar_servidor', False)
+
+    if tipo_midia not in ['imagem_url', 'audio_url', 'video_url']:
+        return jsonify({"erro": "Tipo de mídia inválido"}), 400
+
+    doc_ref = db.collection("traducao").document(traducao_id)
+    doc = doc_ref.get()
+
+    if not doc.exists:
+        return jsonify({"erro": "Tradução não encontrada"}), 404
+
+    #LOGICA DE EXCLUSÃO PERMANENTE
+    url_midia = doc.to_dict().get(tipo_midia)
+    if apagar_servidor and url_midia:
+        try:
+            bucket = storage.bucket()
+            parsed_url = urlparse(url_midia)
+            caminho_blob = unquote(parsed_url.path).lstrip("/")
+            blob = bucket.blob(caminho_blob)
+            if blob.exists():
+                blob.delete()
+            
+            todas_traducoes = db.collection("traducao").stream()
+            
+            batch = db.batch()
+            contador = 0
+            
+            for doc_check in todas_traducoes:
+                dados = doc_check.to_dict()
+                valor_no_banco = dados.get(tipo_midia)
+                if valor_no_banco == url_midia:
+                    print(f"DEBUG: Encontrado match no documento: {doc_check.id}")
+                    ref = db.collection("traducao").document(doc_check.id)
+                    batch.update(ref, { tipo_midia: None })
+                    contador += 1
+            
+            if contador > 0:
+                batch.commit()
+            return jsonify({"mensagem": f"Mídia apagada e removida de {contador} tradução(ões)!"}), 200
+                    
+        except Exception as e:
+            return jsonify({"erro": f"Falha ao apagar arquivo do Storage: {str(e)}"}), 500
+    #LOGICA DE DESVINCULAR
+    try:
+        # Define o campo da mídia específica como nulo no banco de dados
+        doc_ref.update({
+            tipo_midia: None 
+        })
+        return jsonify({"mensagem": "Mídia removida com sucesso da tradução!"}), 200
+    except Exception as e:
+        return jsonify({"erro": f"Erro ao atualizar a tradução no banco: {str(e)}"}), 500

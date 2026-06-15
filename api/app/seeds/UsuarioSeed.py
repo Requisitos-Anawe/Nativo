@@ -15,28 +15,28 @@ def run():
             "email": "admin@site.com",
             "senha": senha_hash_str,
             "data_nascimento": datetime(1990, 1, 1),
-            "perfil": firestore.client().document("perfil/2"),
+            "perfil": "admin",
         },
         {
             "nome": "Professor",
             "email": "joao@site.com",
             "senha": senha_hash_str,
             "data_nascimento": datetime(1985, 6, 20),
-            "perfil": firestore.client().document("perfil/3"),
+            "perfil": "professor",
         },
         {
             "nome": "Moderadora",
             "email": "ana@site.com",
             "senha": senha_hash_str,
             "data_nascimento": datetime(1992, 3, 15),
-            "perfil": firestore.client().document("perfil/4"),
+            "perfil": "moderador",
         },
         {
             "nome": "Usuário Padrão",
             "email": "user@site.com",
             "senha": senha_hash_str,
             "data_nascimento": datetime(2000, 12, 5),
-            "perfil": firestore.client().document("perfil/1"),
+            "perfil": "moderador",
         },
     ]
 
@@ -45,3 +45,6 @@ def run():
         db.collection("usuario").add(user)
 
     print("Usuários adicionados com sucesso.")
+
+if __name__ == '__main__':
+    run()
