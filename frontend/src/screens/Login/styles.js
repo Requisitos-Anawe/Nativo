@@ -16,13 +16,13 @@ export default StyleSheet.create({
         position: 'absolute',
         top: -80,
         left: -50,
-        transform: [{ rotate: '150deg' }, { scale: 1.5 }],
+        transform: [{ rotate: '-10deg' }, { scale: 1.2 }],
     },
     leafMiddleRight: {
         position: 'absolute',
-        bottom: 20,
-        right: 10,
-        transform: [{ rotate: '45deg' }, { scale: 0.9 }],
+        bottom: -50,
+        right: 20,
+        transform: [{ rotate: '-110deg' }, { scale: 1.2 }],
     },
     olaText: {
         color: '#FFFFFF',
@@ -34,9 +34,10 @@ export default StyleSheet.create({
     },
     indigenaWrapper: {
         position: 'absolute',
-        bottom: -20,
+        bottom: -60,
         right: 0,
         zIndex: 10,
+        transform: [{ scale: 1.3 }],
     },
     bottomCard: {
         flex: 0.58,
@@ -44,7 +45,7 @@ export default StyleSheet.create({
         borderTopLeftRadius: 40,
         borderTopRightRadius: 40,
         paddingHorizontal: 30,
-        paddingTop: 45,
+        paddingTop: 35,
         alignItems: 'center',
     },
     loginTitle: {
@@ -52,7 +53,7 @@ export default StyleSheet.create({
         fontSize: 28,
         fontWeight: '900',
         alignSelf: 'flex-start',
-        marginBottom: 30,
+        marginBottom: 20,
     },
     inputContainer: {
         flexDirection: 'row',
@@ -61,7 +62,7 @@ export default StyleSheet.create({
         borderRadius: 20,
         height: 55,
         paddingHorizontal: 15,
-        marginBottom: 20,
+        marginBottom: 15,
         width: '100%',
         shadowColor: "#000",
         shadowOffset: {
@@ -82,7 +83,7 @@ export default StyleSheet.create({
     },
     forgotPassword: {
         alignSelf: 'flex-end',
-        marginBottom: 25,
+        marginBottom: 20,
     },
     forgotPasswordText: {
         color: '#093624',
@@ -96,7 +97,7 @@ export default StyleSheet.create({
         width: '100%',
         justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 30,
+        marginBottom: 20,
     },
     buttonText: {
         color: '#FFFFFF',
@@ -107,7 +108,7 @@ export default StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         width: '100%',
-        marginBottom: 30,
+        marginBottom: 20,
     },
     divider: {
         flex: 1,
@@ -130,7 +131,7 @@ export default StyleSheet.create({
         borderRadius: 25,
         height: 50,
         width: '100%',
-        marginBottom: 30,
+        marginBottom: 20,
     },
     googleIcon: {
         marginRight: 10,

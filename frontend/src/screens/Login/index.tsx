@@ -1,11 +1,11 @@
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View, ScrollView } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import styles from "./styles";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import api from "../../services/api";
 import Icon from 'react-native-vector-icons/Ionicons';
 import { useAuth } from "../../contexts/AuthContext";
-import { useNavigation } from "@react-navigation/native";
+import { useNavigation, useFocusEffect } from "@react-navigation/native";
 import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../../navigation/AuthStack";
 import Erro from "../../components/Erro";
@@ -24,12 +24,18 @@ export default function Login() {
     const { setUser } = useAuth();
     const navigation = useNavigation<Navigation>();
 
+    useFocusEffect(
+        useCallback(() => {
+            setErro('');
+        }, [])
+    );
+
     const handleLogin = async () => {
         try {
             setCarregando(true);
             setErro('');
             const response = await api.post(`/auth/login`, {
-                email: cpf,
+                cpf: cpf,
                 senha: password,
             });
             setUser(response.data.usuario);
@@ -61,70 +67,77 @@ export default function Login() {
             </View>
 
             <View style={styles.bottomCard}>
-                <Text style={styles.loginTitle}>LOGIN</Text>
-
-                <View style={styles.inputContainer}>
-                    <Icon name="id-card-outline" size={20} color="#093624" style={styles.inputIcon} />
-                    <TextInput
-                        value={cpf}
-                        style={styles.input}
-                        onChangeText={setCpf}
-                        placeholder="CPF"
-                        placeholderTextColor="#7a7a7a"
-                        keyboardType="numeric"
-                    />
-                </View>
-
-                <View style={styles.inputContainer}>
-                    <Icon name="key-outline" size={20} color="#093624" style={styles.inputIcon} />
-                    <TextInput
-                        value={password}
-                        style={styles.input}
-                        onChangeText={setPassword}
-                        placeholder="Senha"
-                        placeholderTextColor="#7a7a7a"
-                        secureTextEntry={!showPassword}
-                    />
-                    <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                        <Icon
-                            name={showPassword ? "eye-off-outline" : "eye-outline"}
-                            size={20}
-                            color="#000"
-                        />
-                    </TouchableOpacity>
-                </View>
-
-                <TouchableOpacity style={styles.forgotPassword}>
-                    <Text style={styles.forgotPasswordText}>Esqueceu sua senha?</Text>
-                </TouchableOpacity>
-
-                {erro ? <Erro texto={erro} /> : null}
-
-                <TouchableOpacity
-                    onPress={handleLogin}
-                    disabled={carregando}
-                    style={styles.button}
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={{ flexGrow: 1, alignItems: 'center', paddingBottom: 80 }}
+                    style={{ width: '100%' }}
+                    keyboardShouldPersistTaps="handled"
                 >
-                    <Text style={styles.buttonText}>{carregando ? "Aguarde..." : "Entrar"}</Text>
-                </TouchableOpacity>
+                    <Text style={styles.loginTitle}>LOGIN</Text>
 
-                <View style={styles.dividerContainer}>
-                    <View style={styles.divider} />
-                    <Text style={styles.dividerText}>ou continue com</Text>
-                    <View style={styles.divider} />
-                </View>
+                    <View style={styles.inputContainer}>
+                        <Icon name="id-card-outline" size={20} color="#093624" style={styles.inputIcon} />
+                        <TextInput
+                            value={cpf}
+                            style={styles.input}
+                            onChangeText={setCpf}
+                            placeholder="CPF"
+                            placeholderTextColor="#7a7a7a"
+                            keyboardType="numeric"
+                        />
+                    </View>
 
-                <TouchableOpacity style={styles.googleButton}>
-                    <Icon name="logo-google" size={20} color="#DB4437" style={styles.googleIcon} />
-                    <Text style={styles.googleButtonText}>Sign in with Google</Text>
-                </TouchableOpacity>
+                    <View style={styles.inputContainer}>
+                        <Icon name="key-outline" size={20} color="#093624" style={styles.inputIcon} />
+                        <TextInput
+                            value={password}
+                            style={styles.input}
+                            onChangeText={setPassword}
+                            placeholder="Senha"
+                            placeholderTextColor="#7a7a7a"
+                            secureTextEntry={!showPassword}
+                        />
+                        <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                            <Icon
+                                name={showPassword ? "eye-off-outline" : "eye-outline"}
+                                size={20}
+                                color="#000"
+                            />
+                        </TouchableOpacity>
+                    </View>
 
-                <View style={styles.registerContainer}>
-                    <Text style={styles.noAccountText}>Não possui conta? </Text>
-                    <TouchableOpacity onPress={() => navigation.navigate("Cadastro")}>
-                        <Text style={styles.registerText}>Cadastro</Text>
+                    <TouchableOpacity style={styles.forgotPassword}>
+                        <Text style={styles.forgotPasswordText}>Esqueceu sua senha?</Text>
                     </TouchableOpacity>
-                </View>
+
+                    {erro ? <Erro texto={erro} /> : null}
+
+                    <TouchableOpacity
+                        onPress={handleLogin}
+                        disabled={carregando}
+                        style={styles.button}
+                    >
+                        <Text style={styles.buttonText}>{carregando ? "Aguarde..." : "Entrar"}</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.dividerContainer}>
+                        <View style={styles.divider} />
+                        <Text style={styles.dividerText}>ou continue com</Text>
+                        <View style={styles.divider} />
+                    </View>
+
+                    <TouchableOpacity style={styles.googleButton}>
+                        <Icon name="logo-google" size={20} color="#DB4437" style={styles.googleIcon} />
+                        <Text style={styles.googleButtonText}>Sign in with Google</Text>
+                    </TouchableOpacity>
+
+                    <View style={styles.registerContainer}>
+                        <Text style={styles.noAccountText}>Não possui conta? </Text>
+                        <TouchableOpacity onPress={() => navigation.navigate("Cadastro")}>
+                            <Text style={styles.registerText}>Cadastro</Text>
+                        </TouchableOpacity>
+                    </View>
+                </ScrollView>
             </View>
         </View>
     )

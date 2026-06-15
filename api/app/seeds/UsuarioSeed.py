@@ -33,6 +33,7 @@ def run():
         },
         {
             "nome": "Usuário Padrão",
+            "cpf": "25224271053",
             "email": "user@site.com",
             "senha": senha_hash_str,
             "data_nascimento": datetime(2000, 12, 5),
