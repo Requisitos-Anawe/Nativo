@@ -1,46 +1,51 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Home from "../screens/Home";
-import Icon from "react-native-vector-icons/Ionicons";
-import TranslationCreate from "../screens/TranslationCreate";
-import Informations from "../screens/Informations";
-import TraslationList from "../screens/TranslationList";
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import Icon from 'react-native-vector-icons/Ionicons';
+
+import Home from '../screens/Home';
+import AtividadesScreen from '../screens/Atividades/AtividadesScreen';
 
 const Tab = createBottomTabNavigator();
 
 export default function ProfessorTabs() {
+  console.log('ProfessorTabs COM ATIVIDADES carregado');
+
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
+      screenOptions={({route}) => ({
         headerShown: false,
         tabBarActiveTintColor: '#fff',
         tabBarInactiveTintColor: 'gray',
-        tabBarShowLabel: false,
-        tabBarLabel: () => null,
-        tabBarIcon: ({ color, size }) => {
-          let iconName = 'home-outline';
-          if (route.name === 'Tradutor') iconName = 'language-outline';
-          else if (route.name === 'Informations') iconName = 'information-circle-outline';
-          else if (route.name === 'AddTraducao') iconName = 'add-circle-outline';
-          else if (route.name === 'ListTraducao') iconName = 'document-text-outline';
-          return <Icon name={iconName} size={size} color={color} />;
-        },
+        tabBarShowLabel: true,
         tabBarStyle: {
           backgroundColor: '#114A1B',
-          height: 60, 
-          paddingBottom: 0,
-          paddingTop: 0,
+          height: 75,
+          paddingBottom: 8,
+          paddingTop: 6,
         },
-        tabBarItemStyle: {
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingVertical: 10
+        tabBarLabelStyle: {
+          fontSize: 12,
         },
-      })}
-    >
-      <Tab.Screen name="Tradutor" component={Home} />
-      <Tab.Screen name="AddTraducao" component={TranslationCreate} />
-      <Tab.Screen name="ListTraducao" component={TraslationList} />
-      <Tab.Screen name="Informations" component={Informations} />
+        tabBarIcon: ({color, size}) => {
+          const iconName =
+            route.name === 'Atividades' ? 'school-outline' : 'home-outline';
+
+          return <Icon name={iconName} size={size} color={color} />;
+        },
+      })}>
+      <Tab.Screen
+        name="Tradutor"
+        component={Home}
+        options={{title: 'Tradutor'}}
+      />
+
+      <Tab.Screen
+        name="Atividades"
+        component={AtividadesScreen}
+        options={{
+          title: 'Atividades',
+          tabBarBadge: '!',
+        }}
+      />
     </Tab.Navigator>
   );
 }

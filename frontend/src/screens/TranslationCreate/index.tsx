@@ -6,6 +6,8 @@ import { useCallback, useEffect, useState } from "react";
 import api from "../../services/api";
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import Erro from "../../components/Erro";
+import type {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
+import type {ProfessorTabParamList} from '../../navigation/NavigationTypes';
 import { launchImageLibrary } from 'react-native-image-picker';
 import { pick } from '@react-native-documents/picker';
 import { VideoPlayer } from "../../components/VideoPlayer";
@@ -33,7 +35,8 @@ export default function TraslationCreate() {
     const [textoTraducao, setTextoTraducao] = useState('');
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState('');
-    const navigation = useNavigation();
+    const navigation =
+        useNavigation<BottomTabNavigationProp<ProfessorTabParamList, 'AddTraducao'>>();
 
     const [foto, setFoto] = useState<any | null>(null);
     const [audio, setAudio] = useState<any | null>(null);

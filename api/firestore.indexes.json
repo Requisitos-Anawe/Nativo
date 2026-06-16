@@ -1,0 +1,19 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "atividade",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "professores_associados",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "data_criacao",
+          "order": "DESCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
