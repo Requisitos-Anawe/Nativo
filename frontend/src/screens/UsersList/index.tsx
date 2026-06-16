@@ -17,7 +17,7 @@ export default function UsersList() {
     const [perfilSelecionado, setPerfilSelecionado] = useState('');
     const [perfis, setPerfis] = useState<PerfilInterface[]|null>(null);
 
-    const [limit] = useState(10);
+    const [limit] = useState(1000);
     const [pageCursors, setPageCursors] = useState<Array<string | null>>([null]);
     const [currentPage, setCurrentPage] = useState(1);
     const [nextCursor, setNextCursor] = useState<string | null>(null);
