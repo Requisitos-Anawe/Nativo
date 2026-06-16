@@ -12,6 +12,7 @@ def run():
     usuarios = [
         {
             "nome": "Admin",
+            "cpf": "25224271053",
             "email": "admin@site.com",
             "senha": senha_hash_str,
             "data_nascimento": datetime(1990, 1, 1),
@@ -33,7 +34,6 @@ def run():
         },
         {
             "nome": "Usuário Padrão",
-            "cpf": "25224271053",
             "email": "user@site.com",
             "senha": senha_hash_str,
             "data_nascimento": datetime(2000, 12, 5),

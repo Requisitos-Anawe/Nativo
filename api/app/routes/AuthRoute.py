@@ -45,7 +45,14 @@ def login():
     usuario_doc = results[0]
     usuario_data = usuario_doc.to_dict()
     
-    if not check_password_hash(usuario_data["senha"], senha):
+    senha_db = usuario_data.get("senha")
+    if not senha_db:
+        return jsonify({"erro": "Usuário sem senha configurada"}), 401
+
+    try:
+        if not check_password_hash(senha_db, senha):
+            return jsonify({"erro": "CPF ou senha incorretos"}), 401
+    except Exception:
         return jsonify({"erro": "CPF ou senha incorretos"}), 401
 
     token = jwt.encode({
@@ -53,14 +60,22 @@ def login():
         "exp": datetime.now(pytz.timezone("America/Sao_Paulo")) + timedelta(hours=12)
     }, os.getenv("JWT_SECRET"), algorithm="HS256")
 
+    perfil_val = usuario_data.get('perfil')
+    if hasattr(perfil_val, 'id'):
+        perfil_val = perfil_val.id
+
+    data_nasc_val = usuario_data.get('data_nascimento')
+    if hasattr(data_nasc_val, 'isoformat'):
+        data_nasc_val = data_nasc_val.isoformat()
+
     return jsonify({
         "token": token,
         "usuario": {
             "id": usuario_doc.id,
             "nome": usuario_data.get("nome"),
             "email": usuario_data.get("email"),
-            "data_nascimento": usuario_data.get('data_nascimento'),
-            "perfil": usuario_data.get('perfil'),
+            "data_nascimento": data_nasc_val,
+            "perfil": perfil_val,
         }
     }), 200
 
