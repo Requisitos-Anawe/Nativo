@@ -1,4 +1,4 @@
-import React, { useState, useLayoutEffect } from "react";
+import React, { useState } from "react";
 import { Text, View, TextInput, TouchableOpacity, Alert, ScrollView } from "react-native";
 import styles from "./styles";
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -32,13 +32,7 @@ function Home() {
     const isFocused = useIsFocused();
     const { user } = useAuth();
 
-    useLayoutEffect(() => {
-        if (isFocused) {
-            navigation.getParent()?.setOptions({ headerShown: false });
-        } else {
-            navigation.getParent()?.setOptions({ headerShown: true });
-        }
-    }, [navigation, isFocused]);
+
 
     const copiarParaClipboard = (textoParaCopiar: string) => {
         Clipboard.setString(textoParaCopiar);
@@ -60,7 +54,19 @@ function Home() {
             const response = await api.post(`/discurso/buscar`, {
                 texto: texto.trim(),
             });
-            setTraducao(response.data.traducao);
+            let traducaoData = response.data.traducao;
+
+            if (response.data.imagem_url || response.data.audio_url || response.data.video_url) {
+                traducaoData = traducaoData.map((trad: any) => ({
+                    ...trad,
+                    imagem_url: trad.imagem_url || response.data.imagem_url,
+                    audio_url: trad.audio_url || response.data.audio_url,
+                    video_url: trad.video_url || response.data.video_url,
+                    id: trad.id || response.data.traducao_id // in case we want to pass the id later
+                }));
+            }
+
+            setTraducao(traducaoData);
             setCategoria(response.data.categoria);
         } catch (error) {
             const err = error as any;
