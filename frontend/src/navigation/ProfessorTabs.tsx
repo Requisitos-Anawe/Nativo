@@ -1,15 +1,18 @@
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import Home from "../screens/Home";
-import Icon from "react-native-vector-icons/Ionicons";
-import TranslationCreate from "../screens/TranslationCreate";
-import Informations from "../screens/Informations";
-import TraslationList from "../screens/TranslationList";
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Icon from 'react-native-vector-icons/Ionicons';
+
+import Home from '../screens/Home';
 
 import CustomTabBar from './CustomTabBar';
+import TranslationCreate from '../screens/TranslationCreate';
+import TraslationList from '../screens/TranslationList';
+import Informations from '../screens/Informations';
 
 const Tab = createBottomTabNavigator();
 
 export default function ProfessorTabs() {
+  console.log('ProfessorTabs COM ATIVIDADES carregado');
+
   return (
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}
