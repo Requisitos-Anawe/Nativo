@@ -44,7 +44,7 @@ function Home() {
         setTraducao([]);
     };
 
-    const temPermissaoEdicao = user?.perfil === 'professor' || user?.perfil === 'administrador';
+    const temPermissaoEdicao = user?.perfil === 'professor' || user?.perfil === 'admin';
     const handleTraduzir = async () => {
         if (!texto.trim()) return;
 
