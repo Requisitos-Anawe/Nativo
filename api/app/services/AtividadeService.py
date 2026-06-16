@@ -123,25 +123,19 @@ def _validar_usuario_professor(usuario_id):
         )
 
     usuario = usuario_doc.to_dict() or {}
-    perfil_ref = usuario.get("perfil")
+    perfil_valor = usuario.get("perfil")
 
-    if not isinstance(perfil_ref, firestore.DocumentReference):
-        raise RegraNegocioError(
-            "Usuário associado não possui perfil válido",
-            400,
-            {"professores_ids": [f"Usuário '{usuario_id}' não possui perfil válido."]},
-        )
-
-    perfil_doc = perfil_ref.get()
-
-    if not perfil_doc.exists:
-        raise RegraNegocioError(
-            "Perfil do usuário associado não encontrado",
-            400,
-            {"professores_ids": [f"Perfil do usuário '{usuario_id}' não encontrado."]},
-        )
-
-    descricao = (perfil_doc.to_dict() or {}).get("descricao", "").strip().lower()
+    if isinstance(perfil_valor, firestore.DocumentReference):
+        perfil_doc = perfil_valor.get()
+        if not perfil_doc.exists:
+            raise RegraNegocioError(
+                "Perfil do usuário associado não encontrado",
+                400,
+                {"professores_ids": [f"Perfil do usuário '{usuario_id}' não encontrado."]},
+            )
+        descricao = (perfil_doc.to_dict() or {}).get("descricao", "").strip().lower()
+    else:
+        descricao = str(perfil_valor).strip().lower() if perfil_valor else ""
 
     if descricao != "professor":
         raise RegraNegocioError(

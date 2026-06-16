@@ -257,7 +257,7 @@ export default function AtividadesUsuarioScreen() {
   };
 
   const renderLista = () => (
-    <View style={styles.screen}>
+    <ScrollView style={styles.screen} contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
       <View style={styles.brandArea}>
         <View>
           <Text style={styles.brandTitle}>Atividades</Text>
@@ -324,7 +324,7 @@ export default function AtividadesUsuarioScreen() {
           />
         </Pressable>
       ))}
-    </View>
+    </ScrollView>
   );
 
   const renderExercicio = () => {
@@ -660,7 +660,7 @@ const styles = StyleSheet.create({
     paddingVertical: 22,
     alignItems: 'center',
     marginHorizontal: 28,
-    marginBottom: 28,
+    marginBottom: 120,
   },
   nextButtonText: {
     color: COLORS.lightGreen,
@@ -677,6 +677,7 @@ const styles = StyleSheet.create({
   resultContent: {
     paddingHorizontal: 28,
     paddingTop: 70,
+    paddingBottom: 120,
     alignItems: 'center',
   },
   resultIcon: {
