@@ -78,3 +78,16 @@ def atualizar_usuario(usuario_id, novo_perfil):
 
 def deletar_usuario(usuario_id):
     db.collection(COLLECTION).document(usuario_id).delete()
+
+def atualizar_dados_usuario(usuario_id, novos_dados): # UC12
+    # Atualiza o nome, a data de nascimento e outros campos mas acho q é isso só
+
+    usuario_ref = db.collection(COLLECTION).document(usuario_id)
+    camposPermitidos = ['nome', 'data_nascimento']
+    updateUsuario = {aux: v for aux, v in novos_dados.items() if aux in camposPermitidos}
+    # 
+    if not updateUsuario:
+        return 'Falha ao atualizar' 
+    
+    usuario_ref.update(updateUsuario)
+    return buscar_usuario_por_id(usuario_id)

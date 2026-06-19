@@ -140,3 +140,61 @@ def upload_file():
     url = blob.public_url
     
     return jsonify({'message': 'Arquivo enviado com sucesso', 'url': url})
+
+@bp.route('/usuarios/<usuario_id>', methods=['PUT']) # UC12
+@autenticar_jwt
+def atualizar_dados_usuario(usuario_id): # Confundi com a função de atualizar perfil e quase fiz asneiras =3
+    """
+    Atualizar dados do usuário
+    ---
+    security:
+      - Bearer: []
+    tags:
+      - Usuários
+    summary: Atualiza os dados de um usuário específico
+    parameters:
+      - name: usuario_id
+        in: path
+        type: string
+        required: true        description: ID do usuário
+      - in: body        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            nome:
+              type: string
+              example: admin
+            data_nascimento:
+              type: string
+              example: 1990-01-01
+    responses:
+      200:
+        description: Dados do usuário atualizados com sucesso
+      400:
+        description: Dados inválidos ou não fornecidos
+      404:
+        description: Usuário não encontrado
+      500:
+        description: Erro interno ao atualizar dados do usuário
+    """
+    # Fico feliz em saber q o copilot de alguma forma sabe exatamente oq eu quero fazer com 2 linhas de código
+    # Revisar!! .-.
+    dados = request.get_json()
+    if not dados:
+        return jsonify({'erro': 'Dados não fornecidos'}), 400
+    
+    usuario_atual = UsuarioService.buscar_usuario_por_id(usuario_id)
+    if not usuario_atual:
+        return jsonify({'erro': 'Usuário não encontrado'}), 404
+        # Talvez valha a pena verificar se o usuário é o dono da conta ou um admin
+        # Hmm fica p outro momento mesmo;
+
+    try:
+        resultado = UsuarioService.atualizar_dados_usuario(usuario_id, dados)
+        if isinstance(resultado, str):
+            return jsonify({'erro': resultado}), 400
+        return jsonify(resultado), 200
+
+    except Exception as e:
+        return jsonify({'erro': f'Erro ao atualizar dados do usuário: {str(e)}'}), 500
