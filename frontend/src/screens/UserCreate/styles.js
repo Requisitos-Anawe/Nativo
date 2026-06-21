@@ -1,82 +1,120 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export default StyleSheet.create({
     container: {
         flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        color: '#fff',
+        backgroundColor: '#093624',
     },
-
-    title: {
-        color: '#fff',
-        fontSize: 32,
-        fontWeight: 'bold',
-        marginBottom: 40
+    topSection: {
+        flex: 0.35,
+        position: 'relative',
+        justifyContent: 'flex-end',
     },
-
-    inputView: {
-        width: 250,
-        marginBottom: 10
+    leafTopRight: {
+        position: 'absolute',
+        top: -45,
+        right: -45,
+        transform: [{ rotate: '80deg' }, { scale: 1.0 }],
     },
-
-    subtitle: {
-        color: '#fff',
-        marginBottom: 5
+    leafBottomLeft: {
+        position: 'absolute',
+        bottom: -60,
+        left: -70,
+        transform: [{ rotate: '-100deg' }, { scale: 1.0 }],
     },
-
-    input: {
-        backgroundColor: '#fff',
-        borderRadius: 5,
-        marginBottom: 15,
-        height: 40,
-        paddingHorizontal: 10,
-        justifyContent: 'center'
+    bottomCard: {
+        flex: 0.65,
+        backgroundColor: '#F5F5F5',
+        borderTopLeftRadius: 40,
+        borderTopRightRadius: 40,
+        paddingHorizontal: 30,
+        paddingTop: 30,
     },
-
-    passwordContainer: {
+    headerCard: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 20,
-        width: 250,
-        borderRadius: 5,
-        backgroundColor: '#fff',
-        height: 40,
-        paddingHorizontal: 10
+        justifyContent: 'space-between',
+        marginBottom: 30,
     },
-
+    backButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    backText: {
+        color: '#093624',
+        fontSize: 14,
+        fontWeight: 'bold',
+        marginLeft: 5,
+    },
+    cadastroTitle: {
+        color: '#093624',
+        fontSize: 28,
+        fontWeight: '900',
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 20,
+        height: 55,
+        paddingHorizontal: 15,
+        marginBottom: 15,
+        width: '100%',
+        shadowColor: "#000",
+        shadowOffset: {
+            width: 0,
+            height: 2,
+        },
+        shadowOpacity: 0.1,
+        shadowRadius: 3.84,
+        elevation: 3,
+    },
+    inputIcon: {
+        marginRight: 10,
+    },
+    input: {
+        flex: 1,
+        color: '#000',
+        fontSize: 14,
+    },
+    dateText: {
+        flex: 1,
+        color: '#000',
+        fontSize: 14,
+        marginTop: 17,
+    },
     button: {
-        width: 150,
-        backgroundColor: '#CC005F',
-        paddingVertical: 8,
-        borderRadius: 4,
+        backgroundColor: '#093624',
+        borderRadius: 20,
+        height: 55,
+        width: '100%',
+        justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 10
+        marginBottom: 20,
+        marginTop: 10,
     },
-
     buttonNot: {
-        backgroundColor: '#686868ff',
-        paddingVertical: 8,
-        borderRadius: 4,
+        backgroundColor: '#686868',
+        borderRadius: 20,
+        height: 55,
+        width: '100%',
+        justifyContent: 'center',
         alignItems: 'center',
-        marginBottom: 10,
-        width: 150,
+        marginBottom: 20,
+        marginTop: 10,
     },
-
-    links: {
-        color: '#fff',
-        textDecorationLine: 'underline',
-        marginBottom: 15
+    buttonText: {
+        color: '#FFFFFF',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
-
     termo: {
-        fontSize: 10,
-        color: '#fff',
+        fontSize: 12,
+        color: '#093624',
         textDecorationLine: 'underline',
-        marginBottom: 15
-    },
-
-    checkbox: {
-        color: '#FFF'
+        marginBottom: 15,
+        textAlign: 'center',
     },
 });

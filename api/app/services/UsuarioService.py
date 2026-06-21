@@ -46,6 +46,10 @@ def listar_usuarios(limit=10, start_after=None):
         usuario = doc.to_dict()
         usuario["id"] = doc.id
         usuario.pop('senha', None)
+        
+        perfil = usuario.get('perfil')
+        if hasattr(perfil, 'id'):
+            usuario['perfil'] = perfil.id
 
         usuarios.append(usuario)
         last_id = doc.id
