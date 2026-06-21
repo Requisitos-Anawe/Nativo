@@ -386,7 +386,7 @@ export default function AtividadesScreen() {
   );
 
   const renderLista = () => (
-    <View style={styles.screen}>
+    <ScrollView style={styles.screen} contentContainerStyle={{ flexGrow: 1, paddingBottom: 120 }} showsVerticalScrollIndicator={false}>
       <View style={styles.brandArea}>
         <Text style={styles.brandTitle}>Atividades</Text>
       </View>
@@ -454,14 +454,14 @@ export default function AtividadesScreen() {
       <TouchableOpacity style={styles.createButton} onPress={abrirCriacao}>
         <Text style={styles.createButtonText}>+ Criar Atividade</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   );
 
   const renderFormulario = () => (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={styles.formScreen}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         <Text style={styles.label}>Nome da Atividade *</Text>
 
         <TextInput
@@ -609,7 +609,7 @@ export default function AtividadesScreen() {
     }
 
     return (
-      <ScrollView style={styles.formScreen} showsVerticalScrollIndicator={false}>
+      <ScrollView style={styles.formScreen} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
         <View style={styles.detailCard}>
           <Text style={styles.detailTitle}>{atividadeSelecionada.titulo}</Text>
 

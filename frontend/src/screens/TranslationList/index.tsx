@@ -12,9 +12,6 @@ import Erro from "../../components/Erro"
 import type {BottomTabNavigationProp} from '@react-navigation/bottom-tabs';
 import type {ProfessorTabParamList} from '../../navigation/NavigationTypes';
 
-export default function TraslationList(){
-    const navigation =
-        useNavigation<BottomTabNavigationProp<ProfessorTabParamList>>();
 import { VideoPlayer } from "../../components/VideoPlayer"
 import { AudioPlayer } from "../../components/AudioPlayer"
 import { FotoPlayer } from "../../components/FotoPlayer"
