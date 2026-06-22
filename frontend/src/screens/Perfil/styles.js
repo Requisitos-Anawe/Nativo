@@ -146,4 +146,10 @@ export default StyleSheet.create({
         borderWidth: 3,
         borderColor: '#8A1F18',
     }
+,
+    emptyText: {
+        textAlign: 'center',
+        color: '#555',
+        marginBottom: 25,
+    }
 });

@@ -122,7 +122,8 @@ def listar_favoritos_usuario(usuario_id, limit=50):
     favoritos.sort(key=lambda item: item.get('data_favorito') or '', reverse=True)
 
     return {
-        'data': favoritos[:limit],
+        'mensagem': 'Favoritos listados com sucesso',
+        'dados': favoritos[:limit],
         'limit': limit,
         'total': len(favoritos),
     }, 200

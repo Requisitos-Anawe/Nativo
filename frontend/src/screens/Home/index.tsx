@@ -13,10 +13,13 @@ import { VideoPlayer } from '../../components/VideoPlayer';
 import { useAuth } from "../../contexts/AuthContext";
 import { ModalAdicionarMidia } from "../../components/AddMidia";
 import AppText from '../../components/AppText';
+import FavoriteButton from '../../components/FavoriteButton';
+import {registrarHistorico} from '../../services/HistoricoService';
 
 type Traducao = {
     id: string;
     texto: string;
+    discurso?: string;
     imagem_url?: string;
     audio_url?: string;
     video_url?: string;
@@ -68,6 +71,14 @@ function Home() {
 
             setTraducao(traducaoData);
             setCategoria(response.data.categoria);
+
+            const primeiraTraducao = Array.isArray(traducaoData) ? traducaoData[0] : null;
+            if (primeiraTraducao?.texto) {
+                registrarHistorico({
+                    termo_pesquisado: texto.trim(),
+                    traducao_resultado: primeiraTraducao.texto,
+                }).catch(() => undefined);
+            }
         } catch (error) {
             const err = error as any;
             const mensagemErro = err.response?.data?.erro || "Não foi possível traduzir, erro desconhecido.";
@@ -198,6 +209,7 @@ function Home() {
                         </Text>
 
                         <View style={styles.outputActions}>
+                            {trad.id && <FavoriteButton traducaoId={trad.id} />}
                             <TouchableOpacity onPress={() => copiarParaClipboard(trad.texto)}>
                                 <Icon name="copy-outline" size={22} color="#000" />
                             </TouchableOpacity>

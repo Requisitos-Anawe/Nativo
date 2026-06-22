@@ -13,7 +13,7 @@ CAMPOS_USUARIO_COMPLETO = ['nome', 'data_nascimento', 'email', 'senha']
 CAMPOS_MODERADOR = ['nome', 'data_nascimento']
 PERFIS_ADMIN = {'admin', 'administrador'}
 PERFIS_MODERADOR = {'moderador'}
-PERFIS_PROTEGIDOS_MODERADOR = {'admin', 'administrador', 'moderador'}
+PERFIS_PROTEGIDOS_MODERADOR = {'admin', 'administrador', 'moderador', 'professor'}
 
 
 def _perfil(usuario_id):
@@ -33,7 +33,7 @@ def _campos_permitidos_para_atualizacao(usuario_logado_id, usuario_alvo_id):
 
     if perfil_logado in PERFIS_MODERADOR:
         if perfil_alvo in PERFIS_PROTEGIDOS_MODERADOR:
-            return None, ({'erro': 'Moderadores não podem editar administradores ou outros moderadores'}, 403)
+            return None, ({'erro': 'Moderadores não podem editar administradores, professores ou outros moderadores'}, 403)
         return CAMPOS_MODERADOR, None
 
     return None, ({'erro': 'Usuário não autorizado a editar este perfil'}, 403)
@@ -65,6 +65,19 @@ def listar():
     limit = request.args.get("limit", default=10, type=int)
     start_after = request.args.get("start_after")
     return jsonify(UsuarioService.listar_usuarios(limit, start_after))
+
+
+@bp.route('/usuarios/me', methods=['GET'])
+@autenticar_jwt
+def buscar_usuario_logado():
+    """Retorna os dados seguros do usuário autenticado."""
+    usuario = UsuarioService.buscar_usuario_por_id(g.usuario_id)
+    if usuario:
+        return jsonify({
+            'mensagem': 'Usuário encontrado',
+            'dados': usuario,
+        }), 200
+    return jsonify({'erro': 'Usuário não encontrado'}), 404
 
 @bp.route('/usuarios/<usuario_id>', methods=['GET'])
 @autenticar_jwt

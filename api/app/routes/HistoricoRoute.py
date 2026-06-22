@@ -46,6 +46,20 @@ def listar_historico_usuario_logado():
     return jsonify(resultado), status
 
 
+
+@bp.route("/usuarios/me/historico/<historico_id>", methods=["DELETE"])
+@autenticar_jwt
+def deletar_item_historico_usuario_logado(historico_id):
+    usuario_id = g.get("usuario_id")
+
+    resultado, status = HistoricoService.deletar_item_historico_usuario(
+        usuario_id=usuario_id,
+        historico_id=historico_id,
+    )
+
+    return jsonify(resultado), status
+
+
 @bp.route("/usuarios/me/historico", methods=["DELETE"])
 @autenticar_jwt
 def deletar_historico_usuario_logado():

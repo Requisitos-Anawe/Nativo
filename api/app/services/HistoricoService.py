@@ -99,3 +99,23 @@ class HistoricoService:
             return {
                 "erro": f"Erro ao deletar histórico: {str(e)}"
             }, 500
+
+    @staticmethod
+    def deletar_item_historico_usuario(usuario_id, historico_id):
+        try:
+            historico_ref = db.collection(COLLECTION).document(historico_id)
+            historico_doc = historico_ref.get()
+
+            if not historico_doc.exists:
+                return {"erro": "Item de histórico não encontrado"}, 404
+
+            historico = historico_doc.to_dict() or {}
+            if historico.get("usuario_id") != usuario_id:
+                return {"erro": "Usuário não autorizado a remover este item de histórico"}, 403
+
+            historico_ref.delete()
+
+            return {"mensagem": "Item de histórico removido com sucesso"}, 200
+
+        except Exception as e:
+            return {"erro": f"Erro ao deletar item do histórico: {str(e)}"}, 500

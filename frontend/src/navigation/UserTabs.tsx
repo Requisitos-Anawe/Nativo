@@ -31,7 +31,7 @@ export default function UserTabs() {
     >
       <Tab.Screen name="Tradutor" component={HomeStack} />
       <Tab.Screen name="Atividades" component={AtividadesUsuarioScreen} />
-      <Tab.Screen name="Perfil" component={PerfilStack} />
+      <Tab.Screen name="Perfil" component={PerfilStack} options={{ headerShown: false }}/>
     </Tab.Navigator>
   );
 }
