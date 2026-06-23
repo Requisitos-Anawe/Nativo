@@ -9,6 +9,10 @@ export interface AtividadePayload {
   descricao?: string | null;
   questoes: QuestaoAtividade[];
   professores_ids?: string[] | null;
+  insignia_titulo?: string | null;
+  insignia_descricao?: string | null;
+  insignia_imagem_url?: string | null;
+  insignia_porcentagem_minima?: number | null;
 }
 
 export interface Atividade extends AtividadePayload {

@@ -303,7 +303,9 @@ export default function Perfil() {
                                         activeOpacity={0.7}
                                     >
                                         <View style={styles.badgeImageWrapper}>
-                                            {Asset ? (
+                                            {imageName && imageName.startsWith('http') ? (
+                                                <Image source={{ uri: imageName }} style={{ width: 66, height: 66, borderRadius: 33 }} resizeMode="cover" />
+                                            ) : Asset ? (
                                                 isPng ? (
                                                     <Image source={Asset} style={{ width: 66, height: 66 }} resizeMode="contain" />
                                                 ) : (
@@ -485,6 +487,11 @@ export default function Perfil() {
                                 const imageName = insigniaSelecionada.adquirida
                                     ? insigniaSelecionada.imagem
                                     : insigniaSelecionada.imagem_bloqueada;
+                                
+                                if (imageName && imageName.startsWith('http')) {
+                                    return <Image source={{ uri: imageName }} style={{ width: 220, height: 220, borderRadius: 110 }} resizeMode="cover" />;
+                                }
+
                                 const Asset = ASSETS_INSIGNIAS[imageName];
                                 const isPng = imageName.endsWith('.png');
 
