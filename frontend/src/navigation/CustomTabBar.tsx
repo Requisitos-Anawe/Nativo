@@ -58,9 +58,22 @@ const TabBarButton = ({ options, route, isFocused, onPress, onLongPress }: any) 
   );
 };
 
+const getActiveRouteName = (state: any): string => {
+  const route = state.routes[state.index];
+  if (route.state) {
+    return getActiveRouteName(route.state);
+  }
+  return route.name;
+};
+
 export default function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
   const insets = useSafeAreaInsets();
   const TAB_BAR_HEIGHT = 70;
+
+  const activeRouteName = getActiveRouteName(state);
+  if (activeRouteName === 'Informations') {
+    return null;
+  }
 
   return (
     <View style={[styles.container, { height: TAB_BAR_HEIGHT + insets.bottom, paddingBottom: insets.bottom }]}>

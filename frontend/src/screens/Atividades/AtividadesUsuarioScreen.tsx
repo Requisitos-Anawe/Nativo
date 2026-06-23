@@ -24,6 +24,9 @@ import {
   submeterAtividadePratica,
 } from '../../services/PraticaAtividadeService';
 
+import { useAuth } from '../../contexts/AuthContext';
+import { obterInsigniasUsuario } from '../../services/InsigniaService';
+
 const COLORS = {
   black: '#171918',
   green: '#043222',
@@ -90,6 +93,7 @@ const mensagemErroApi = (erro: unknown): string => {
 };
 
 export default function AtividadesUsuarioScreen() {
+  const { user } = useAuth();
   const [modo, setModo] = useState<ModoTela>('lista');
   const [atividades, setAtividades] = useState<PraticaAtividadeResumo[]>([]);
   const [exercicio, setExercicio] = useState<ExercicioAtividade | null>(null);
@@ -205,6 +209,21 @@ export default function AtividadesUsuarioScreen() {
       setResultado(response.dados);
       setModo('resultado');
       await carregarLista();
+
+      if (user?.id) {
+        try {
+          const data = await obterInsigniasUsuario(user.id);
+          const conquistadaAgora = data.insignias.find(i => i.limite === data.total_atividades && i.adquirida);
+          if (conquistadaAgora) {
+            Alert.alert(
+              "🎉 Nova Insígnia Conquistada!",
+              `Parabéns! Você desbloqueou a insígnia:\n\n"${conquistadaAgora.titulo}" - ${conquistadaAgora.descricao}`
+            );
+          }
+        } catch (badgeErr) {
+          console.error("Erro ao verificar nova insígnia:", badgeErr);
+        }
+      }
     } catch (err) {
       const mensagem = mensagemErroApi(err);
 
