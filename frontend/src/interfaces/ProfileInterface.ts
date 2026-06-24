@@ -5,4 +5,5 @@ export interface UsuarioPerfil {
   cpf_mascarado?: string;
   data_nascimento?: string;
   perfil?: string;
+  imagem_url?: string;
 }

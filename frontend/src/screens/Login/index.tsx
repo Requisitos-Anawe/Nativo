@@ -31,6 +31,10 @@ export default function Login() {
     );
 
     const handleLogin = async () => {
+        if (!cpf.trim() || !password.trim()) {
+            setErro("CPF e senha são obrigatórios.");
+            return;
+        }
         try {
             setCarregando(true);
             setErro('');

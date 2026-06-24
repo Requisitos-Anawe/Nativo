@@ -2,6 +2,7 @@ import React, {useCallback, useState} from 'react';
 import {
   ActivityIndicator,
   Alert,
+  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -13,10 +14,13 @@ import {
 import {useFocusEffect, useNavigation} from '@react-navigation/native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/Ionicons';
+import {launchImageLibrary} from 'react-native-image-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 import {useAuth} from '../../contexts/AuthContext';
 import {UsuarioPerfil} from '../../interfaces/ProfileInterface';
 import {atualizarUsuario, buscarMeuPerfil} from '../../services/ProfileService';
+import api from '../../services/api';
 import styles from './styles';
 
 type FormState = {
@@ -25,14 +29,36 @@ type FormState = {
   data_nascimento: string;
   senha: string;
   confirmarSenha: string;
+  imagem_url: string;
 };
 
 const normalizarData = (valor?: string | null) => {
   if (!valor) {
     return '';
   }
-
   return valor.split('T')[0];
+};
+
+const converterParaBr = (valor?: string | null) => {
+  if (!valor) return '';
+  const dataLimpa = valor.split('T')[0];
+  const partes = dataLimpa.split('-');
+  if (partes.length === 3) {
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+  }
+  return valor;
+};
+
+const aplicarMascaraData = (valor: string) => {
+  const limpo = valor.replace(/\D/g, '');
+  let formatado = limpo;
+  if (limpo.length > 2) {
+    formatado = `${limpo.slice(0, 2)}/${limpo.slice(2)}`;
+  }
+  if (limpo.length > 4) {
+    formatado = `${limpo.slice(0, 2)}/${limpo.slice(2, 4)}/${limpo.slice(4, 8)}`;
+  }
+  return formatado;
 };
 
 export default function EditProfileScreen() {
@@ -49,10 +75,18 @@ export default function EditProfileScreen() {
     data_nascimento: '',
     senha: '',
     confirmarSenha: '',
+    imagem_url: '',
   });
+  const [dataDigitada, setDataDigitada] = useState('');
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+
+  // States para o DateTimePicker
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showSenha, setShowSenha] = useState(false);
+  const [showConfirmarSenha, setShowConfirmarSenha] = useState(false);
+  const [dateObj, setDateObj] = useState(new Date());
 
   const carregarPerfil = useCallback(async () => {
     try {
@@ -63,12 +97,14 @@ export default function EditProfileScreen() {
       const dados: UsuarioPerfil = response?.dados || response?.usuario || response;
 
       setPerfil(dados);
+      setDataDigitada(converterParaBr(dados?.data_nascimento));
       setForm({
         nome: dados?.nome || '',
         email: dados?.email || '',
         data_nascimento: normalizarData(dados?.data_nascimento),
         senha: '',
         confirmarSenha: '',
+        imagem_url: dados?.imagem_url || '',
       });
     } catch (error: any) {
       setErro(error?.response?.data?.erro || 'Não foi possível carregar seus dados.');
@@ -87,9 +123,85 @@ export default function EditProfileScreen() {
     setForm(prev => ({...prev, [campo]: valor}));
   };
 
+  const handleDataDigitadaChange = (valor: string) => {
+    const mascarado = aplicarMascaraData(valor);
+    setDataDigitada(mascarado);
+
+    if (mascarado.length === 10) {
+      const partes = mascarado.split('/');
+      if (partes.length === 3) {
+        const [dia, mes, ano] = partes;
+        atualizarCampo('data_nascimento', `${ano}-${mes}-${dia}`);
+      }
+    } else {
+      atualizarCampo('data_nascimento', '');
+    }
+  };
+
+  const abrirCalendario = () => {
+    if (form.data_nascimento) {
+      const partes = form.data_nascimento.split('-');
+      if (partes.length === 3) {
+        const ano = parseInt(partes[0], 10);
+        const mes = parseInt(partes[1], 10) - 1;
+        const dia = parseInt(partes[2], 10);
+        setDateObj(new Date(ano, mes, dia));
+      }
+    } else {
+      setDateObj(new Date());
+    }
+    setShowDatePicker(true);
+  };
+
+  const onChangeDatePicker = (event: any, selectedDate?: Date) => {
+    setShowDatePicker(false);
+    if (selectedDate) {
+      setDateObj(selectedDate);
+      const dia = String(selectedDate.getDate()).padStart(2, '0');
+      const mes = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const ano = selectedDate.getFullYear();
+      const dataFormatada = `${dia}/${mes}/${ano}`;
+      setDataDigitada(dataFormatada);
+      atualizarCampo('data_nascimento', `${ano}-${mes}-${dia}`);
+    }
+  };
+
+  const selecionarAvatar = async () => {
+    const result = await launchImageLibrary({mediaType: 'photo', quality: 0.8});
+    if (result.assets && result.assets.length > 0) {
+      const asset = result.assets[0];
+      const formData = new FormData();
+      formData.append('file', {
+        uri: Platform.OS === 'android' ? asset.uri : asset.uri?.replace('file://', ''),
+        type: asset.type || 'image/jpeg',
+        name: asset.fileName || 'avatar.jpg',
+      } as any);
+      formData.append('pasta', 'perfis');
+
+      try {
+        setSalvando(true);
+        const uploadResponse = await api.post('/upload_midia', formData, {
+          headers: {'Content-Type': 'multipart/form-data'},
+        });
+        const url = uploadResponse.data.url;
+        atualizarCampo('imagem_url', url);
+        Alert.alert(
+          'Sucesso',
+          'Foto de perfil carregada com sucesso! Lembre-se de salvar as alterações do perfil.',
+        );
+      } catch (uploadError: any) {
+        Alert.alert(
+          'Erro',
+          uploadError?.response?.data?.erro || 'Falha ao realizar o upload da imagem.',
+        );
+      } finally {
+        setSalvando(false);
+      }
+    }
+  };
+
   const validarFormulario = () => {
     const email = form.email.trim();
-    const dataNascimento = form.data_nascimento.trim();
 
     if (!form.nome.trim()) {
       Alert.alert('Erro', 'O nome é obrigatório.');
@@ -101,8 +213,13 @@ export default function EditProfileScreen() {
       return false;
     }
 
-    if (dataNascimento && !/^\d{4}-\d{2}-\d{2}$/.test(dataNascimento)) {
-      Alert.alert('Erro', 'Informe a data no formato AAAA-MM-DD.');
+    if (dataDigitada.trim() && !/^\d{2}\/\d{2}\/\d{4}$/.test(dataDigitada.trim())) {
+      Alert.alert('Erro', 'Informe a data no formato DD/MM/AAAA.');
+      return false;
+    }
+
+    if (form.data_nascimento.trim() && !/^\d{4}-\d{2}-\d{2}$/.test(form.data_nascimento.trim())) {
+      Alert.alert('Erro', 'Data de nascimento inválida.');
       return false;
     }
 
@@ -138,6 +255,7 @@ export default function EditProfileScreen() {
       email?: string;
       data_nascimento?: string;
       senha?: string;
+      imagem_url?: string;
     } = {
       nome: form.nome.trim(),
     };
@@ -153,6 +271,8 @@ export default function EditProfileScreen() {
     if (form.senha) {
       payload.senha = form.senha;
     }
+
+    payload.imagem_url = form.imagem_url;
 
     try {
       setSalvando(true);
@@ -202,6 +322,24 @@ export default function EditProfileScreen() {
           <Text style={styles.errorText}>{erro}</Text>
         ) : (
           <>
+            <View style={styles.avatarWrapper}>
+              <View style={styles.avatarContainer}>
+                {form.imagem_url ? (
+                  <Image
+                    source={{uri: form.imagem_url}}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <View style={[styles.avatarImage, {alignItems: 'center', justifyContent: 'center'}]}>
+                    <Icon name="person" size={60} color="#042d1f" />
+                  </View>
+                )}
+                <TouchableOpacity style={styles.avatarEditButton} onPress={selecionarAvatar}>
+                  <Icon name="camera" size={18} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            </View>
+
             <Text style={styles.label}>Nome</Text>
             <TextInput
               style={styles.input}
@@ -223,33 +361,68 @@ export default function EditProfileScreen() {
             />
 
             <Text style={styles.label}>Data de nascimento</Text>
-            <TextInput
-              style={styles.input}
-              value={form.data_nascimento}
-              onChangeText={valor => atualizarCampo('data_nascimento', valor)}
-              placeholder="AAAA-MM-DD"
-              placeholderTextColor="#777"
-            />
+            <View style={styles.dateInputContainer}>
+              <TextInput
+                style={styles.dateInput}
+                value={dataDigitada}
+                onChangeText={handleDataDigitadaChange}
+                placeholder="DD/MM/AAAA"
+                placeholderTextColor="#777"
+                keyboardType="numeric"
+                maxLength={10}
+              />
+              <TouchableOpacity style={styles.calendarButton} onPress={abrirCalendario}>
+                <Icon name="calendar-outline" size={22} color="#042d1f" />
+              </TouchableOpacity>
+            </View>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={dateObj}
+                mode="date"
+                display="default"
+                onChange={onChangeDatePicker}
+                maximumDate={new Date()}
+              />
+            )}
 
             <Text style={styles.label}>Nova senha</Text>
-            <TextInput
-              style={styles.input}
-              value={form.senha}
-              onChangeText={valor => atualizarCampo('senha', valor)}
-              placeholder="Deixe em branco para não alterar"
-              placeholderTextColor="#777"
-              secureTextEntry
-            />
+            <View style={styles.passwordInputContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                value={form.senha}
+                onChangeText={valor => atualizarCampo('senha', valor)}
+                placeholder="Deixe em branco para não alterar"
+                placeholderTextColor="#777"
+                secureTextEntry={!showSenha}
+              />
+              <TouchableOpacity style={styles.eyeButton} onPress={() => setShowSenha(!showSenha)}>
+                <Icon
+                  name={showSenha ? "eye-off-outline" : "eye-outline"}
+                  size={20}
+                  color="#042d1f"
+                />
+              </TouchableOpacity>
+            </View>
 
             <Text style={styles.label}>Confirmar nova senha</Text>
-            <TextInput
-              style={styles.input}
-              value={form.confirmarSenha}
-              onChangeText={valor => atualizarCampo('confirmarSenha', valor)}
-              placeholder="Confirme a nova senha"
-              placeholderTextColor="#777"
-              secureTextEntry
-            />
+            <View style={styles.passwordInputContainer}>
+              <TextInput
+                style={styles.passwordInput}
+                value={form.confirmarSenha}
+                onChangeText={valor => atualizarCampo('confirmarSenha', valor)}
+                placeholder="Confirme a nova senha"
+                placeholderTextColor="#777"
+                secureTextEntry={!showConfirmarSenha}
+              />
+              <TouchableOpacity style={styles.eyeButton} onPress={() => setShowConfirmarSenha(!showConfirmarSenha)}>
+                <Icon
+                  name={showConfirmarSenha ? "eye-off-outline" : "eye-outline"}
+                  size={20}
+                  color="#042d1f"
+                />
+              </TouchableOpacity>
+            </View>
 
             <TouchableOpacity
               style={[styles.saveButton, salvando && styles.saveButtonDisabled]}

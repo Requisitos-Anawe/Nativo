@@ -12,6 +12,7 @@ export async function atualizarUsuario(
     email?: string;
     senha?: string;
     data_nascimento?: string;
+    imagem_url?: string;
   },
 ) {
   const response = await api.put(`/usuarios/${usuarioId}`, dados);
