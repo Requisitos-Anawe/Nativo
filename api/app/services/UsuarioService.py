@@ -182,7 +182,7 @@ def atualizar_dados_usuario(usuario_id, novos_dados, campos_permitidos=None):
     if not usuario_doc.exists:
         return 'Usuário não encontrado'
 
-    campos_permitidos = set(campos_permitidos or ['nome', 'data_nascimento', 'email', 'senha'])
+    campos_permitidos = set(campos_permitidos or ['nome', 'data_nascimento', 'email', 'senha', 'imagem_url'])
     update_usuario = {}
 
     if 'nome' in campos_permitidos and 'nome' in novos_dados:
@@ -213,6 +213,9 @@ def atualizar_dados_usuario(usuario_id, novos_dados, campos_permitidos=None):
         update_usuario['senha'] = bcrypt.hashpw(
             senha.encode('utf-8'), bcrypt.gensalt()
         ).decode('utf-8')
+
+    if 'imagem_url' in campos_permitidos and 'imagem_url' in novos_dados:
+        update_usuario['imagem_url'] = novos_dados.get('imagem_url')
 
     if not update_usuario:
         return 'Nenhum campo permitido foi informado para atualização'

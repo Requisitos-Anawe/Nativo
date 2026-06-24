@@ -9,8 +9,8 @@ schema = UsuarioSchema()
 
 bp = Blueprint('usuarios', __name__)
 
-CAMPOS_USUARIO_COMPLETO = ['nome', 'data_nascimento', 'email', 'senha']
-CAMPOS_MODERADOR = ['nome', 'data_nascimento']
+CAMPOS_USUARIO_COMPLETO = ['nome', 'data_nascimento', 'email', 'senha', 'imagem_url']
+CAMPOS_MODERADOR = ['nome', 'data_nascimento', 'imagem_url']
 PERFIS_ADMIN = {'admin', 'administrador'}
 PERFIS_MODERADOR = {'moderador'}
 PERFIS_PROTEGIDOS_MODERADOR = {'admin', 'administrador', 'moderador', 'professor'}
