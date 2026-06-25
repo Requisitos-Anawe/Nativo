@@ -120,17 +120,6 @@ export default function Login() {
                         <Text style={styles.buttonText}>{carregando ? "Aguarde..." : "Entrar"}</Text>
                     </TouchableOpacity>
 
-                    <View style={styles.dividerContainer}>
-                        <View style={styles.divider} />
-                        <Text style={styles.dividerText}>ou continue com</Text>
-                        <View style={styles.divider} />
-                    </View>
-
-                    <TouchableOpacity style={styles.googleButton}>
-                        <Icon name="logo-google" size={20} color="#DB4437" style={styles.googleIcon} />
-                        <Text style={styles.googleButtonText}>Sign in with Google</Text>
-                    </TouchableOpacity>
-
                     <View style={styles.registerContainer}>
                         <Text style={styles.noAccountText}>Não possui conta? </Text>
                         <TouchableOpacity onPress={() => navigation.navigate("Cadastro")}>
