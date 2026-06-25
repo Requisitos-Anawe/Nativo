@@ -1,37 +1,134 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export default StyleSheet.create({
-    title: {
-        fontFamily: 'InterDisplay-SemiBold',
-        fontSize: 20,
-        textDecorationLine: 'underline',
-        marginBottom: 15,
-        color: '#CC005F',
+    container: {
+        flex: 1,
+        backgroundColor: '#f4f5f4',
     },
-
-    pink: {
-        color: '#CC005F',
+    svgBackground: {
+        width: width * 1.5,
+        aspectRatio: 3088 / 999,
+        marginLeft: -(width * 0.50),
+        marginTop: 40,
+    },
+    header: {
+        backgroundColor: '#042d1f',
+        width: '100%',
+        paddingBottom: 25,
+        paddingHorizontal: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        zIndex: 10,
+        position: 'relative',
+    },
+    headerTitle: {
+        color: '#fff',
+        fontSize: 22,
         fontFamily: 'InterDisplay-SemiBold',
+        fontWeight: '600',
+        textAlign: 'center',
+    },
+    backButton: {
+        position: 'absolute',
+        left: 20,
+        bottom: 20,
+        padding: 5,
+        zIndex: 11,
+    },
+    scrollContainer: {
+        flex: 1,
+        zIndex: 1,
+    },
+    scrollContent: {
+        paddingHorizontal: 24,
+        paddingTop: 40,
+        paddingBottom: 0,
+    },
+    welcomeTitle: {
+        fontFamily: 'InterDisplay-SemiBold',
+        fontSize: 24,
+        fontWeight: 'bold',
+        color: '#1A1A1A',
+        marginBottom: 30,
+    },
+    downloadCard: {
+        backgroundColor: '#042d1f',
+        borderRadius: 16,
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 20,
+        marginBottom: 30,
+        overflow: 'hidden',
+    },
+    downloadIconCircle: {
+        width: 50,
+        height: 50,
+        borderRadius: 25,
+        backgroundColor: '#F5E8C7',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
+        zIndex: 2,
+    },
+    downloadTextContainer: {
+        flex: 1,
+        zIndex: 2,
+    },
+    downloadTitle: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    downloadSubtitle: {
+        color: '#A8B1AC',
+        fontSize: 11,
+        lineHeight: 14,
+    },
+    downloadArrow: {
+        marginLeft: 10,
+        zIndex: 2,
+    },
+    card: {
+        backgroundColor: '#fff',
+        borderRadius: 16,
+        padding: 24,
+        marginBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 10,
+        elevation: 4,
+    },
+    cardHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 15,
+    },
+    cardIconCircle: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: '#042d1f',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
+    },
+    cardTitle: {
+        color: '#042d1f',
         fontSize: 16,
-        textDecorationLine: 'underline',
-        marginBottom: 15
-    },
-
-    link: {
         fontWeight: 'bold',
-        textDecorationLine: 'underline',
-        marginBottom: 15,
     },
-
-    paragraphTitle: {
-        color: '#CC005F',
-        fontWeight: 'bold',
-        fontSize: 18,
-        marginTop: 15,
-    },
-
-    paragraph: {
-        marginBottom: 5,
-        fontSize: 18,
+    cardText: {
+        fontSize: 13,
+        color: '#444',
+        lineHeight: 18,
+        textAlign: 'justify',
+        marginBottom: 10,
     },
 });

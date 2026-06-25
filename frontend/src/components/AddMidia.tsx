@@ -14,7 +14,7 @@ interface ModalProps {
 }
 export const ModalAdicionarMidia = ({ visible, onClose, traducaoId, traducao, onSucesso }: ModalProps) => {
     const { user } = useAuth();
-    const temPermissao = user?.perfil === 'professor' || user?.perfil === 'administrador';
+    const temPermissao = user?.perfil === 'professor' || user?.perfil === 'administrador' || user?.perfil === 'admin';
 
     // Se não tiver permissão, fecha o modal automaticamente
     React.useEffect(() => {

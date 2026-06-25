@@ -1,34 +1,69 @@
 import { StyleSheet } from 'react-native';
-import { Dimensions } from 'react-native';
-const screenHeight = Dimensions.get('window').height;
 
 export default StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        padding: 25,
-        minHeight: screenHeight-140
-    },
-
-    divisor: {
-        width: '100%',
-        height: 1,
-        backgroundColor: "#D9D9D9",
-        marginVertical: 20
-    },
-
-    title: {
-        fontSize: 32,
-        fontWeight: 'bold',
-        paddingBottom: 12
-    },
-
-    termo: {
-        fontSize: 16,
-        color: '#000',
-        textDecorationLine: 'underline',
-        marginBottom: 15,
-        fontWeight: 'bold',
-        paddingTop: 14,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: '#f4f5f4',
+  },
+  header: {
+    backgroundColor: '#042d1f',
+    width: '100%',
+    paddingBottom: 25,
+    paddingHorizontal: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    zIndex: 10,
+    position: 'relative',
+  },
+  backButton: {
+    position: 'absolute',
+    left: 20,
+    bottom: 20,
+    padding: 5,
+    zIndex: 11,
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 22,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  content: {
+    padding: 20,
+    paddingBottom: 90,
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  cardText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
 });

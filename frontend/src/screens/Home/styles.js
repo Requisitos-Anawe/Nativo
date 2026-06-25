@@ -1,84 +1,163 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export default StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#f4f5f4',
+    paddingHorizontal: 24,
+    paddingTop: 40,
+  },
+
+  // Language selectors
+  languageContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 30,
+  },
+  languageDropdown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
     backgroundColor: '#fff',
-    padding: 24,
-  },
-
-  input: {
-    height: 150,
+    borderRadius: 8,
     borderWidth: 1,
-    borderRadius: 24,
-    borderColor: "#d6d6d6",
-    paddingHorizontal: 20,
-    textAlign: 'left',    
-    textAlignVertical: 'top', 
-    marginBottom: 24
+    borderColor: '#dcdcdc',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    width: '40%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  languageText: {
+    color: '#a0a0a0',
+    fontSize: 14,
+    fontFamily: 'InterDisplay-SemiBold',
+    fontWeight: 'bold',
   },
 
+  // Input Area
+  inputContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#dcdcdc',
+    padding: 15,
+    minHeight: 120,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    position: 'relative',
+  },
+  input: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    textAlignVertical: 'top',
+    paddingRight: 30, // space for clear icon
+  },
+  clearIcon: {
+    position: 'absolute',
+    top: 15,
+    right: 15,
+    zIndex: 2,
+  },
+
+  // Translate Button
   actions: {
     width: '100%',
-    justifyContent: 'center',
     alignItems: 'flex-end',
-    marginBottom: 10
+    marginBottom: 30,
   },
-
   button: {
-    width: 120,
-    backgroundColor: '#CC005F',
-    paddingVertical: 8,
-    borderRadius: 4,
-    alignItems: 'center',
+    backgroundColor: '#042d1f',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 6,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
-
   textButton: {
     color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+
+  // Output Area
+  outputContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#dcdcdc',
+    padding: 15,
+    minHeight: 120,
+    marginBottom: 30,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+    position: 'relative',
+  },
+  outputText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 30,
+  },
+  outputActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'absolute',
+    bottom: -10,
+    right: 15,
+    gap: 15,
   },
 
-  divisor: {
-    width: '100%',
-    height: 1,
-    backgroundColor: "#D9D9D9",
-    marginBottom: 15
+  // Bottom Graphics
+  graphicsContainer: {
+    flexDirection: 'row',
+    gap: 15,
+    marginBottom: 30,
+  },
+  graphicBoxRed: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#F5E8C7',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 4,
+  },
+  graphicBoxGreen: {
+    width: 100,
+    height: 100,
+    backgroundColor: '#A3D9B1',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 4,
   },
 
-  translateActions: {
-    width: '100%',
-    color: "#fff",
-    height: 'auto',
-    marginBottom: 10
-  },
-
-  categoriaTexto: {
-    fontSize: 12,
-    fontFamily: 'InterDisplay-SemiBold',
-    color: "#003066"
-  },
-
-  traducaoBox: {
-    paddingVertical: 32,
-  },
-
-  traducaoTexto: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-
-  copyText: {
-    fontSize: 10,
-    color: "#fff"
-  },
-
-  copy: {
-    backgroundColor: "rgba(0, 48, 102, 0.5)",
-    padding: 6,
-    borderRadius: 6,
-    width: 80,
-    alignItems: 'center'
+  // Floating Info Button
+  infoButton: {
+    position: 'absolute',
+    bottom: 150,
+    right: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#888',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
   }
-
 });

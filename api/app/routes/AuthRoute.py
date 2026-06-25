@@ -3,6 +3,7 @@ from firebase_admin import firestore
 from flask_bcrypt import check_password_hash
 import re, jwt, os, pytz, bcrypt
 from app.helpers.senha_validator import validar_senha
+from app.helpers.cpf_validator import validar_cpf, limpar_cpf
 from datetime import datetime, timedelta
 
 from app.schemas.UsuarioSchema import UsuarioSchema
@@ -27,28 +28,45 @@ def login():
             description: Credenciais inválidas
     """
     data = request.get_json()
-    email = data.get("email")
+    cpf = data.get("cpf")
     senha = data.get("senha")
 
-    if not email or not senha:
-        return jsonify({"erro": "Email e senha obrigatórios"}), 400
+    if not cpf or not senha:
+        return jsonify({"erro": "CPF e senha obrigatórios"}), 400
 
-    usuarios_ref = db.collection("usuario").where("email", "==", email).limit(1)
+    cpf_limpo = limpar_cpf(cpf)
+
+    usuarios_ref = db.collection("usuario").where("cpf", "==", cpf_limpo).limit(1)
     results = list(usuarios_ref.stream())
 
     if not results:
-        return jsonify({"erro": "Email ou senha incorretos"}), 404
+        return jsonify({"erro": "CPF ou senha incorretos"}), 404
 
     usuario_doc = results[0]
     usuario_data = usuario_doc.to_dict()
     
-    if not check_password_hash(usuario_data["senha"], senha):
-        return jsonify({"erro": "Email ou senha incorretos"}), 401
+    senha_db = usuario_data.get("senha")
+    if not senha_db:
+        return jsonify({"erro": "Usuário sem senha configurada"}), 401
+
+    try:
+        if not check_password_hash(senha_db, senha):
+            return jsonify({"erro": "CPF ou senha incorretos"}), 401
+    except Exception:
+        return jsonify({"erro": "CPF ou senha incorretos"}), 401
 
     token = jwt.encode({
         "usuario_id": usuario_doc.id,
         "exp": datetime.now(pytz.timezone("America/Sao_Paulo")) + timedelta(hours=12)
     }, os.getenv("JWT_SECRET"), algorithm="HS256")
+
+    perfil_val = usuario_data.get('perfil')
+    if hasattr(perfil_val, 'id'):
+        perfil_val = perfil_val.id
+
+    data_nasc_val = usuario_data.get('data_nascimento')
+    if hasattr(data_nasc_val, 'isoformat'):
+        data_nasc_val = data_nasc_val.isoformat()
 
     return jsonify({
         "token": token,
@@ -56,8 +74,8 @@ def login():
             "id": usuario_doc.id,
             "nome": usuario_data.get("nome"),
             "email": usuario_data.get("email"),
-            "data_nascimento": usuario_data.get('data_nascimento'),
-            "perfil": usuario_data.get('perfil'),
+            "data_nascimento": data_nasc_val,
+            "perfil": perfil_val,
         }
     }), 200
 
@@ -81,12 +99,13 @@ def cadastro():
     email = data.get("email")
     senha = data.get("senha")
     nome = data.get("nome")
+    cpf = data.get("cpf")
     
     data_nascimento = data.get("data_nascimento")
     data_dt = datetime.fromisoformat(data_nascimento)
 
     # VALIDACOES
-    if not all([email, senha, nome, data_nascimento]):
+    if not all([email, senha, nome, data_nascimento, cpf]):
         return jsonify({"erro": "Todos os campos são obrigatórios"}), 400
     
     if not isinstance(data_dt, datetime):
@@ -103,9 +122,18 @@ def cadastro():
     if not valida:
         return jsonify({"erro": "Senha inválida", "detalhes": erros_senha}), 400
 
+    if not validar_cpf(cpf):
+        return jsonify({"erro": "CPF inválido."}), 400
+
+    cpf_limpo = limpar_cpf(cpf)
+
     usuarios_ref = db.collection("usuario").where("email", "==", email).stream()
     if any(usuarios_ref):
         return jsonify({"erro": "Email já cadastrado"}), 409
+        
+    usuarios_cpf_ref = db.collection("usuario").where("cpf", "==", cpf_limpo).stream()
+    if any(usuarios_cpf_ref):
+        return jsonify({"erro": "CPF já cadastrado"}), 409
     
     # CADASTRO
     senha_hash = bcrypt.hashpw(senha.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
@@ -113,6 +141,7 @@ def cadastro():
         "email": email,
         "senha": senha_hash,
         "nome": nome,
+        "cpf": cpf_limpo,
         "data_nascimento": data_dt,
         "perfil": "padrão",
         "data_criacao": firestore.SERVER_TIMESTAMP
