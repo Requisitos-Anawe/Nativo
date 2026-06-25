@@ -57,12 +57,11 @@ export default function HistoricoScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, {paddingTop: insets.top + 12}]}>
+      <View style={[styles.header, {paddingTop: insets.top + 20}]}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Histórico</Text>
-        <Text style={styles.headerSubtitle}>Veja o histórico de traduções anteriores</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>

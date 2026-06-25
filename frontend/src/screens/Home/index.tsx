@@ -150,21 +150,6 @@ function Home() {
         <SafeAreaView style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
 
-                {/* Seletores de Idioma */}
-                <View style={styles.languageContainer}>
-                    <View style={styles.languageDropdown}>
-                        <Text style={styles.languageText}>De</Text>
-                        <Icon name="chevron-down" size={16} color="#000" />
-                    </View>
-
-                    <Icon name="swap-horizontal" size={20} color="#000" />
-
-                    <View style={styles.languageDropdown}>
-                        <Text style={styles.languageText}>Para</Text>
-                        <Icon name="chevron-down" size={16} color="#000" />
-                    </View>
-                </View>
-
                 {/* Área de Input */}
                 <View style={styles.inputContainer}>
                     <TextInput
@@ -204,37 +189,36 @@ function Home() {
 
                 {traducao.map((trad, index) => (
                     <View key={trad.id || index} style={[styles.outputContainer, { marginBottom: index === traducao.length - 1 ? 30 : 15 }]}>
-                        <Text style={[styles.outputText, { color: '#333' }]}>
-                            {trad.texto}
-                        </Text>
+                        <View style={{ minHeight: 60, paddingBottom: 20 }}>
+                            <Text style={[styles.outputText, { color: '#333', marginBottom: 5 }]}>
+                                {trad.texto}
+                            </Text>
 
-                        <View style={styles.outputActions}>
-                            {trad.id && <FavoriteButton traducaoId={trad.id} />}
-                            <TouchableOpacity onPress={() => copiarParaClipboard(trad.texto)}>
-                                <Icon name="copy-outline" size={22} color="#000" />
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <Icon name="mic-outline" size={24} color="#000" />
-                            </TouchableOpacity>
+                            <View style={styles.outputActions}>
+                                {trad.id && <FavoriteButton traducaoId={trad.id} />}
+                                <TouchableOpacity onPress={() => copiarParaClipboard(trad.texto)} style={{ padding: 4 }}>
+                                    <Icon name="copy-outline" size={22} color="#000" />
+                                </TouchableOpacity>
+                            </View>
                         </View>
 
                         {/* Midias */}
                         {trad.imagem_url && (
-                            <View style={{ marginTop: 20 }}>
+                            <View style={{ marginTop: 5 }}>
                                 <FotoPlayer uri={trad.imagem_url} />
                                 <BotaoRemoverMidia id={trad.id} tipo="imagem_url" />
                             </View>
                         )}
 
                         {trad.audio_url && (
-                            <View style={{ marginTop: 20 }}>
+                            <View style={{ marginTop: 5 }}>
                                 <AudioPlayer uri={trad.audio_url} name="Áudio da Tradução" />
                                 <BotaoRemoverMidia id={trad.id} tipo="audio_url" />
                             </View>
                         )}
 
                         {trad.video_url && (
-                            <View style={{ marginTop: 20 }}>
+                            <View style={{ marginTop: 5 }}>
                                 <VideoPlayer uri={trad.video_url} />
                                 <BotaoRemoverMidia id={trad.id} tipo="video_url" />
                             </View>

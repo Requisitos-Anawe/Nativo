@@ -39,8 +39,8 @@ export default function Perfil() {
 
       const [perfilResponse, historicoResponse, favoritosResponse] = await Promise.all([
         buscarMeuPerfil(),
-        listarHistorico(2),
-        listarFavoritos(2),
+        listarHistorico(5),
+        listarFavoritos(5),
       ]);
 
       const dadosPerfil = perfilResponse.dados || perfilResponse.usuario || perfilResponse;
@@ -141,14 +141,21 @@ export default function Perfil() {
                 Você ainda não possui histórico de traduções.
               </Text>
             ) : (
-              historicoPreview.map(item => (
-                <TranslationCard
-                  key={item.id}
-                  discurso={item.termo_pesquisado}
-                  traducao={item.traducao_resultado}
-                  onDelete={() => removerHistoricoLocal(item)}
-                />
-              ))
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{marginBottom: 14}}
+                contentContainerStyle={{paddingRight: 20}}>
+                {historicoPreview.slice(0, 5).map(item => (
+                  <TranslationCard
+                    key={item.id}
+                    discurso={item.termo_pesquisado}
+                    traducao={item.traducao_resultado}
+                    onDelete={() => removerHistoricoLocal(item)}
+                    style={{width: 300, marginRight: 12, marginBottom: 0}}
+                  />
+                ))}
+              </ScrollView>
             )}
 
             <TouchableOpacity
@@ -164,14 +171,21 @@ export default function Perfil() {
                 Você ainda não possui traduções favoritas.
               </Text>
             ) : (
-              favoritosPreview.map(item => (
-                <TranslationCard
-                  key={item.id}
-                  discurso={item.traducao?.discurso}
-                  traducao={item.traducao?.texto}
-                  onDelete={() => removerFavoritoLocal(item)}
-                />
-              ))
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{marginBottom: 14}}
+                contentContainerStyle={{paddingRight: 20}}>
+                {favoritosPreview.slice(0, 5).map(item => (
+                  <TranslationCard
+                    key={item.id}
+                    discurso={item.traducao?.discurso}
+                    traducao={item.traducao?.texto}
+                    onDelete={() => removerFavoritoLocal(item)}
+                    style={{width: 300, marginRight: 12, marginBottom: 0}}
+                  />
+                ))}
+              </ScrollView>
             )}
           </>
         )}

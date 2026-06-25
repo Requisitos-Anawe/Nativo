@@ -66,12 +66,11 @@ export default function FavoritosScreen() {
 
   return (
     <View style={styles.container}>
-      <View style={[styles.header, {paddingTop: insets.top + 12}]}>
+      <View style={[styles.header, {paddingTop: insets.top + 20}]}>
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Favoritos</Text>
-        <Text style={styles.headerSubtitle}>Veja suas traduções favoritas</Text>
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
