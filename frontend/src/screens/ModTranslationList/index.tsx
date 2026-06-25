@@ -7,7 +7,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import Erro from "../../components/Erro";
 
 export default function ModTranslationList(){
-    const [traducoes, setTraducoes] = useState<TraducaoInterface[]|null>(null);
+    const [traducoes, setTraducoes] = useState<TraducaoResponse[]|null>(null);
     const [carregando, setCarregando] = useState(true);
     const [erro, setErro] = useState('');
 
@@ -105,7 +105,7 @@ export default function ModTranslationList(){
                         </View>
                         <Text style={styles.textDiscurso} > 
                             <Text style={{fontWeight: 'bold'}}>Discurso: </Text> 
-                            {item.discurso.texto}
+                            {item.discurso}
                         </Text>
                         <View style={styles.divisor} />
                         <Text style={styles.textTraducao}>
