@@ -1,5 +1,5 @@
-import React from 'react';
-import { Text, TouchableOpacity, View, ScrollView } from "react-native";
+import React, { useState, useEffect } from 'react';
+import { Text, TouchableOpacity, View, ScrollView, Switch } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -13,6 +13,30 @@ export default function Configurations() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { setUser } = useAuth();
+  const [offlineAccess, setOfflineAccess] = useState(false);
+
+  useEffect(() => {
+    const loadOfflineState = async () => {
+      try {
+        const value = await AsyncStorage.getItem('offline_access');
+        if (value !== null) {
+          setOfflineAccess(value === 'true');
+        }
+      } catch (e) {
+        console.log('Erro ao carregar estado offline:', e);
+      }
+    };
+    loadOfflineState();
+  }, []);
+
+  const toggleOfflineAccess = async (value: boolean) => {
+    try {
+      setOfflineAccess(value);
+      await AsyncStorage.setItem('offline_access', String(value));
+    } catch (e) {
+      console.log('Erro ao salvar estado offline:', e);
+    }
+  };
 
   const handleLogout = async () => {
     try {
@@ -34,6 +58,22 @@ export default function Configurations() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+        <View style={styles.card}>
+          <View style={styles.cardLeft}>
+            <View style={[styles.iconContainer, { backgroundColor: '#e8f0fe' }]}>
+              <Icon name="cloud-offline-outline" size={22} color="#1a73e8" />
+            </View>
+            <Text style={styles.cardText}>Acesso Offline</Text>
+          </View>
+          <Switch
+            trackColor={{ false: '#dcdcdc', true: '#042d1f' }}
+            thumbColor={offlineAccess ? '#fff' : '#f4f4f4'}
+            ios_backgroundColor="#dcdcdc"
+            onValueChange={toggleOfflineAccess}
+            value={offlineAccess}
+          />
+        </View>
+
         <TouchableOpacity
           style={styles.card}
           activeOpacity={0.7}
