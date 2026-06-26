@@ -144,6 +144,7 @@ export default function Configurations() {
                 onPress={handleDownload}
                 style={{ padding: 4 }}
                 hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                testID="download-acervo-button"
               >
                 <Icon
                   name="cloud-download-outline"
@@ -196,7 +197,7 @@ export default function Configurations() {
             </Text>
             <View style={{ width: '100%', height: 8, backgroundColor: '#e0e0e0', borderRadius: 4, overflow: 'hidden', marginBottom: 12 }}>
 
-              <View style={{ width: `${downloadProgress}%`, height: '100%', backgroundColor: '#1a73e8' }} />
+              <View testID="download-progress-bar" style={{ width: `${downloadProgress}%`, height: '100%', backgroundColor: '#1a73e8' }} />
             </View>
             <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1a73e8', marginBottom: 24 }}>
               {downloadProgress}%
