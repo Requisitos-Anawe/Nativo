@@ -45,6 +45,7 @@ def listar_usuarios(limit=10, start_after=None):
     for doc in docs:
         usuario = doc.to_dict()
         usuario["id"] = doc.id
+        usuario["status"] = usuario.get("status", "ativo")
         usuario.pop('senha', None)
         
         perfil = usuario.get('perfil')
@@ -82,3 +83,19 @@ def atualizar_usuario(usuario_id, novo_perfil):
 
 def deletar_usuario(usuario_id):
     db.collection(COLLECTION).document(usuario_id).delete()
+
+def atualizar_status_usuario(usuario_id, novo_status, motivo=None):
+    usuario_ref = db.collection(COLLECTION).document(usuario_id)
+
+    if novo_status not in ['ativo', 'banido']:
+        return jsonify({'erro': 'Status inválido'}), 400
+
+    dados_update = {
+        'status': novo_status,
+        'data_atualizacao': datetime.now(pytz.timezone("America/Sao_Paulo"))
+    }
+    
+    if motivo:
+        dados_update['motivo_banimento'] = motivo
+
+    usuario_ref.update(dados_update)

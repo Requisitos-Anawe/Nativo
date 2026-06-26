@@ -45,6 +45,9 @@ def login():
     usuario_doc = results[0]
     usuario_data = usuario_doc.to_dict()
     
+    if usuario_data.get("status") == "banido":
+        return jsonify({"erro": "Esta conta foi banida e não tem mais acesso à plataforma."}), 403
+    
     senha_db = usuario_data.get("senha")
     if not senha_db:
         return jsonify({"erro": "Usuário sem senha configurada"}), 401
@@ -144,6 +147,7 @@ def cadastro():
         "cpf": cpf_limpo,
         "data_nascimento": data_dt,
         "perfil": "padrão",
+        "status": "ativo",
         "data_criacao": firestore.SERVER_TIMESTAMP
     }
 
