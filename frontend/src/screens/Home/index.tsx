@@ -55,7 +55,6 @@ function Home() {
             const resultadosLocais: any = await TraducaoLocalRepository.buscarTextoOffline(termoBuscado);
 
             if (resultadosLocais && resultadosLocais.length > 0) {
-                //formata o resultado do SQLite para casar com a tipagem da tela
                 const traducaoDataFormatada = resultadosLocais.map((item: any) => ({
                     id: item.id.toString(),
                     texto: item.traducao,
@@ -63,12 +62,16 @@ function Home() {
                 }));
 
                 setTraducao(traducaoDataFormatada);
-                setCategoria("Acervo Local (Offline)"); // Dá um feedback sutil que não usou a internet
+                setCategoria("Acervo Local (Offline)");
             } else {
-                Alert.alert("Modo Offline", "Nenhuma tradução encontrada para esta palavra no aparelho.");
+                setTraducao([]);
+                setCategoria('');
+                Alert.alert("Modo Offline", "Nenhum conteúdo offline disponível para esta palavra. Baixe os dados nas Configurações.");
             }
         } catch (error) {
-            Alert.alert("Erro", "Falha ao ler o banco de dados offline do dispositivo.");
+            setTraducao([]);
+            setCategoria('');
+            Alert.alert("Erro", "Não foi possível acessar o banco offline. Baixe os dados nas Configurações ou ative o acesso offline.");
         }
     };
 
@@ -83,7 +86,6 @@ function Home() {
             const estaOnline = conexao.isConnected && conexao.isInternetReachable;
 
             if (estaOnline) {
-                // 2A. FLUXO PADRÃO ONLINE (Tenta bater na API)
                 try {
                     const response = await api.post(`/discurso/buscar`, {
                         texto: texto.trim(),
@@ -188,7 +190,6 @@ function Home() {
         <SafeAreaView style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
 
-                {/* Área de Input */}
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
@@ -205,7 +206,6 @@ function Home() {
                     )}
                 </View>
 
-                {/* Botão Traduzir */}
                 <View style={styles.actions}>
                     <TouchableOpacity
                         style={styles.button}
