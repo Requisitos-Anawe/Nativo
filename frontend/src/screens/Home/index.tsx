@@ -12,9 +12,10 @@ import { AudioPlayer } from '../../components/AudioPlayer';
 import { VideoPlayer } from '../../components/VideoPlayer';
 import { useAuth } from "../../contexts/AuthContext";
 import { ModalAdicionarMidia } from "../../components/AddMidia";
-import AppText from '../../components/AppText';
+import { TraducaoLocalRepository } from '../../repositories/TraducaoLocalRepository';
 import FavoriteButton from '../../components/FavoriteButton';
-import {registrarHistorico} from '../../services/HistoricoService';
+import { registrarHistorico } from '../../services/HistoricoService';
+import NetInfo from '@react-native-community/netinfo';
 
 type Traducao = {
     id: string;
@@ -48,41 +49,78 @@ function Home() {
     };
 
     const temPermissaoEdicao = user?.perfil === 'professor' || user?.perfil === 'admin';
+
+    const executarBuscaOffline = async (termoBuscado: string) => {
+        try {
+            const resultadosLocais: any = await TraducaoLocalRepository.buscarTextoOffline(termoBuscado);
+
+            if (resultadosLocais && resultadosLocais.length > 0) {
+                //formata o resultado do SQLite para casar com a tipagem da tela
+                const traducaoDataFormatada = resultadosLocais.map((item: any) => ({
+                    id: item.id.toString(),
+                    texto: item.traducao,
+                    discurso: item.original
+                }));
+
+                setTraducao(traducaoDataFormatada);
+                setCategoria("Acervo Local (Offline)"); // Dá um feedback sutil que não usou a internet
+            } else {
+                Alert.alert("Modo Offline", "Nenhuma tradução encontrada para esta palavra no aparelho.");
+            }
+        } catch (error) {
+            Alert.alert("Erro", "Falha ao ler o banco de dados offline do dispositivo.");
+        }
+    };
+
     const handleTraduzir = async () => {
         if (!texto.trim()) return;
 
         try {
             setCarregando(true);
-            setTraducao([])
-            const response = await api.post(`/discurso/buscar`, {
-                texto: texto.trim(),
-            });
-            let traducaoData = response.data.traducao;
+            setTraducao([]);
 
-            if (response.data.imagem_url || response.data.audio_url || response.data.video_url) {
-                traducaoData = traducaoData.map((trad: any) => ({
-                    ...trad,
-                    imagem_url: trad.imagem_url || response.data.imagem_url,
-                    audio_url: trad.audio_url || response.data.audio_url,
-                    video_url: trad.video_url || response.data.video_url,
-                    id: trad.id || response.data.traducao_id // in case we want to pass the id later
-                }));
+            const conexao = await NetInfo.fetch();
+            const estaOnline = conexao.isConnected && conexao.isInternetReachable;
+
+            if (estaOnline) {
+                // 2A. FLUXO PADRÃO ONLINE (Tenta bater na API)
+                try {
+                    const response = await api.post(`/discurso/buscar`, {
+                        texto: texto.trim(),
+                    });
+                    
+                    let traducaoData = response.data.traducao;
+
+                    if (response.data.imagem_url || response.data.audio_url || response.data.video_url) {
+                        traducaoData = traducaoData.map((trad: any) => ({
+                            ...trad,
+                            imagem_url: trad.imagem_url || response.data.imagem_url,
+                            audio_url: trad.audio_url || response.data.audio_url,
+                            video_url: trad.video_url || response.data.video_url,
+                            id: trad.id || response.data.traducao_id
+                        }));
+                    }
+
+                    setTraducao(traducaoData);
+                    setCategoria(response.data.categoria);
+
+                    const primeiraTraducao = Array.isArray(traducaoData) ? traducaoData[0] : null;
+                    if (primeiraTraducao?.texto) {
+                        registrarHistorico({
+                            termo_pesquisado: texto.trim(),
+                            traducao_resultado: primeiraTraducao.texto,
+                        }).catch(() => undefined);
+                    }
+                } catch (errorOnline) {
+                    console.log("Erro no servidor, tentando fallback offline...");
+                    await executarBuscaOffline(texto.trim());
+                }
+            } else {
+                await executarBuscaOffline(texto.trim());
             }
 
-            setTraducao(traducaoData);
-            setCategoria(response.data.categoria);
-
-            const primeiraTraducao = Array.isArray(traducaoData) ? traducaoData[0] : null;
-            if (primeiraTraducao?.texto) {
-                registrarHistorico({
-                    termo_pesquisado: texto.trim(),
-                    traducao_resultado: primeiraTraducao.texto,
-                }).catch(() => undefined);
-            }
         } catch (error) {
-            const err = error as any;
-            const mensagemErro = err.response?.data?.erro || "Não foi possível traduzir, erro desconhecido.";
-            Alert.alert(mensagemErro);
+            Alert.alert("Erro", "Ocorreu um erro inesperado ao realizar a busca.");
         } finally {
             setCarregando(false);
         }
