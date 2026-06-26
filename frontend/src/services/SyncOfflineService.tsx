@@ -25,7 +25,7 @@ export const SyncOfflineService = {
         }
     },
 
-    iniciarDownload: async (onProgress: (porcentagem: number) => void) => {
+    iniciarDownload: async (onProgress: (porcentagem: number) => void, signal?: AbortSignal) => {
         return new Promise(async (resolve, reject) => {
             try {
                 const unsubscribeNet = NetInfo.addEventListener(state => {
@@ -36,6 +36,7 @@ export const SyncOfflineService = {
                 });
 
                 const resposta = await api.get('/sync/banco_traducoes', {
+                    signal: signal,
                     onDownloadProgress: (progressEvent) => {
                         if (progressEvent.total) {
                             const porcentagem = Math.round((progressEvent.loaded * 100) / progressEvent.total);

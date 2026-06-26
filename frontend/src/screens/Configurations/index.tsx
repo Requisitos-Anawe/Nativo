@@ -1,19 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { Text, TouchableOpacity, View, ScrollView, Switch } from "react-native";
+import React, { useState, useEffect, useRef } from 'react';
+import { Text, TouchableOpacity, View, ScrollView, Switch, Alert, ActivityIndicator, Modal } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import Icon from "react-native-vector-icons/Ionicons";
+import MaterialIcon from "react-native-vector-icons/MaterialIcons";
 
 import { useAuth } from "../../contexts/AuthContext";
 import DownloadFile from "../../components/DownloadFile";
 import styles from "./styles";
+import { SyncOfflineService } from '../../services/SyncOfflineService';
 
 export default function Configurations() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const { setUser } = useAuth();
   const [offlineAccess, setOfflineAccess] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [tamanhoDownload, setTamanhoDownload] = useState("0.00");
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
     const loadOfflineState = async () => {
@@ -29,12 +36,76 @@ export default function Configurations() {
     loadOfflineState();
   }, []);
 
-  const toggleOfflineAccess = async (value: boolean) => {
+  const sincronizarBancoLocal = async () => {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) throw new Error("Usuário não autenticado");
+    abortControllerRef.current = new AbortController();
+    await SyncOfflineService.prepararSincronizacao();
+    await SyncOfflineService.iniciarDownload(
+      (progresso) => setDownloadProgress(progresso),
+      abortControllerRef.current.signal
+    );
+  };
+
+  const cancelarDownload = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+  };
+
+  const handleDownload = async () => {
     try {
-      setOfflineAccess(value);
-      await AsyncStorage.setItem('offline_access', String(value));
-    } catch (e) {
-      console.log('Erro ao salvar estado offline:', e);
+      setIsDownloading(true);
+      const tamanho = await SyncOfflineService.prepararSincronizacao();
+      setTamanhoDownload(tamanho);
+      setIsDownloading(false);
+      const titulo = offlineAccess ? "Atualizar Acervo" : "Baixar Acervo Offline";
+      const mensagem = offlineAccess
+        ? `Deseja substituir os dados locais pelas traduções mais recentes do servidor?\n\nTamanho do download: ${tamanho} MB`
+        : `Deseja baixar os dados para acessar sem internet? Isso consumirá espaço no seu dispositivo.\n\nTamanho do download: ${tamanho} MB`;
+
+      Alert.alert(titulo, mensagem, [
+        { text: "Cancelar", style: "cancel" },
+        {
+          text: "Baixar",
+          onPress: async () => {
+            try {
+              setIsLoading(true);
+              setDownloadProgress(0);
+              await sincronizarBancoLocal();
+              await AsyncStorage.setItem('offline_access', 'true');
+              setOfflineAccess(true);
+              setTimeout(() => {
+                Alert.alert("Sucesso", "Banco de traduções atualizado com sucesso!");
+              }, 500);
+
+            } catch (error: any) {
+              if (error.name === 'CanceledError' || error.message === 'canceled') {
+                setTimeout(() => {
+                  Alert.alert("Cancelado", "O download foi interrompido.");
+                }, 500);
+              } else {
+                console.log('Erro na sincronização:', error);
+                setTimeout(() => {
+                  Alert.alert("Erro", "Não foi possível conectar ao servidor. Verifique sua conexão e tente novamente.");
+                }, 500);
+              }
+            } finally {
+              setIsLoading(false);
+              setDownloadProgress(0);
+              abortControllerRef.current = null;
+            }
+          }
+        }
+      ]);
+    } catch (error: any) {
+      setIsLoading(false);
+      if (error.message === 'ESPACO_INSUFICIENTE') {
+        Alert.alert("Erro de Espaço", "Seu dispositivo não tem espaço livre suficiente para armazenar o acervo.");
+      } else {
+        console.log('Erro ao verificar tamanho:', error);
+        Alert.alert("Erro", "Não foi possível verificar os dados com o servidor. Verifique sua conexão.");
+      }
     }
   };
 
@@ -61,17 +132,27 @@ export default function Configurations() {
         <View style={styles.card}>
           <View style={styles.cardLeft}>
             <View style={[styles.iconContainer, { backgroundColor: '#e8f0fe' }]}>
-              <Icon name="cloud-offline-outline" size={22} color="#1a73e8" />
+              <MaterialIcon name="signal-wifi-off" size={22} color="#1a73e8" />
             </View>
-            <Text style={styles.cardText}>Acesso Offline</Text>
+            <Text style={styles.cardText}>Habilitar tradução offline</Text>
           </View>
-          <Switch
-            trackColor={{ false: '#dcdcdc', true: '#042d1f' }}
-            thumbColor={offlineAccess ? '#fff' : '#f4f4f4'}
-            ios_backgroundColor="#dcdcdc"
-            onValueChange={toggleOfflineAccess}
-            value={offlineAccess}
-          />
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#1a73e8" style={{ marginRight: 10 }} />
+            ) : (
+              <TouchableOpacity
+                onPress={handleDownload}
+                style={{ padding: 4 }}
+                hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+              >
+                <Icon
+                  name="cloud-download-outline"
+                  size={26}
+                  color={offlineAccess ? "#1a73e8" : "#042d1f"}
+                />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         <TouchableOpacity
@@ -102,6 +183,34 @@ export default function Configurations() {
           <Icon name="chevron-forward" size={20} color="#c62828" />
         </TouchableOpacity>
       </ScrollView>
+      <Modal
+        transparent={true}
+        visible={isLoading}
+        animationType="fade"
+      >
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0, 0, 0, 0.6)' }}>
+          <View style={{ width: '80%', backgroundColor: '#fff', borderRadius: 12, padding: 24, alignItems: 'center', elevation: 5 }}>
+
+            <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#333', marginBottom: 20 }}>
+              Baixando Acervo...
+            </Text>
+            <View style={{ width: '100%', height: 8, backgroundColor: '#e0e0e0', borderRadius: 4, overflow: 'hidden', marginBottom: 12 }}>
+
+              <View style={{ width: `${downloadProgress}%`, height: '100%', backgroundColor: '#1a73e8' }} />
+            </View>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#1a73e8', marginBottom: 24 }}>
+              {downloadProgress}%
+            </Text>
+            <TouchableOpacity
+              onPress={cancelarDownload}
+              style={{ width: '100%', paddingVertical: 12, backgroundColor: '#ffebee', borderRadius: 8, alignItems: 'center' }}
+            >
+              <Text style={{ color: '#c62828', fontWeight: 'bold', fontSize: 16 }}>Cancelar</Text>
+            </TouchableOpacity>
+
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
