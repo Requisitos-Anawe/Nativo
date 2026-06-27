@@ -107,66 +107,6 @@ def buscar(usuario_id):
         return jsonify(usuario)
     return jsonify({"erro": "Usuário não encontrado"}), 404
 
-@bp.route('/usuarios/<usuario_id>/perfil', methods=['PUT'])
-@autenticar_jwt
-@verificar_admin
-def editar_perfil_usuario(usuario_id):
-    """
-    Atualizar perfil do usuário
-    ---
-    security:
-      - Bearer: []
-    tags:
-      - Usuários
-    summary: Atualiza o perfil de um usuário
-    parameters:
-      - name: usuario_id
-        in: path
-        type: string
-        required: true
-        description: ID do usuário
-      - in: body
-        name: body
-        required: true
-        schema:
-          type: object
-          properties:
-            perfil:
-              type: string
-              example: admin
-    responses:
-      200:
-        description: Perfil atualizado com sucesso
-      400:
-        description: Perfil não fornecido
-      500:
-        description: Erro interno ao atualizar perfil
-    """
-    dados = request.get_json()
-    perfil = dados.get('perfil')
-    print(perfil)
-
-    if not perfil:
-        return jsonify({'erro': 'Novo perfil não fornecido'}), 400
-    
-    if usuario_id == g.usuario_id:
-        return jsonify({'erro': 'Usuário não pode editar seu próprio perfil'}), 400
-    
-    usuario_atual = UsuarioService.buscar_usuario_por_id(usuario_id)
-    if not usuario_atual:
-        return jsonify({'erro': 'Usuário não encontrado'}), 404
-
-    if usuario_atual['perfil'] == 'admin' and perfil != 'admin':
-        return jsonify({'erro': 'Usuário não pode remover o perfil de admin'}), 400
-
-    try:
-        erro = UsuarioService.atualizar_usuario(usuario_id, perfil)
-        if(erro):
-            return erro
-        return jsonify({'mensagem': 'Perfil do usuário atualizado com sucesso'}), 200
-
-    except Exception as e:
-        return jsonify({'erro': f'Erro ao atualizar perfil: {str(e)}'}), 500
 
 @bp.route('/upload', methods=['POST'])
 @autenticar_jwt
