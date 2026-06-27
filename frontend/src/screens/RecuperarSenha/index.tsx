@@ -1,7 +1,7 @@
 import { useNavigation } from "@react-navigation/native";
 import { Alert, Platform, Text, TextInput, TouchableOpacity, View, ScrollView, KeyboardAvoidingView } from "react-native";
 import styles from "./styles";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Icon from "react-native-vector-icons/Ionicons";
 import api from "../../services/api";
 import Erro from "../../components/Erro";
@@ -19,9 +19,22 @@ export default function RecuperarSenha() {
     const [carregando, setCarregando] = useState(false);
     const [erro, setErro] = useState('');
     const [isFocused, setIsFocused] = useState(false);
+    const [timer, setTimer] = useState(0);
 
     const inputRef = useRef<TextInput>(null);
     const navigation = useNavigation();
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (timer > 0) {
+            interval = setInterval(() => {
+                setTimer((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => {
+            if (interval) clearInterval(interval);
+        };
+    }, [timer]);
 
     const handleEnviarEmail = async () => {
         if (!email.trim()) {
@@ -35,6 +48,7 @@ export default function RecuperarSenha() {
                 email: email.trim()
             });
             Alert.alert("Sucesso", response.data.mensagem || "Código de verificação enviado!");
+            setTimer(180); // Start 3-minute cooldown (180 seconds)
             setStep(2);
         } catch (error: any) {
             if (error.response) {
@@ -56,6 +70,7 @@ export default function RecuperarSenha() {
                 email: email.trim()
             });
             Alert.alert("Sucesso", response.data.mensagem || "Novo código de verificação enviado!");
+            setTimer(180); // Reset/restart 3-minute cooldown
         } catch (error: any) {
             if (error.response) {
                 setErro(error.response.data.erro || "Erro ao reenviar código.");
@@ -285,11 +300,11 @@ export default function RecuperarSenha() {
 
                             <TouchableOpacity
                                 onPress={handleReenviarEmail}
-                                disabled={carregando}
-                                style={styles.resendButton}
+                                disabled={carregando || timer > 0}
+                                style={[styles.resendButton, (carregando || timer > 0) && { opacity: 0.5 }]}
                             >
                                 <Text style={styles.resendText}>
-                                    Reenviar código
+                                    {timer > 0 ? `Reenviar código (${Math.floor(timer / 60)}:${String(timer % 60).padStart(2, '0')})` : "Reenviar código"}
                                 </Text>
                             </TouchableOpacity>
                         </View>

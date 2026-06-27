@@ -199,18 +199,40 @@ def recuperar_senha():
     if not email:
         return jsonify({"erro": "E-mail é obrigatório"}), 400
 
+    now = datetime.now(pytz.timezone("America/Sao_Paulo"))
+
+    # Check cooldown (3 minutes / 180 seconds)
+    codigo_doc = db.collection("codigo_verificacao").document(email).get()
+    if codigo_doc.exists:
+        codigo_data = codigo_doc.to_dict()
+        criado_em = codigo_data.get("criado_em")
+        if criado_em:
+            if criado_em.tzinfo is None:
+                criado_em = pytz.timezone("America/Sao_Paulo").localize(criado_em)
+            diferenca = (now - criado_em).total_seconds()
+            if diferenca < 180:
+                tempo_restante = int(180 - diferenca)
+                return jsonify({"erro": f"Por favor, aguarde {tempo_restante} segundos antes de solicitar um novo código."}), 429
+
     usuarios_ref = db.collection("usuario").where("email", "==", email).limit(1).stream()
     if not any(usuarios_ref):
         # FE01 – E-mail Não Encontrado: generic success message to prevent user enumeration
+        # But we still store the cooldown info to prevent enumeration using timing/cooldown checks
+        db.collection("codigo_verificacao").document(email).set({
+            "email": email,
+            "criado_em": now,
+            "expira_em": now - timedelta(minutes=1) # Expired dummy code
+        })
         return jsonify({"mensagem": "Se o e-mail informado estiver cadastrado, o código de recuperação foi enviado."}), 200
 
     codigo = f"{random.randint(100000, 999999)}"
-    expira_em = datetime.now(pytz.timezone("America/Sao_Paulo")) + timedelta(minutes=15)
+    expira_em = now + timedelta(minutes=15)
 
     db.collection("codigo_verificacao").document(email).set({
         "email": email,
         "codigo": codigo,
-        "expira_em": expira_em
+        "expira_em": expira_em,
+        "criado_em": now
     })
 
     if enviar_email_codigo(email, codigo):
