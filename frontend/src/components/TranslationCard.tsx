@@ -28,7 +28,7 @@ export default function TranslationCard({
         },
         style,
       ]}>
-      <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start'}}>
+      <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'stretch', flex: 1}}>
         {/* Columns container */}
         <View style={{flexDirection: 'row', flex: 1}}>
           {/* Left Column: Discurso */}
@@ -37,7 +37,7 @@ export default function TranslationCard({
               <Icon name="chatbubble-ellipses-outline" size={18} color="#042d1f" />
               <Text style={{fontWeight: 'bold', color: '#1A1A1A'}}>Discurso</Text>
             </View>
-            <Text style={{marginTop: 6, color: '#1A1A1A'}}>
+            <Text numberOfLines={2} style={{marginTop: 6, color: '#1A1A1A'}}>
               {discurso || 'Discurso não informado'}
             </Text>
           </View>
@@ -51,7 +51,7 @@ export default function TranslationCard({
               <Icon name="language-outline" size={18} color="#042d1f" />
               <Text style={{fontWeight: 'bold', color: '#1A1A1A'}}>Tradução</Text>
             </View>
-            <Text style={{marginTop: 6, color: '#1A1A1A'}}>
+            <Text numberOfLines={2} style={{marginTop: 6, color: '#1A1A1A'}}>
               {traducao || 'Tradução não informada'}
             </Text>
           </View>
@@ -61,7 +61,7 @@ export default function TranslationCard({
         {onDelete && (
           <TouchableOpacity
             onPress={onDelete}
-            style={{marginLeft: 8, padding: 4}}>
+            style={{marginLeft: 8, padding: 4, justifyContent: 'center'}}>
             <Icon name="trash-outline" size={18} color="#dc3545" />
           </TouchableOpacity>
         )}

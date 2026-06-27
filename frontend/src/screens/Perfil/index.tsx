@@ -131,36 +131,6 @@ export default function Perfil() {
             <TouchableOpacity
               style={styles.sectionHeader}
               activeOpacity={0.7}
-              onPress={() => navigation.navigate('Historico')}>
-              <Text style={styles.sectionTitle}>HISTÓRICO</Text>
-              <Icon name="chevron-forward" size={20} color="#000" />
-            </TouchableOpacity>
-
-            {historicoPreview.length === 0 ? (
-              <Text style={styles.emptyText}>
-                Você ainda não possui histórico de traduções.
-              </Text>
-            ) : (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={{marginBottom: 14}}
-                contentContainerStyle={{paddingRight: 20}}>
-                {historicoPreview.slice(0, 5).map(item => (
-                  <TranslationCard
-                    key={item.id}
-                    discurso={item.termo_pesquisado}
-                    traducao={item.traducao_resultado}
-                    onDelete={() => removerHistoricoLocal(item)}
-                    style={{width: 300, marginRight: 12, marginBottom: 0}}
-                  />
-                ))}
-              </ScrollView>
-            )}
-
-            <TouchableOpacity
-              style={styles.sectionHeader}
-              activeOpacity={0.7}
               onPress={() => navigation.navigate('Favoritos')}>
               <Text style={styles.sectionTitle}>TRADUÇÕES FAVORITAS</Text>
               <Icon name="chevron-forward" size={20} color="#000" />
@@ -182,7 +152,37 @@ export default function Perfil() {
                     discurso={item.traducao?.discurso}
                     traducao={item.traducao?.texto}
                     onDelete={() => removerFavoritoLocal(item)}
-                    style={{width: 300, marginRight: 12, marginBottom: 0}}
+                    style={{width: 300, height: 110, marginRight: 12, marginBottom: 0}}
+                  />
+                ))}
+              </ScrollView>
+            )}
+
+            <TouchableOpacity
+              style={styles.sectionHeader}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('Historico')}>
+              <Text style={styles.sectionTitle}>HISTÓRICO</Text>
+              <Icon name="chevron-forward" size={20} color="#000" />
+            </TouchableOpacity>
+
+            {historicoPreview.length === 0 ? (
+              <Text style={styles.emptyText}>
+                Você ainda não possui histórico de traduções.
+              </Text>
+            ) : (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                style={{marginBottom: 14}}
+                contentContainerStyle={{paddingRight: 20}}>
+                {historicoPreview.slice(0, 5).map(item => (
+                  <TranslationCard
+                    key={item.id}
+                    discurso={item.termo_pesquisado}
+                    traducao={item.traducao_resultado}
+                    onDelete={() => removerHistoricoLocal(item)}
+                    style={{width: 300, height: 110, marginRight: 12, marginBottom: 0}}
                   />
                 ))}
               </ScrollView>
