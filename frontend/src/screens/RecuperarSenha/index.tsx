@@ -47,6 +47,26 @@ export default function RecuperarSenha() {
         }
     };
 
+    const handleReenviarEmail = async () => {
+        try {
+            setCarregando(true);
+            setErro('');
+            setCodigo('');
+            const response = await api.post(`/auth/recuperar-senha`, {
+                email: email.trim()
+            });
+            Alert.alert("Sucesso", response.data.mensagem || "Novo código de verificação enviado!");
+        } catch (error: any) {
+            if (error.response) {
+                setErro(error.response.data.erro || "Erro ao reenviar código.");
+            } else {
+                setErro("Erro inesperado. Tente novamente.");
+            }
+        } finally {
+            setCarregando(false);
+        }
+    };
+
     const handleValidarCodigo = async () => {
         if (!codigo.trim()) {
             setErro("Por favor, digite o código de verificação.");
@@ -63,7 +83,24 @@ export default function RecuperarSenha() {
             setStep(3);
         } catch (error: any) {
             if (error.response) {
-                setErro(error.response.data.erro || "Código inválido ou expirado.");
+                const erroMsg = error.response.data.erro;
+                setErro(erroMsg || "Código inválido ou expirado.");
+                if (erroMsg && erroMsg.includes("A solicitação não é mais válida")) {
+                    Alert.alert(
+                        "Solicitação Expirada/Inválida",
+                        erroMsg,
+                        [
+                            {
+                                text: "Nova Solicitação",
+                                onPress: () => {
+                                    setStep(1);
+                                    setCodigo('');
+                                    setErro('');
+                                }
+                            }
+                        ]
+                    );
+                }
             } else {
                 setErro("Erro inesperado. Tente novamente.");
             }
@@ -99,6 +136,25 @@ export default function RecuperarSenha() {
                     setErro(`${erroMsg}:\n- ${detalhes.join('\n- ')}`);
                 } else {
                     setErro(erroMsg || "Erro ao redefinir senha.");
+                }
+                
+                if (erroMsg && erroMsg.includes("A solicitação não é mais válida")) {
+                    Alert.alert(
+                        "Solicitação Expirada/Inválida",
+                        erroMsg,
+                        [
+                            {
+                                text: "Nova Solicitação",
+                                onPress: () => {
+                                    setStep(1);
+                                    setCodigo('');
+                                    setNovaSenha('');
+                                    setConfirmaSenha('');
+                                    setErro('');
+                                }
+                            }
+                        ]
+                    );
                 }
             } else {
                 setErro("Erro inesperado. Tente novamente.");
@@ -224,6 +280,16 @@ export default function RecuperarSenha() {
                             >
                                 <Text style={styles.buttonText}>
                                     {carregando ? "Validando..." : "Validar Código"}
+                                </Text>
+                            </TouchableOpacity>
+
+                            <TouchableOpacity
+                                onPress={handleReenviarEmail}
+                                disabled={carregando}
+                                style={styles.resendButton}
+                            >
+                                <Text style={styles.resendText}>
+                                    Reenviar código
                                 </Text>
                             </TouchableOpacity>
                         </View>

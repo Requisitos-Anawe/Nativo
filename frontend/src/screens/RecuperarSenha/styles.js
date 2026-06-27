@@ -141,4 +141,15 @@ export default StyleSheet.create({
         height: 1,
         opacity: 0,
     },
+    resendButton: {
+        alignItems: 'center',
+        marginTop: 10,
+        marginBottom: 15,
+    },
+    resendText: {
+        color: '#093624',
+        fontSize: 15,
+        fontWeight: 'bold',
+        textDecorationLine: 'underline',
+    },
 });

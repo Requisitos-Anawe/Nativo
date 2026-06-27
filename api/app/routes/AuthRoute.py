@@ -201,7 +201,8 @@ def recuperar_senha():
 
     usuarios_ref = db.collection("usuario").where("email", "==", email).limit(1).stream()
     if not any(usuarios_ref):
-        return jsonify({"erro": "E-mail não cadastrado"}), 404
+        # FE01 – E-mail Não Encontrado: generic success message to prevent user enumeration
+        return jsonify({"mensagem": "Se o e-mail informado estiver cadastrado, o código de recuperação foi enviado."}), 200
 
     codigo = f"{random.randint(100000, 999999)}"
     expira_em = datetime.now(pytz.timezone("America/Sao_Paulo")) + timedelta(minutes=15)
@@ -213,7 +214,7 @@ def recuperar_senha():
     })
 
     if enviar_email_codigo(email, codigo):
-        return jsonify({"mensagem": "Código de verificação enviado por e-mail"}), 200
+        return jsonify({"mensagem": "Se o e-mail informado estiver cadastrado, o código de recuperação foi enviado."}), 200
     else:
         return jsonify({"erro": "Falha ao enviar e-mail de recuperação"}), 500
 
@@ -228,7 +229,8 @@ def validar_codigo():
 
     codigo_doc = db.collection("codigo_verificacao").document(email).get()
     if not codigo_doc.exists:
-        return jsonify({"erro": "Código inválido ou não solicitado"}), 400
+        # FE02 – Link ou Código Inválido/Expirado
+        return jsonify({"erro": "A solicitação não é mais válida. Por favor, realize uma nova solicitação de recuperação de senha."}), 400
 
     codigo_data = codigo_doc.to_dict()
     expira_em = codigo_data.get("expira_em")
@@ -238,10 +240,12 @@ def validar_codigo():
         expira_em = pytz.timezone("America/Sao_Paulo").localize(expira_em)
 
     if now > expira_em:
-        return jsonify({"erro": "Código expirado"}), 400
+        # FE02 – Link ou Código Inválido/Expirado
+        return jsonify({"erro": "A solicitação não é mais válida. Por favor, realize uma nova solicitação de recuperação de senha."}), 400
 
     if codigo_data.get("codigo") != codigo:
-        return jsonify({"erro": "Código incorreto"}), 400
+        # FE02 – Link ou Código Inválido/Expirado
+        return jsonify({"erro": "A solicitação não é mais válida. Por favor, realize uma nova solicitação de recuperação de senha."}), 400
 
     return jsonify({"mensagem": "Código validado com sucesso"}), 200
 
@@ -257,7 +261,8 @@ def redefinir_senha():
 
     codigo_doc = db.collection("codigo_verificacao").document(email).get()
     if not codigo_doc.exists:
-        return jsonify({"erro": "Código inválido ou não solicitado"}), 400
+        # FE02 – Link ou Código Inválido/Expirado
+        return jsonify({"erro": "A solicitação não é mais válida. Por favor, realize uma nova solicitação de recuperação de senha."}), 400
 
     codigo_data = codigo_doc.to_dict()
     expira_em = codigo_data.get("expira_em")
@@ -267,10 +272,12 @@ def redefinir_senha():
         expira_em = pytz.timezone("America/Sao_Paulo").localize(expira_em)
 
     if now > expira_em:
-        return jsonify({"erro": "Código expirado"}), 400
+        # FE02 – Link ou Código Inválido/Expirado
+        return jsonify({"erro": "A solicitação não é mais válida. Por favor, realize uma nova solicitação de recuperação de senha."}), 400
 
     if codigo_data.get("codigo") != codigo:
-        return jsonify({"erro": "Código incorreto"}), 400
+        # FE02 – Link ou Código Inválido/Expirado
+        return jsonify({"erro": "A solicitação não é mais válida. Por favor, realize uma nova solicitação de recuperação de senha."}), 400
 
     valida, erros_senha = validar_senha(nova_senha)
     if not valida:
