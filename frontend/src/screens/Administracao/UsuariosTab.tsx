@@ -10,7 +10,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
-  ActivityIndicator
+  ActivityIndicator,
+  Image
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import api from '../../services/api'; 
@@ -26,6 +27,7 @@ type Usuario = {
   cargo: Cargo;
   iniciais: string;
   isCurrentUser?: boolean;
+  foto_perfil?: string;
 };
 
 const FILTROS: Array<'Todos' | Cargo> = ['Todos', 'Admin', 'Moderador', 'Professor', 'Usuário', 'Banido'];
@@ -37,6 +39,14 @@ const cargoBadgeStyle: Record<Cargo, { backgroundColor: string; color: string }>
   Professor: { backgroundColor: '#2b76c9', color: '#eef6ff' },
   Usuário: { backgroundColor: '#9d9d9d', color: '#ffffff' },
   Banido: { backgroundColor: '#cc3b2e', color: '#fff2ef' },
+};
+
+const avatarColorStyle: Record<Cargo, { bg: string; text: string }> = {
+  Admin: { bg: '#d8fbe8', text: '#0d3f2b' },
+  Moderador: { bg: '#fff3e8', text: '#9a6b45' },
+  Professor: { bg: '#eef6ff', text: '#2b76c9' },
+  Usuário: { bg: '#e0e0e0', text: '#6f6f6f' },
+  Banido: { bg: '#fde7e4', text: '#c53226' },
 };
 
 const actionLabels: Record<Exclude<ModalTipo, null>, { title: string; primary: string; accent: string }> = {
@@ -62,7 +72,7 @@ export default function UsuariosTab() {
   const fetchUsuarios = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/usuarios');
+      const response = await api.get('/usuarios?limit=1000');
       const usuariosRecebidos = response.data.data;
       
       const usuariosFormatados = usuariosRecebidos.map((u: any) => {
@@ -74,7 +84,7 @@ export default function UsuariosTab() {
         let cargoFinal: Cargo = 'Usuário';
         if (u.status === 'banido') {
           cargoFinal = 'Banido';
-        } else if (u.perfil === 'admin') {
+        } else if (u.perfil === 'admin' || u.perfil === 'administrador') {
           cargoFinal = 'Admin';
         } else if (u.perfil === 'moderador') {
           cargoFinal = 'Moderador';
@@ -88,7 +98,8 @@ export default function UsuariosTab() {
           email: u.email,
           cargo: cargoFinal,
           iniciais: iniciais,
-          isCurrentUser: u.id === user?.id 
+          isCurrentUser: u.id === user?.id,
+          foto_perfil: u.foto_perfil || u.foto || u.avatar || u.imagem || u.photoURL
         };
       });
 
@@ -215,131 +226,143 @@ export default function UsuariosTab() {
           <Text style={{ marginTop: 10, color: '#666' }}>Carregando usuários...</Text>
         </View>
       ) : (
-        <FlatList
-          data={usuariosFiltrados}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.listContent}
-          onScrollBeginDrag={() => setMenuAbertoUserId(null)}
-          ListHeaderComponent={(
-            <View>
-              <TextInput
-                style={styles.searchInput}
-                placeholder="Buscar por nome ou e-mail"
-                placeholderTextColor="#9b9b9b"
-                value={busca}
-                onChangeText={setBusca}
-              />
+        <>
+          <View style={styles.stickyHeader}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Buscar por nome ou e-mail"
+              placeholderTextColor="#9b9b9b"
+              value={busca}
+              onChangeText={setBusca}
+            />
 
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll}>
-                {FILTROS.map((filtro) => {
-                  const isActive = filtroAtivo === filtro;
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filtersScroll}>
+              {FILTROS.map((filtro) => {
+                const isActive = filtroAtivo === filtro;
+                return (
+                  <TouchableOpacity
+                    key={filtro}
+                    style={[styles.filterBadge, isActive && styles.filterBadgeActive]}
+                    onPress={() => setFiltroAtivo(filtro)}
+                    activeOpacity={0.85}
+                  >
+                    <Text style={[styles.filterText, isActive && styles.filterTextActive]}>{filtro === 'Banido' ? 'Banidos' : filtro}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </ScrollView>
 
-                  return (
-                    <TouchableOpacity
-                      key={filtro}
-                      style={[styles.filterBadge, isActive && styles.filterBadgeActive]}
-                      onPress={() => setFiltroAtivo(filtro)}
-                      activeOpacity={0.85}
-                    >
-                      <Text style={[styles.filterText, isActive && styles.filterTextActive]}>{filtro === 'Banido' ? 'Banidos' : filtro}</Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </ScrollView>
+            <Text style={styles.resultCount}>{usuariosFiltrados.length} usuários encontrados</Text>
+          </View>
 
-              <Text style={styles.resultCount}>{usuariosFiltrados.length} usuários encontrados</Text>
-            </View>
-          )}
-          renderItem={({ item }) => (
-            <View style={[styles.userCard, menuAbertoUserId === item.id && styles.userCardWithMenu]}>
-              <View style={[styles.avatar, item.cargo === 'Banido' && styles.avatarBanned]}>
-                <Text style={[styles.avatarText, item.cargo === 'Banido' && styles.avatarTextBanned]}>{item.iniciais}</Text>
-              </View>
-
-              <View style={styles.userInfo}>
-                <View style={styles.nameRow}>
-                  <Text style={styles.userName}>{item.nome}</Text>
-                  {item.isCurrentUser ? <Text style={styles.currentUserTag}>você</Text> : null}
-                  <View style={[styles.roleChip, { backgroundColor: cargoBadgeStyle[item.cargo].backgroundColor }]}>
-                    <Text style={[styles.roleChipText, { color: cargoBadgeStyle[item.cargo].color }]}>{item.cargo}</Text>
+          {/* LISTA DE USUÁRIOS */}
+          <FlatList
+            data={usuariosFiltrados}
+            keyExtractor={(item) => item.id}
+            onScrollBeginDrag={() => setMenuAbertoUserId(null)}
+            ListFooterComponent={<View style={{ height: 320 }} />}
+            renderItem={({ item }) => (
+              <View style={[styles.userCard, menuAbertoUserId === item.id && styles.userCardWithMenu]}>
+                
+                {/* LÓGICA DO AVATAR: Foto real OU Letras coloridas */}
+                {item.foto_perfil ? (
+                  <Image source={{ uri: item.foto_perfil }} style={styles.avatarImage} />
+                ) : (
+                  <View style={[styles.avatar, { backgroundColor: avatarColorStyle[item.cargo].bg }]}>
+                    <Text style={[styles.avatarText, { color: avatarColorStyle[item.cargo].text }]}>{item.iniciais}</Text>
                   </View>
+                )}
+
+                <View style={styles.userInfo}>
+                  <View style={styles.nameRow}>
+                    <Text style={styles.userName}>{item.nome}</Text>
+                    {item.isCurrentUser ? <Text style={styles.currentUserTag}>você</Text> : null}
+                    <View style={[styles.roleChip, { backgroundColor: cargoBadgeStyle[item.cargo].backgroundColor }]}>
+                      <Text style={[styles.roleChipText, { color: cargoBadgeStyle[item.cargo].color }]}>{item.cargo}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.userEmail}>{item.email}</Text>
                 </View>
-                <Text style={styles.userEmail}>{item.email}</Text>
+
+                <TouchableOpacity
+                  accessibilityRole="button"
+                  onPress={() => toggleMenuAcoes(item.id)}
+                  style={styles.menuButton}
+                  activeOpacity={0.8}
+                >
+                  <Icon name="ellipsis-vertical" size={18} color="#6f6f6f" />
+                </TouchableOpacity>
+
+                {/* MENU DE AÇÕES */}
+                {menuAbertoUserId === item.id ? (
+                  <View style={styles.acoesMenu}>
+                    {item.cargo === 'Banido' ? (
+                      <TouchableOpacity 
+                        style={styles.acaoItem} 
+                        activeOpacity={0.8} 
+                        onPress={() => abrirModalPorAcao(item, 'desbanir')}
+                      >
+                        <Icon name="person-add-outline" size={18} color="#2eaf5d" />
+                        <Text style={[styles.acaoItemText, styles.acaoItemSuccess]}>Desbanir Usuário</Text>
+                      </TouchableOpacity>
+                    ) : (
+                      <>
+                        {/* Lógica Inteligente: Atribuir vs Alterar */}
+                        <TouchableOpacity 
+                          style={styles.acaoItem} 
+                          activeOpacity={0.8} 
+                          onPress={() => abrirModalPorAcao(item, 'atribuir')}
+                        >
+                          <Icon name={item.cargo === 'Usuário' ? 'add-circle-outline' : 'create-outline'} size={18} color="#0d3f2b" />
+                          <Text style={styles.acaoItemText}>
+                            {item.cargo === 'Usuário' ? 'Atribuir Cargo' : 'Alterar Permissão'}
+                          </Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.acaoDivider} />
+
+                        {/* O botão de Revogar SÓ aparece se a pessoa já tiver um cargo especial */}
+                        {item.cargo !== 'Usuário' && (
+                          <>
+                            <TouchableOpacity 
+                              style={styles.acaoItem} 
+                              activeOpacity={0.8} 
+                              onPress={() => abrirModalPorAcao(item, 'revogar')}
+                            >
+                              <Icon name="shield-outline" size={18} color="#c47c52" />
+                              <Text style={[styles.acaoItemText, styles.acaoItemWarning]}>Revogar Cargo</Text>
+                            </TouchableOpacity>
+
+                            <View style={styles.acaoDivider} />
+                          </>
+                        )}
+
+                        {/* Banir sempre aparece para usuários não-banidos */}
+                        <TouchableOpacity 
+                          style={styles.acaoItem} 
+                          activeOpacity={0.8} 
+                          onPress={() => abrirModalPorAcao(item, 'banir')}
+                        >
+                          <Icon name="person-remove-outline" size={18} color="#d43d2c" />
+                          <Text style={[styles.acaoItemText, styles.acaoItemDanger]}>Banir Usuário</Text>
+                        </TouchableOpacity>
+                      </>
+                    )}
+                  </View>
+                ) : null}
               </View>
-
-              <TouchableOpacity
-                accessibilityRole="button"
-                onPress={() => toggleMenuAcoes(item.id)}
-                style={styles.menuButton}
-                activeOpacity={0.8}
-              >
-                <Icon name="ellipsis-vertical" size={18} color="#6f6f6f" />
-              </TouchableOpacity>
-
-              {menuAbertoUserId === item.id ? (
-                <View style={styles.acoesMenu}>
-                  {item.cargo === 'Banido' ? (
-                    /* Se o usuário estiver banido, mostra UNICAMENTE a opção de desbanir */
-                    <TouchableOpacity 
-                      style={styles.acaoItem} 
-                      activeOpacity={0.8} 
-                      onPress={() => abrirModalPorAcao(item, 'desbanir')}
-                    >
-                      <Icon name="person-add-outline" size={18} color="#2eaf5d" />
-                      <Text style={[styles.acaoItemText, styles.acaoItemSuccess]}>
-                        Desbanir Usuário
-                      </Text>
-                    </TouchableOpacity>
-                  ) : (
-                    /* Se o usuário NÃO estiver banido, mostra as opções administrativas normais */
-                    <>
-                      <TouchableOpacity 
-                        style={styles.acaoItem} 
-                        activeOpacity={0.8} 
-                        onPress={() => abrirModalPorAcao(item, 'atribuir')}
-                      >
-                        <Icon name="create-outline" size={18} color="#0d3f2b" />
-                        <Text style={styles.acaoItemText}>Alterar Permissão</Text>
-                      </TouchableOpacity>
-
-                      <View style={styles.acaoDivider} />
-
-                      <TouchableOpacity 
-                        style={styles.acaoItem} 
-                        activeOpacity={0.8} 
-                        onPress={() => abrirModalPorAcao(item, 'revogar')}
-                      >
-                        <Icon name="shield-outline" size={18} color="#c47c52" />
-                        <Text style={[styles.acaoItemText, styles.acaoItemWarning]}>Revogar Cargo</Text>
-                      </TouchableOpacity>
-
-                      <View style={styles.acaoDivider} />
-
-                      <TouchableOpacity 
-                        style={styles.acaoItem} 
-                        activeOpacity={0.8} 
-                        onPress={() => abrirModalPorAcao(item, 'banir')}
-                      >
-                        <Icon name="person-remove-outline" size={18} color="#d43d2c" />
-                        <Text style={[styles.acaoItemText, styles.acaoItemDanger]}>
-                          Banir Usuário
-                        </Text>
-                      </TouchableOpacity>
-                    </>
-                  )}
-                </View>
-              ) : null}
-            </View>
-          )}
-          ListEmptyComponent={(
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyTitle}>Nenhum usuário encontrado</Text>
-              <Text style={styles.emptyText}>Ajuste o filtro ou a busca para localizar outro perfil.</Text>
-            </View>
-          )}
-        />
+            )}
+            ListEmptyComponent={(
+              <View style={styles.emptyState}>
+                <Text style={styles.emptyTitle}>Nenhum usuário encontrado</Text>
+                <Text style={styles.emptyText}>Ajuste o filtro ou a busca para localizar outro perfil.</Text>
+              </View>
+            )}
+          />
+        </>
       )}
 
+      {/* MODAL DE CONFIRMAÇÃO */}
       <Modal visible={modalTipo !== null && usuarioSelecionado !== null} transparent animationType="fade" onRequestClose={closeModal}>
         <Pressable style={styles.modalOverlay} onPress={closeModal}>
           <Pressable style={styles.modalContent} onPress={() => undefined}>
@@ -429,8 +452,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  listContent: {
-    paddingBottom: 24,
+  stickyHeader: {
+    paddingBottom: 10,
+    zIndex: 10,
   },
   searchInput: {
     backgroundColor: '#fff',
@@ -494,20 +518,18 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#eaf4ef',
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 12,
   },
-  avatarBanned: {
-    backgroundColor: '#fde7e4',
+  avatarImage: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    marginRight: 12,
   },
   avatarText: {
-    color: '#0d3f2b',
     fontWeight: '800',
-  },
-  avatarTextBanned: {
-    color: '#c53226',
   },
   userInfo: {
     flex: 1,

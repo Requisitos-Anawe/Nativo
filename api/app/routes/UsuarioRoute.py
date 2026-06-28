@@ -67,12 +67,8 @@ def buscar(usuario_id):
 
 @bp.route('/usuarios/<usuario_id>/perfil', methods=['PUT'])
 @autenticar_jwt
-# @verificar_admin (Removido para evitar o conflito de DocumentReference)
+@verificar_admin
 def editar_perfil_usuario(usuario_id):
-    """
-    Atualizar perfil do usuário (Com validação FE01 expandida)
-    """
-    # 1. NOVA TRAVA DE SEGURANÇA MANUAL (Ignora o conflito de tipos)
     solicitante = UsuarioService.buscar_usuario_por_id(g.usuario_id)
     if not solicitante:
         return jsonify({'erro': 'Usuário solicitante não encontrado'}), 404
@@ -82,7 +78,7 @@ def editar_perfil_usuario(usuario_id):
         perfil_solicitante = perfil_solicitante.id
         
     if str(perfil_solicitante) not in ['admin', 'administrador']:
-        return jsonify({'erro': 'Acesso negado. Apenas administradores podem atribuir cargos.'}), 403
+     return jsonify({'erro': 'Acesso negado. Apenas administradores podem atribuir cargos.'}), 403
     # -------------------------------------------------------------
 
     dados = request.get_json()
@@ -132,12 +128,9 @@ def editar_perfil_usuario(usuario_id):
 
 @bp.route('/usuarios/<usuario_id>/status', methods=['PUT'])
 @autenticar_jwt
-# @verificar_admin (Removido para evitar o conflito de DocumentReference)
+@verificar_admin
 def editar_status_usuario(usuario_id):
-    """
-    Atualizar o status do usuário (Banir/Desbanir com validação FE01 expandida)
-    """
-    # 1. NOVA TRAVA DE SEGURANÇA MANUAL (Ignora o conflito de tipos)
+    
     solicitante = UsuarioService.buscar_usuario_por_id(g.usuario_id)
     if not solicitante:
         return jsonify({'erro': 'Usuário solicitante não encontrado'}), 404
@@ -147,7 +140,7 @@ def editar_status_usuario(usuario_id):
         perfil_solicitante = perfil_solicitante.id
         
     if str(perfil_solicitante) not in ['admin', 'administrador']:
-        return jsonify({'erro': 'Acesso negado. Apenas administradores podem alterar status.'}), 403
+       return jsonify({'erro': 'Acesso negado. Apenas administradores podem alterar status.'}), 403
     # -------------------------------------------------------------
 
     dados = request.get_json()
@@ -209,3 +202,37 @@ def upload_file():
     url = blob.public_url
     
     return jsonify({'message': 'Arquivo enviado com sucesso', 'url': url})
+
+@bp.route('/usuarios/<usuario_id>', methods=['PUT'])
+@autenticar_jwt
+def atualizar_dados_gerais_usuario(usuario_id):
+
+    # Garante que o usuário só pode editar a própria foto (ou é um admin)
+    if usuario_id != g.usuario_id:
+        solicitante = UsuarioService.buscar_usuario_por_id(g.usuario_id)
+        if not solicitante:
+            return jsonify({'erro': 'Usuário solicitante não encontrado'}), 404
+            
+        perfil_solicitante = solicitante.get('perfil')
+        if hasattr(perfil_solicitante, 'id'):
+            perfil_solicitante = perfil_solicitante.id
+            
+        if str(perfil_solicitante) not in ['admin', 'administrador']:
+            return jsonify({'erro': 'Acesso negado. Você só pode editar seu próprio perfil.'}), 403
+
+    dados = request.get_json()
+    if not dados:
+        return jsonify({'erro': 'Nenhum dado fornecido'}), 400
+
+    # Impede que a pessoa use essa rota para hackear o próprio cargo ou senha
+    dados.pop('perfil', None)
+    dados.pop('status', None)
+    dados.pop('senha', None)
+    dados.pop('cpf', None)
+
+    try:
+        # Atualiza a foto no banco de dados!
+        db.collection('usuario').document(usuario_id).update(dados)
+        return jsonify({'mensagem': 'Usuário atualizado com sucesso'}), 200
+    except Exception as e:
+        return jsonify({'erro': f'Erro ao atualizar usuário: {str(e)}'}), 500

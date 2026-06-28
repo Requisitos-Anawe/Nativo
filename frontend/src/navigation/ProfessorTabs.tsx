@@ -8,6 +8,7 @@ import TranslationCreate from '../screens/TranslationCreate';
 import TraslationList from '../screens/TranslationList';
 import Informations from '../screens/Informations';
 import AtividadesScreen from '../screens/Atividades/AtividadesScreen';
+import AdminScreen from '../screens/Administracao/index';
 
 const Tab = createBottomTabNavigator();
 
@@ -26,6 +27,8 @@ export default function ProfessorTabs() {
           else if (route.name === 'Atividades') iconName = 'school-outline';
           else if (route.name === 'AddTraducao') iconName = 'add-circle-outline';
           else if (route.name === 'ListTraducao') iconName = 'document-text-outline';
+          // COMENTADO PARA OCULTAR O ÍCONE DO ADMIN:
+          // else if (route.name === 'Admin') iconName = 'shield-checkmark-outline';
           return <Icon name={iconName} size={size} color={color} />;
         },
       })}
@@ -34,6 +37,8 @@ export default function ProfessorTabs() {
       <Tab.Screen name="AddTraducao" component={TranslationCreate} />
       <Tab.Screen name="Atividades" component={AtividadesScreen} />
       <Tab.Screen name="ListTraducao" component={TraslationList} />
+      {/* COMENTADO PARA OCULTAR A TELA DO ADMIN: */}
+      {/* <Tab.Screen name="Admin" component={AdminScreen} /> */}
     </Tab.Navigator>
   );
 }

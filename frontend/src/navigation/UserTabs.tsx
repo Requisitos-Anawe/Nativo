@@ -8,6 +8,7 @@ import Icon from "react-native-vector-icons/Ionicons";
 import HomeStack from "./HomeStack";
 import PerfilStack from "./PerfilStack";
 import AtividadesUsuarioScreen from "../screens/Atividades/AtividadesUsuarioScreen";
+import AdminScreen from '../screens/Administracao/index';
 
 import CustomTabBar from './CustomTabBar';
 
@@ -25,6 +26,8 @@ export default function UserTabs() {
           if (route.name === 'Tradutor') iconName = 'language-outline';
           else if (route.name === 'Atividades') iconName = 'school-outline';
           else if (route.name === 'Perfil') iconName = 'person-outline';
+          // COMENTADO PARA OCULTAR O ÍCONE DO ADMIN:
+          // else if (route.name === 'Admin') iconName = 'shield-checkmark-outline';
           return <Icon name={iconName} size={size} color={color} />;
         },
       })}
@@ -32,6 +35,8 @@ export default function UserTabs() {
       <Tab.Screen name="Tradutor" component={HomeStack} />
       <Tab.Screen name="Atividades" component={AtividadesUsuarioScreen} />
       <Tab.Screen name="Perfil" component={PerfilStack} />
+      {/* COMENTADO PARA OCULTAR A TELA DO ADMIN: */}
+      {/* <Tab.Screen name="Admin" component={AdminScreen} /> */}
     </Tab.Navigator>
   );
 }
