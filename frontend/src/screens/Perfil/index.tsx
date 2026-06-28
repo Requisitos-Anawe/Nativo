@@ -273,7 +273,7 @@ export default function Perfil() {
                     activeOpacity={0.7}
                     onPress={() => navigation.navigate('Insignias' as never)}
                 >
-                    <Text style={styles.sectionTitle}>CONQUISTAS ({totalAtividades} concluídas)</Text>
+                    <Text style={styles.sectionTitle}>CONQUISTAS ({totalAtividades} atividades concluídas)</Text>
                     <Icon name="chevron-forward" size={20} color="#000" />
                 </TouchableOpacity>
 
@@ -282,7 +282,14 @@ export default function Perfil() {
                         <ActivityIndicator size="small" color="#042d1f" />
                     ) : (
                         (() => {
-                            const conquistadas = insignias.filter(i => i.adquirida).slice(-4);
+                            const conquistadas = insignias
+                                .filter(i => i.adquirida)
+                                .sort((a, b) => {
+                                    const dateA = a.data_conquista ? new Date(a.data_conquista).getTime() : 0;
+                                    const dateB = b.data_conquista ? new Date(b.data_conquista).getTime() : 0;
+                                    return dateB - dateA;
+                                })
+                                .slice(0, 4);
                             if (conquistadas.length === 0) {
                                 return (
                                     <Text style={{ color: '#666', fontSize: 14, fontFamily: 'Inter', fontStyle: 'italic', paddingVertical: 10 }}>
