@@ -3,5 +3,6 @@ interface UserInterface {
     email: string,
     perfil: string,
     data_nascimento: string
-    id: string
+    id: string,
+    foto?: string
 }

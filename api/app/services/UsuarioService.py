@@ -182,7 +182,7 @@ def atualizar_dados_usuario(usuario_id, novos_dados, campos_permitidos=None):
     if not usuario_doc.exists:
         return 'Usuário não encontrado'
 
-    campos_permitidos = set(campos_permitidos or ['nome', 'data_nascimento', 'email', 'senha', 'imagem_url'])
+    campos_permitidos = set(campos_permitidos or ['nome', 'data_nascimento', 'email', 'senha', 'imagem_url', 'foto'])
     update_usuario = {}
 
     if 'nome' in campos_permitidos and 'nome' in novos_dados:
@@ -216,6 +216,9 @@ def atualizar_dados_usuario(usuario_id, novos_dados, campos_permitidos=None):
 
     if 'imagem_url' in campos_permitidos and 'imagem_url' in novos_dados:
         update_usuario['imagem_url'] = novos_dados.get('imagem_url')
+
+    if 'foto' in campos_permitidos and 'foto' in novos_dados:
+        update_usuario['foto'] = novos_dados.get('foto')
 
     if not update_usuario:
         return 'Nenhum campo permitido foi informado para atualização'

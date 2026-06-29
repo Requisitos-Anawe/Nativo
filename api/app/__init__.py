@@ -12,6 +12,7 @@ from app.routes.CategoriaRoute import bp as categoria_bp
 from app.routes.PerfilRoute import bp as perfil_bp
 from app.routes.AtividadeRoute import bp as atividade_bp
 from app.routes.PraticaAtividadeRoute import bp as pratica_atividade_bp
+from app.routes.InsigniaRoute import bp as insignia_bp
 from app.routes.FavoritoRoute import bp as favorito_bp
 from app.routes.HistoricoRoute import bp as historico_bp
 from app.routes.UploadRoute import bp as upload_bp
@@ -19,6 +20,7 @@ from app.routes.SyncRoute import sync_bp
 
 def create_app():
     app = Flask(__name__)
+
     if os.getenv('FLASK_ENV') == 'development':
         Swagger(app, template={
             'swagger': '2.0',
@@ -45,6 +47,7 @@ def create_app():
     app.register_blueprint(perfil_bp, url_prefix='/api')
     app.register_blueprint(atividade_bp, url_prefix='/api')
     app.register_blueprint(pratica_atividade_bp, url_prefix='/api')
+    app.register_blueprint(insignia_bp, url_prefix='/api')
     app.register_blueprint(favorito_bp, url_prefix='/api')
     app.register_blueprint(historico_bp, url_prefix='/api')
     app.register_blueprint(upload_bp, url_prefix='/api')

@@ -155,8 +155,32 @@ class BaseAtividadeSchema(Schema):
         allow_none=True,
         validate=validate.Length(max=10),
         error_messages={
-            "invalid": "Professores devem ser informados em uma lista de IDs.",
+            "invalid": "Professores devem ser informados in uma lista de IDs.",
         },
+    )
+
+    insignia_titulo = fields.Str(
+        required=False,
+        allow_none=True,
+        validate=validate.Length(max=120),
+    )
+
+    insignia_descricao = fields.Str(
+        required=False,
+        allow_none=True,
+        validate=validate.Length(max=1000),
+    )
+
+    insignia_imagem_url = fields.Str(
+        required=False,
+        allow_none=True,
+        validate=validate.Length(max=1000),
+    )
+
+    insignia_porcentagem_minima = fields.Int(
+        required=False,
+        allow_none=True,
+        validate=validate.Range(min=0, max=100),
     )
 
     @pre_load
@@ -166,13 +190,22 @@ class BaseAtividadeSchema(Schema):
 
         normalizado = dict(data)
 
-        for campo in ["titulo", "descricao"]:
+        for campo in ["titulo", "descricao", "insignia_titulo", "insignia_descricao", "insignia_imagem_url"]:
             valor = normalizado.get(campo)
             if isinstance(valor, str):
                 normalizado[campo] = valor.strip()
 
         if normalizado.get("descricao") == "":
             normalizado["descricao"] = None
+
+        if normalizado.get("insignia_titulo") == "":
+            normalizado["insignia_titulo"] = None
+
+        if normalizado.get("insignia_descricao") == "":
+            normalizado["insignia_descricao"] = None
+
+        if normalizado.get("insignia_imagem_url") == "":
+            normalizado["insignia_imagem_url"] = None
 
         professores_ids = normalizado.get("professores_ids")
         if isinstance(professores_ids, list):
