@@ -20,6 +20,7 @@ from app.routes.UploadRoute import bp as upload_bp
 
 def create_app():
     app = Flask(__name__)
+
     if os.getenv('FLASK_ENV') == 'development':
         Swagger(app, template={
             'swagger': '2.0',
@@ -37,19 +38,6 @@ def create_app():
             }
         })
 
-    app.register_blueprint(usuarios_bp, url_prefix="/api")
-    app.register_blueprint(discurso_bp, url_prefix="/api")
-    app.register_blueprint(auth_bp, url_prefix="/api")
-    app.register_blueprint(traducao_bp, url_prefix="/api")
-    app.register_blueprint(idioma_bp, url_prefix="/api")
-    app.register_blueprint(categoria_bp, url_prefix="/api")
-    app.register_blueprint(perfil_bp, url_prefix="/api")
-    app.register_blueprint(atividade_bp, url_prefix="/api")
-    app.register_blueprint(pratica_atividade_bp, url_prefix="/api")
-    app.register_blueprint(insignia_bp, url_prefix="/api")
-
-    return app
-    app.register_blueprint(upload_bp, url_prefix="/api")
     app.register_blueprint(usuarios_bp, url_prefix='/api')
     app.register_blueprint(discurso_bp, url_prefix='/api')
     app.register_blueprint(auth_bp, url_prefix='/api')
@@ -59,6 +47,7 @@ def create_app():
     app.register_blueprint(perfil_bp, url_prefix='/api')
     app.register_blueprint(atividade_bp, url_prefix='/api')
     app.register_blueprint(pratica_atividade_bp, url_prefix='/api')
+    app.register_blueprint(insignia_bp, url_prefix='/api')
     app.register_blueprint(favorito_bp, url_prefix='/api')
     app.register_blueprint(historico_bp, url_prefix='/api')
     app.register_blueprint(upload_bp, url_prefix='/api')

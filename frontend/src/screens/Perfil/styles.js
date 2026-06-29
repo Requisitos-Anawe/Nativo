@@ -279,7 +279,6 @@ export default StyleSheet.create({
         fontWeight: 'bold',
         fontFamily: 'InterDisplay-SemiBold',
     },
-,
     emptyText: {
         textAlign: 'center',
         color: '#555',
