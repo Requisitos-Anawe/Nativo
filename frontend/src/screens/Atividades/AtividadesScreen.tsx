@@ -11,8 +11,11 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
+import { launchImageLibrary } from 'react-native-image-picker';
+import api from '../../services/api';
 
 import {
   Atividade,
@@ -55,6 +58,11 @@ type FormState = {
   descricao: string;
   questoes: QuestaoAtividade[];
   professores_ids: string[];
+  criar_insignia: boolean;
+  insignia_titulo: string;
+  insignia_descricao: string;
+  insignia_imagem_url: string;
+  insignia_porcentagem_minima: number;
 };
 
 const criarQuestaoVazia = (): QuestaoAtividade => ({
@@ -68,6 +76,11 @@ const criarFormularioVazio = (): FormState => ({
   descricao: '',
   questoes: [criarQuestaoVazia()],
   professores_ids: [],
+  criar_insignia: false,
+  insignia_titulo: '',
+  insignia_descricao: '',
+  insignia_imagem_url: '',
+  insignia_porcentagem_minima: 80,
 });
 
 const montarFormulario = (atividade: Atividade): FormState => ({
@@ -82,6 +95,11 @@ const montarFormulario = (atividade: Atividade): FormState => ({
         }))
       : [criarQuestaoVazia()],
   professores_ids: atividade.professores_associados || [],
+  criar_insignia: Boolean(atividade.insignia_titulo),
+  insignia_titulo: atividade.insignia_titulo || '',
+  insignia_descricao: atividade.insignia_descricao || '',
+  insignia_imagem_url: atividade.insignia_imagem_url || '',
+  insignia_porcentagem_minima: atividade.insignia_porcentagem_minima ?? 80,
 });
 
 const formatarData = (data?: string): string => {
@@ -302,6 +320,22 @@ export default function AtividadesScreen() {
       }
     }
 
+    if (formulario.criar_insignia) {
+      if (!formulario.insignia_titulo.trim()) {
+        return 'Informe o título da insígnia.';
+      }
+      if (!formulario.insignia_descricao.trim()) {
+        return 'Informe a descrição da insígnia.';
+      }
+      if (!formulario.insignia_imagem_url.trim()) {
+        return 'Selecione uma foto/imagem para a insígnia.';
+      }
+      const minPct = Number(formulario.insignia_porcentagem_minima);
+      if (Number.isNaN(minPct) || minPct < 0 || minPct > 100) {
+        return 'A porcentagem mínima de acertos deve ser um número de 0 a 100.';
+      }
+    }
+
     return null;
   };
 
@@ -314,6 +348,10 @@ export default function AtividadesScreen() {
       alternativa_correta: questao.alternativa_correta,
     })),
     professores_ids: formulario.professores_ids,
+    insignia_titulo: formulario.criar_insignia ? formulario.insignia_titulo.trim() : null,
+    insignia_descricao: formulario.criar_insignia ? formulario.insignia_descricao.trim() : null,
+    insignia_imagem_url: formulario.criar_insignia ? formulario.insignia_imagem_url.trim() : null,
+    insignia_porcentagem_minima: formulario.criar_insignia ? Number(formulario.insignia_porcentagem_minima) : null,
   });
 
   const salvar = async () => {
@@ -582,6 +620,106 @@ export default function AtividadesScreen() {
             })}
           </View>
         )}
+
+        {/* Associação de Insígnia */}
+        <View style={{ marginTop: 24, padding: 16, backgroundColor: COLORS.white, borderRadius: 12, elevation: 4 }}>
+          <TouchableOpacity 
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+            onPress={() => setFormulario(prev => ({ ...prev, criar_insignia: !prev.criar_insignia }))}
+          >
+            <Icon 
+              name={formulario.criar_insignia ? "checkbox" : "square-outline"} 
+              size={24} 
+              color={COLORS.green} 
+            />
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: COLORS.black, fontFamily: FONT.title }}>
+              Associar insígnia de desempenho?
+            </Text>
+          </TouchableOpacity>
+
+          {formulario.criar_insignia && (
+            <View style={{ marginTop: 16, gap: 12 }}>
+              <Text style={styles.label}>Título da Insígnia *</Text>
+              <TextInput
+                value={formulario.insignia_titulo}
+                onChangeText={text => setFormulario(prev => ({ ...prev, insignia_titulo: text }))}
+                placeholder="Ex: Explorador Lendário"
+                placeholderTextColor={COLORS.muted}
+                style={styles.input}
+              />
+
+              <Text style={styles.label}>Descrição da Insígnia *</Text>
+              <TextInput
+                value={formulario.insignia_descricao}
+                onChangeText={text => setFormulario(prev => ({ ...prev, insignia_descricao: text }))}
+                placeholder="Ex: Acertou mais de 80% das questões"
+                placeholderTextColor={COLORS.muted}
+                style={styles.input}
+              />
+
+              <Text style={styles.label}>Porcentagem Mínima de Acerto (%) *</Text>
+              <TextInput
+                value={String(formulario.insignia_porcentagem_minima)}
+                onChangeText={text => {
+                  const val = text.replace(/\D/g, '');
+                  setFormulario(prev => ({ ...prev, insignia_porcentagem_minima: val ? Math.min(100, parseInt(val, 10)) : 0 }));
+                }}
+                placeholder="Ex: 80"
+                placeholderTextColor={COLORS.muted}
+                keyboardType="numeric"
+                style={styles.input}
+              />
+
+              <Text style={styles.label}>Foto/Imagem da Insígnia *</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 15 }}>
+                {formulario.insignia_imagem_url ? (
+                  <Image 
+                    source={{ uri: formulario.insignia_imagem_url }} 
+                    style={{ width: 80, height: 80, borderRadius: 12, borderWidth: 1, borderColor: '#ccc' }} 
+                  />
+                ) : (
+                  <View style={{ width: 80, height: 80, borderRadius: 12, backgroundColor: '#f0f0f0', justifyContent: 'center', alignItems: 'center', borderWidth: 1, borderColor: '#ccc' }}>
+                    <Icon name="image-outline" size={32} color={COLORS.muted} />
+                  </View>
+                )}
+                
+                <TouchableOpacity 
+                  style={{
+                    backgroundColor: COLORS.green,
+                    paddingHorizontal: 15,
+                    paddingVertical: 10,
+                    borderRadius: 8,
+                  }}
+                  onPress={async () => {
+                    const res = await launchImageLibrary({ mediaType: 'photo' });
+                    if (res.assets && res.assets.length > 0) {
+                      const file = res.assets[0];
+                      const formData = new FormData();
+                      formData.append("file", {
+                        uri: file.uri,
+                        type: file.type || 'image/jpeg',
+                        name: file.fileName || 'insignia.jpg',
+                      } as any);
+
+                      try {
+                        Alert.alert("Aguarde", "Fazendo upload da imagem da insígnia...");
+                        const uploadRes = await api.post('/upload', formData, {
+                          headers: { 'Content-Type': 'multipart/form-data' }
+                        });
+                        setFormulario(prev => ({ ...prev, insignia_imagem_url: uploadRes.data.url }));
+                        Alert.alert("Sucesso", "Imagem carregada com sucesso!");
+                      } catch (e) {
+                        Alert.alert("Erro", "Erro ao fazer upload da imagem.");
+                      }
+                    }
+                  }}
+                >
+                  <Text style={{ color: COLORS.white, fontWeight: 'bold' }}>Escolher Imagem</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </View>
 
         {erroFormulario ? (
           <Text style={styles.formError}>{erroFormulario}</Text>

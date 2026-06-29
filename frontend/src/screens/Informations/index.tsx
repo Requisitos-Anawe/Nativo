@@ -17,8 +17,6 @@ export default function Informations() {
   useLayoutEffect(() => {
     if (isFocused) {
       navigation.getParent()?.setOptions({ headerShown: false });
-    } else {
-      navigation.getParent()?.setOptions({ headerShown: true });
     }
   }, [navigation, isFocused]);
 
