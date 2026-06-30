@@ -28,6 +28,7 @@ def run():
         },
         {
             "nome": "Moderadora",
+            "cpf": "57879595074",
             "email": "ana@site.com",
             "senha": senha_hash_str,
             "data_nascimento": datetime(1992, 3, 15),
@@ -35,10 +36,11 @@ def run():
         },
         {
             "nome": "Usuário Padrão",
+            "cpf": "01421229048",
             "email": "user@site.com",
             "senha": senha_hash_str,
             "data_nascimento": datetime(2000, 12, 5),
-            "perfil": "moderador",
+            "perfil": "padrao",
         },
     ]
 

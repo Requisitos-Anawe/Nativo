@@ -7,6 +7,9 @@ export type ProfessorTabParamList = {
 };
 
 export type AppStackParamList = {
+  EditProfile: undefined;
   Main: undefined;
   Configurations: undefined;
+  Historico: undefined;
+  Favoritos: undefined;
 };
