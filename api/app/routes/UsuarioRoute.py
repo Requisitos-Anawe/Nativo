@@ -10,6 +10,36 @@ schema = UsuarioSchema()
 
 bp = Blueprint('usuarios', __name__)
 
+CAMPOS_USUARIO_COMPLETO = ['nome', 'data_nascimento', 'email', 'senha', 'imagem_url', 'foto']
+CAMPOS_MODERADOR = ['nome', 'data_nascimento', 'imagem_url', 'foto']
+PERFIS_ADMIN = {'admin', 'administrador'}
+PERFIS_MODERADOR = {'moderador'}
+PERFIS_PROTEGIDOS_MODERADOR = {'admin', 'administrador', 'moderador', 'professor'}
+
+
+def _perfil(usuario_id):
+    perfil = UsuarioService.obter_descricao_perfil_por_id(usuario_id)
+    return perfil.lower() if perfil else None
+
+
+def _campos_permitidos_para_atualizacao(usuario_logado_id, usuario_alvo_id):
+    if usuario_logado_id == usuario_alvo_id:
+        return CAMPOS_USUARIO_COMPLETO, None
+
+    perfil_logado = _perfil(usuario_logado_id)
+    perfil_alvo = _perfil(usuario_alvo_id)
+
+    if perfil_logado in PERFIS_ADMIN:
+        return CAMPOS_USUARIO_COMPLETO, None
+
+    if perfil_logado in PERFIS_MODERADOR:
+        if perfil_alvo in PERFIS_PROTEGIDOS_MODERADOR:
+            return None, ({'erro': 'Moderadores não podem editar administradores, professores ou outros moderadores'}, 403)
+        return CAMPOS_MODERADOR, None
+
+    return None, ({'erro': 'Usuário não autorizado a editar este perfil'}, 403)
+
+
 @bp.route('/usuarios', methods=['GET'])
 @autenticar_jwt
 def listar():
@@ -36,6 +66,19 @@ def listar():
     limit = request.args.get("limit", default=10, type=int)
     start_after = request.args.get("start_after")
     return jsonify(UsuarioService.listar_usuarios(limit, start_after))
+
+
+@bp.route('/usuarios/me', methods=['GET'])
+@autenticar_jwt
+def buscar_usuario_logado():
+    """Retorna os dados seguros do usuário autenticado."""
+    usuario = UsuarioService.buscar_usuario_por_id(g.usuario_id)
+    if usuario:
+        return jsonify({
+            'mensagem': 'Usuário encontrado',
+            'dados': usuario,
+        }), 200
+    return jsonify({'erro': 'Usuário não encontrado'}), 404
 
 @bp.route('/usuarios/<usuario_id>', methods=['GET'])
 @autenticar_jwt
@@ -205,34 +248,47 @@ def upload_file():
 
 @bp.route('/usuarios/<usuario_id>', methods=['PUT'])
 @autenticar_jwt
-def atualizar_dados_gerais_usuario(usuario_id):
+def atualizar_dados_usuario(usuario_id):
+    """Atualiza dados cadastrais de um usuário.
 
-    # Garante que o usuário só pode editar a própria foto (ou é um admin)
-    if usuario_id != g.usuario_id:
-        solicitante = UsuarioService.buscar_usuario_por_id(g.usuario_id)
-        if not solicitante:
-            return jsonify({'erro': 'Usuário solicitante não encontrado'}), 404
-            
-        perfil_solicitante = solicitante.get('perfil')
-        if hasattr(perfil_solicitante, 'id'):
-            perfil_solicitante = perfil_solicitante.id
-            
-        if str(perfil_solicitante) not in ['admin', 'administrador']:
-            return jsonify({'erro': 'Acesso negado. Você só pode editar seu próprio perfil.'}), 403
+    Regras:
+    - o próprio usuário pode atualizar nome, data de nascimento, email e senha;
+    - administradores podem atualizar esses mesmos campos para qualquer usuário;
+    - moderadores podem atualizar apenas nome e data de nascimento de usuários não protegidos;
+    - perfil não é aceito neste endpoint.
+    """
+    dados = request.get_json(silent=True)
+    if not isinstance(dados, dict) or not dados:
+        return jsonify({'erro': 'Dados não fornecidos'}), 400
 
-    dados = request.get_json()
-    if not dados:
-        return jsonify({'erro': 'Nenhum dado fornecido'}), 400
+    usuario_atual = UsuarioService.buscar_usuario_por_id(usuario_id)
+    if not usuario_atual:
+        return jsonify({'erro': 'Usuário não encontrado'}), 404
 
-    # Impede que a pessoa use essa rota para hackear o próprio cargo ou senha
-    dados.pop('perfil', None)
-    dados.pop('status', None)
-    dados.pop('senha', None)
-    dados.pop('cpf', None)
+    campos_permitidos, erro_permissao = _campos_permitidos_para_atualizacao(g.usuario_id, usuario_id)
+    if erro_permissao:
+        corpo, status = erro_permissao
+        return jsonify(corpo), status
+
+    if 'perfil' in dados:
+        return jsonify({'erro': 'O campo perfil deve ser alterado apenas pelo endpoint específico de perfil'}), 400
 
     try:
-        # Atualiza a foto no banco de dados!
-        db.collection('usuario').document(usuario_id).update(dados)
-        return jsonify({'mensagem': 'Usuário atualizado com sucesso'}), 200
+        resultado = UsuarioService.atualizar_dados_usuario(
+            usuario_id,
+            dados,
+            campos_permitidos=campos_permitidos,
+        )
+
+        if isinstance(resultado, str):
+            return jsonify({'erro': resultado}), 400
+
+        if isinstance(resultado, dict) and resultado.get('erro'):
+            status = 400 if resultado.get('erro') != 'Usuário não encontrado' else 404
+            return jsonify(resultado), status
+
+        return jsonify(resultado), 200
+
     except Exception as e:
-        return jsonify({'erro': f'Erro ao atualizar usuário: {str(e)}'}), 500
+        return jsonify({'erro': f'Erro ao atualizar dados do usuário: {str(e)}'}), 500
+

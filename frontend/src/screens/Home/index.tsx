@@ -12,11 +12,15 @@ import { AudioPlayer } from '../../components/AudioPlayer';
 import { VideoPlayer } from '../../components/VideoPlayer';
 import { useAuth } from "../../contexts/AuthContext";
 import { ModalAdicionarMidia } from "../../components/AddMidia";
-import AppText from '../../components/AppText';
+import { TraducaoLocalRepository } from '../../repositories/TraducaoLocalRepository';
+import FavoriteButton from '../../components/FavoriteButton';
+import { registrarHistorico } from '../../services/HistoricoService';
+import NetInfo from '@react-native-community/netinfo';
 
 type Traducao = {
     id: string;
     texto: string;
+    discurso?: string;
     imagem_url?: string;
     audio_url?: string;
     video_url?: string;
@@ -45,33 +49,80 @@ function Home() {
     };
 
     const temPermissaoEdicao = user?.perfil === 'professor' || user?.perfil === 'admin';
+
+    const executarBuscaOffline = async (termoBuscado: string) => {
+        try {
+            const resultadosLocais: any = await TraducaoLocalRepository.buscarTextoOffline(termoBuscado);
+
+            if (resultadosLocais && resultadosLocais.length > 0) {
+                const traducaoDataFormatada = resultadosLocais.map((item: any) => ({
+                    id: item.id.toString(),
+                    texto: item.traducao,
+                    discurso: item.original
+                }));
+
+                setTraducao(traducaoDataFormatada);
+                setCategoria("Acervo Local (Offline)");
+            } else {
+                setTraducao([]);
+                setCategoria('');
+                Alert.alert("Modo Offline", "Nenhum conteúdo offline disponível para esta palavra. Baixe os dados nas Configurações.");
+            }
+        } catch (error) {
+            setTraducao([]);
+            setCategoria('');
+            Alert.alert("Erro", "Não foi possível acessar o banco offline. Baixe os dados nas Configurações ou ative o acesso offline.");
+        }
+    };
+
     const handleTraduzir = async () => {
         if (!texto.trim()) return;
 
         try {
             setCarregando(true);
-            setTraducao([])
-            const response = await api.post(`/discurso/buscar`, {
-                texto: texto.trim(),
-            });
-            let traducaoData = response.data.traducao;
+            setTraducao([]);
 
-            if (response.data.imagem_url || response.data.audio_url || response.data.video_url) {
-                traducaoData = traducaoData.map((trad: any) => ({
-                    ...trad,
-                    imagem_url: trad.imagem_url || response.data.imagem_url,
-                    audio_url: trad.audio_url || response.data.audio_url,
-                    video_url: trad.video_url || response.data.video_url,
-                    id: trad.id || response.data.traducao_id // in case we want to pass the id later
-                }));
+            const conexao = await NetInfo.fetch();
+            const estaOnline = conexao.isConnected && conexao.isInternetReachable;
+
+            if (estaOnline) {
+                try {
+                    const response = await api.post(`/discurso/buscar`, {
+                        texto: texto.trim(),
+                    });
+                    
+                    let traducaoData = response.data.traducao;
+
+                    if (response.data.imagem_url || response.data.audio_url || response.data.video_url) {
+                        traducaoData = traducaoData.map((trad: any) => ({
+                            ...trad,
+                            imagem_url: trad.imagem_url || response.data.imagem_url,
+                            audio_url: trad.audio_url || response.data.audio_url,
+                            video_url: trad.video_url || response.data.video_url,
+                            id: trad.id || response.data.traducao_id
+                        }));
+                    }
+
+                    setTraducao(traducaoData);
+                    setCategoria(response.data.categoria);
+
+                    const primeiraTraducao = Array.isArray(traducaoData) ? traducaoData[0] : null;
+                    if (primeiraTraducao?.texto) {
+                        registrarHistorico({
+                            termo_pesquisado: texto.trim(),
+                            traducao_resultado: primeiraTraducao.texto,
+                        }).catch(() => undefined);
+                    }
+                } catch (errorOnline) {
+                    console.log("Erro no servidor, tentando fallback offline...");
+                    await executarBuscaOffline(texto.trim());
+                }
+            } else {
+                await executarBuscaOffline(texto.trim());
             }
 
-            setTraducao(traducaoData);
-            setCategoria(response.data.categoria);
         } catch (error) {
-            const err = error as any;
-            const mensagemErro = err.response?.data?.erro || "Não foi possível traduzir, erro desconhecido.";
-            Alert.alert(mensagemErro);
+            Alert.alert("Erro", "Ocorreu um erro inesperado ao realizar a busca.");
         } finally {
             setCarregando(false);
         }
@@ -139,22 +190,6 @@ function Home() {
         <SafeAreaView style={styles.container}>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1 }}>
 
-                {/* Seletores de Idioma */}
-                <View style={styles.languageContainer}>
-                    <View style={styles.languageDropdown}>
-                        <Text style={styles.languageText}>De</Text>
-                        <Icon name="chevron-down" size={16} color="#000" />
-                    </View>
-
-                    <Icon name="swap-horizontal" size={20} color="#000" />
-
-                    <View style={styles.languageDropdown}>
-                        <Text style={styles.languageText}>Para</Text>
-                        <Icon name="chevron-down" size={16} color="#000" />
-                    </View>
-                </View>
-
-                {/* Área de Input */}
                 <View style={styles.inputContainer}>
                     <TextInput
                         style={styles.input}
@@ -171,7 +206,6 @@ function Home() {
                     )}
                 </View>
 
-                {/* Botão Traduzir */}
                 <View style={styles.actions}>
                     <TouchableOpacity
                         style={styles.button}
@@ -193,36 +227,36 @@ function Home() {
 
                 {traducao.map((trad, index) => (
                     <View key={trad.id || index} style={[styles.outputContainer, { marginBottom: index === traducao.length - 1 ? 30 : 15 }]}>
-                        <Text style={[styles.outputText, { color: '#333' }]}>
-                            {trad.texto}
-                        </Text>
+                        <View style={{ minHeight: 60, paddingBottom: 20 }}>
+                            <Text style={[styles.outputText, { color: '#333', marginBottom: 5 }]}>
+                                {trad.texto}
+                            </Text>
 
-                        <View style={styles.outputActions}>
-                            <TouchableOpacity onPress={() => copiarParaClipboard(trad.texto)}>
-                                <Icon name="copy-outline" size={22} color="#000" />
-                            </TouchableOpacity>
-                            <TouchableOpacity>
-                                <Icon name="mic-outline" size={24} color="#000" />
-                            </TouchableOpacity>
+                            <View style={styles.outputActions}>
+                                {trad.id && <FavoriteButton traducaoId={trad.id} />}
+                                <TouchableOpacity onPress={() => copiarParaClipboard(trad.texto)} style={{ padding: 4 }}>
+                                    <Icon name="copy-outline" size={22} color="#000" />
+                                </TouchableOpacity>
+                            </View>
                         </View>
 
                         {/* Midias */}
                         {trad.imagem_url && (
-                            <View style={{ marginTop: 20 }}>
+                            <View style={{ marginTop: 5 }}>
                                 <FotoPlayer uri={trad.imagem_url} />
                                 <BotaoRemoverMidia id={trad.id} tipo="imagem_url" />
                             </View>
                         )}
 
                         {trad.audio_url && (
-                            <View style={{ marginTop: 20 }}>
+                            <View style={{ marginTop: 5 }}>
                                 <AudioPlayer uri={trad.audio_url} name="Áudio da Tradução" />
                                 <BotaoRemoverMidia id={trad.id} tipo="audio_url" />
                             </View>
                         )}
 
                         {trad.video_url && (
-                            <View style={{ marginTop: 20 }}>
+                            <View style={{ marginTop: 5 }}>
                                 <VideoPlayer uri={trad.video_url} />
                                 <BotaoRemoverMidia id={trad.id} tipo="video_url" />
                             </View>

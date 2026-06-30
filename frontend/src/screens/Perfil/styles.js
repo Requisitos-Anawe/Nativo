@@ -114,7 +114,7 @@ export default StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         alignItems: 'center',
-        justifyContent: 'space-between',
+        justifyContent: 'flex-start',
         gap: 10,
     },
     achievementBadge: {
@@ -279,4 +279,9 @@ export default StyleSheet.create({
         fontWeight: 'bold',
         fontFamily: 'InterDisplay-SemiBold',
     },
+    emptyText: {
+        textAlign: 'center',
+        color: '#555',
+        marginBottom: 25,
+    }
 });

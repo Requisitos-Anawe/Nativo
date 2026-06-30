@@ -31,6 +31,10 @@ export default function Login() {
     );
 
     const handleLogin = async () => {
+        if (!cpf.trim() || !password.trim()) {
+            setErro("CPF e senha são obrigatórios.");
+            return;
+        }
         try {
             setCarregando(true);
             setErro('');
@@ -106,7 +110,7 @@ export default function Login() {
                         </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity style={styles.forgotPassword}>
+                    <TouchableOpacity style={styles.forgotPassword} onPress={() => navigation.navigate("RecuperarSenha")}>
                         <Text style={styles.forgotPasswordText}>Esqueceu sua senha?</Text>
                     </TouchableOpacity>
 
@@ -118,17 +122,6 @@ export default function Login() {
                         style={styles.button}
                     >
                         <Text style={styles.buttonText}>{carregando ? "Aguarde..." : "Entrar"}</Text>
-                    </TouchableOpacity>
-
-                    <View style={styles.dividerContainer}>
-                        <View style={styles.divider} />
-                        <Text style={styles.dividerText}>ou continue com</Text>
-                        <View style={styles.divider} />
-                    </View>
-
-                    <TouchableOpacity style={styles.googleButton}>
-                        <Icon name="logo-google" size={20} color="#DB4437" style={styles.googleIcon} />
-                        <Text style={styles.googleButtonText}>Sign in with Google</Text>
                     </TouchableOpacity>
 
                     <View style={styles.registerContainer}>
