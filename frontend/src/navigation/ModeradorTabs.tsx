@@ -4,7 +4,6 @@ import Icon from "react-native-vector-icons/Ionicons";
 import Informations from "../screens/Informations";
 import ModTranslationList from "../screens/ModTranslationList";
 import AtividadesScreen from "../screens/Atividades/AtividadesScreen";
-
 import CustomTabBar from './CustomTabBar';
 
 const Tab = createBottomTabNavigator();
