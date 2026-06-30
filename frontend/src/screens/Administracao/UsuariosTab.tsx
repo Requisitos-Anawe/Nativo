@@ -365,7 +365,7 @@ export default function UsuariosTab() {
       {/* MODAL DE CONFIRMAÇÃO */}
       <Modal visible={modalTipo !== null && usuarioSelecionado !== null} transparent animationType="fade" onRequestClose={closeModal}>
         <Pressable style={styles.modalOverlay} onPress={closeModal}>
-          <Pressable style={styles.modalContent} onPress={() => undefined}>
+          <View style={styles.modalContent} onStartShouldSetResponder={() => true}>
             {usuarioSelecionado && modalTipo ? (
               <>
                 <View style={[styles.modalAlert, modalTipo === 'banir' && styles.modalAlertDanger, modalTipo === 'desbanir' && styles.modalAlertSuccess]}>
@@ -441,7 +441,7 @@ export default function UsuariosTab() {
                 </View>
               </>
             ) : null}
-          </Pressable>
+          </View>
         </Pressable>
       </Modal>
     </View>

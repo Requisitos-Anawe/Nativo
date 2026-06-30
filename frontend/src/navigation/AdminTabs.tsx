@@ -14,24 +14,23 @@ export default function AdminTabs() {
     <Tab.Navigator
       tabBar={(props) => <CustomTabBar {...props} />}
       screenOptions={({ route }) => ({
-        headerShown: false, 
-        tabBarShowLabel: false, 
+        headerShown: false,
+        tabBarShowLabel: false,
         tabBarIcon: ({ color, size }) => {
           let iconName = 'home-outline';
-          
+
           if (route.name === 'Tradutor') iconName = 'language-outline';
           else if (route.name === 'Atividades') iconName = 'school-outline';
-          else if (route.name === 'Perfil') iconName = 'person-outline'; 
-          else if (route.name === 'Admin') iconName = 'shield-checkmark-outline'; 
-          
+          else if (route.name === 'Admin') iconName = 'shield-checkmark-outline';
+          else if (route.name === 'Perfil') iconName = 'person-outline';
           return <Icon name={iconName} size={size} color={color} />;
         },
       })}
     >
       <Tab.Screen name="Tradutor" component={HomeStack} />
       <Tab.Screen name="Atividades" component={AtividadesUsuarioScreen} />
-      <Tab.Screen name="Perfil" component={PerfilStack} />
       <Tab.Screen name="Admin" component={AdminScreen} />
+      <Tab.Screen name="Perfil" component={PerfilStack} />
     </Tab.Navigator>
   );
 }

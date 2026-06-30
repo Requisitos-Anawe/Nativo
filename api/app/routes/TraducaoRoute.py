@@ -17,7 +17,7 @@ transaction = db.transaction()
 
 @bp.route('/traducao/<traducao_id>/com-discurso', methods=['PUT'])
 @autenticar_jwt
-@verificar_professor
+@verificar_professor_admin
 def editar_traducao_discurso(traducao_id):
     """
     Atualizar tradução e discurso com suporte a multimídia
@@ -122,7 +122,7 @@ def editar_traducao_discurso(traducao_id):
 
 @bp.route('/traducao/<traducao_id>', methods=['GET'])
 @autenticar_jwt
-@verificar_professor
+@verificar_professor_admin
 def buscar_traducao(traducao_id):
     """
     Buscar tradução por ID
@@ -266,7 +266,7 @@ def listar_traducao_usuario(usuario_id):
 
 @bp.route("/traducao/cadastrar", methods=["POST"])
 @autenticar_jwt
-@verificar_professor
+@verificar_professor_admin
 def cadastrar_traducao():
     """
     Cadastrar nova tradução com multimídia
