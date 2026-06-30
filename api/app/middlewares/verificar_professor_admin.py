@@ -19,7 +19,7 @@ def verificar_professor_admin(f):
 
         usuario = usuario_doc.to_dict()
         perfil = usuario.get('perfil', '').lower()
-        if perfil not in ['professor', 'administrador']:
+        if perfil not in ['professor', 'admin']:
             return jsonify({'erro': 'Acesso negado: apenas professores ou administradores'}), 403
 
         return f(*args, **kwargs)
