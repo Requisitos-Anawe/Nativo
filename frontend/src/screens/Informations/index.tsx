@@ -1,5 +1,5 @@
-import React, { useLayoutEffect } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useLayoutEffect, useState } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, useIsFocused } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
@@ -14,11 +14,37 @@ export default function Informations() {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
 
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+
   useLayoutEffect(() => {
     if (isFocused) {
       navigation.getParent()?.setOptions({ headerShown: false });
     }
   }, [navigation, isFocused]);
+
+  const handleDownload = async () => {
+    if (isDownloading) return;
+
+    setIsDownloading(true);
+    setDownloadProgress(0);
+
+    const success = await DownloadFile(
+      'manual_nativo',
+      'https://drive.google.com/uc?export=download&id=176jdwMj0g_sQptlPF0SDREApmtjs82Jl',
+      (totalBytes) => {
+        console.log('Total bytes a serem baixados:', totalBytes);
+      },
+      (bytesWritten, contentLength) => {
+        if (contentLength > 0) {
+          const progress = Math.round((bytesWritten / contentLength) * 100);
+          setDownloadProgress(progress);
+        }
+      }
+    );
+
+    setIsDownloading(false);
+  };
 
   return (
     <View style={styles.container}>
@@ -40,16 +66,34 @@ export default function Informations() {
         <TouchableOpacity
           style={styles.downloadCard}
           activeOpacity={0.8}
-          onPress={() => DownloadFile('manual', 'https://drive.google.com/uc?export=download&id=176jdwMj0g_sQptlPF0SDREApmtjs82Jl')}
+          onPress={handleDownload}
+          disabled={isDownloading}
         >
           <View style={styles.downloadIconCircle}>
-            <Icon name="download-outline" size={24} color="#042d1f" />
+            {isDownloading ? (
+              <ActivityIndicator size="small" color="#042d1f" />
+            ) : (
+              <Icon name="download-outline" size={24} color="#042d1f" />
+            )}
           </View>
           <View style={styles.downloadTextContainer}>
-            <Text style={styles.downloadTitle}>Baixar manual do aplicativo</Text>
-            <Text style={styles.downloadSubtitle}>Guia completo para aproveitar todos os recursos do Nativo</Text>
+            <Text style={styles.downloadTitle}>
+              {isDownloading ? 'Baixando manual...' : 'Baixar manual do aplicativo'}
+            </Text>
+            <Text style={styles.downloadSubtitle}>
+              {isDownloading 
+                ? `Progresso: ${downloadProgress}%` 
+                : 'Guia completo para aproveitar todos os recursos do Nativo'}
+            </Text>
+            {isDownloading && (
+              <View style={styles.progressBarContainer}>
+                <View style={[styles.progressBar, { width: `${downloadProgress}%` }]} />
+              </View>
+            )}
           </View>
-          <Icon name="chevron-forward-outline" size={20} color="#fff" style={styles.downloadArrow} />
+          {!isDownloading && (
+            <Icon name="chevron-forward-outline" size={20} color="#fff" style={styles.downloadArrow} />
+          )}
         </TouchableOpacity>
 
         {/* Card: Sobre o aplicativo */}
