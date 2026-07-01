@@ -2,7 +2,7 @@ import React from 'react';
 import renderer, { act } from 'react-test-renderer';
 import Configurations from '../src/screens/Configurations';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert, TouchableOpacity } from 'react-native';
+import { Alert, TouchableOpacity, Linking } from 'react-native';
 import { SyncOfflineService } from '../src/services/SyncOfflineService';
 
 jest.mock('@react-native-async-storage/async-storage', () => ({
@@ -26,7 +26,10 @@ jest.mock('react-native-safe-area-context', () => ({
 }));
 
 jest.mock('../src/contexts/AuthContext', () => ({
-    useAuth: () => ({ setUser: jest.fn() }),
+    useAuth: () => ({
+        user: { id: 'test-user-id', nome: 'Test User', email: 'test@example.com', perfil: 'usuario', data_nascimento: '1990-01-01' },
+        setUser: jest.fn()
+    }),
 }));
 
 jest.mock('../src/components/DownloadFile', () => jest.fn());
@@ -73,7 +76,7 @@ describe('Configurations screen', () => {
 
         (AsyncStorage.getItem as jest.Mock).mockImplementation(async (key: string) => {
             if (key === 'token') return 'fake-token';
-            if (key === 'offline_access') return 'false';
+            if (key === 'offline_access_test-user-id') return 'false';
             return null;
         });
         (AsyncStorage.setItem as jest.Mock).mockResolvedValue(undefined);
@@ -89,7 +92,22 @@ describe('Configurations screen', () => {
         });
 
         expect(tree!.root.findByProps({ children: 'Configurações' })).toBeTruthy();
-        expect(tree!.root.findByProps({ children: 'Habilitar tradução offline' })).toBeTruthy();
+        expect(tree!.root.findByProps({ children: 'Baixar tradução off-line' })).toBeTruthy();
+    });
+
+    it('renderiza o texto Atualizar tradução-offline se ja baixou', async () => {
+        (AsyncStorage.getItem as jest.Mock).mockImplementation(async (key: string) => {
+            if (key === 'token') return 'fake-token';
+            if (key === 'offline_access_test-user-id') return 'true';
+            return null;
+        });
+
+        let tree: renderer.ReactTestRenderer;
+        await act(async () => {
+            tree = renderer.create(<Configurations />);
+        });
+
+        expect(tree!.root.findByProps({ children: 'Atualizar tradução-offline' })).toBeTruthy();
     });
 
     it('trata erro de leitura do AsyncStorage no useEffect inicial', async () => {
@@ -155,7 +173,7 @@ describe('Configurations screen', () => {
             jest.runAllTimers();
         });
 
-        expect(AsyncStorage.setItem).toHaveBeenCalledWith('offline_access', 'true');
+        expect(AsyncStorage.setItem).toHaveBeenCalledWith('offline_access_test-user-id', 'true');
     });
 
     it('trata erro de cancelamento CanceledError graciosamente', async () => {
@@ -239,7 +257,9 @@ describe('Configurations screen', () => {
         expect(AsyncStorage.removeItem).toHaveBeenCalledWith('user');
     });
 
-    it('chama a função DownloadFile ao clicar em Termos de Uso', async () => {
+    it('abre o link dos termos de uso ao clicar em Termos de Uso', async () => {
+        const openURLSpy = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+
         let tree: renderer.ReactTestRenderer;
         await act(async () => {
             tree = renderer.create(<Configurations />);
@@ -247,8 +267,11 @@ describe('Configurations screen', () => {
 
         const termsButton = findButtonByText(tree!, 'Termos de Uso e Privacidade');
         await act(async () => {
-            termsButton.props.onPress();
+            await termsButton.props.onPress();
         });
+
+        expect(openURLSpy).toHaveBeenCalledWith('https://drive.google.com/file/d/1V74rvGWG31ek6fx51rP64viIYK8vtvnk/view?usp=sharing');
+        openURLSpy.mockRestore();
     });
 
     it('chama a navegação de retorno ao pressionar o botão de voltar no cabeçalho', async () => {

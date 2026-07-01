@@ -66,7 +66,7 @@ function Home() {
             } else {
                 setTraducao([]);
                 setCategoria('');
-                Alert.alert("Modo Offline", "Nenhum conteúdo offline disponível para esta palavra. Baixe os dados nas Configurações.");
+                Alert.alert("Busca", "A tradução do discurso não foi encontrada.");
             }
         } catch (error) {
             setTraducao([]);
@@ -90,7 +90,7 @@ function Home() {
                     const response = await api.post(`/discurso/buscar`, {
                         texto: texto.trim(),
                     });
-                    
+
                     let traducaoData = response.data.traducao;
 
                     if (response.data.imagem_url || response.data.audio_url || response.data.video_url) {
