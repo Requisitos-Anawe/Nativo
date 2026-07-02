@@ -1,7 +1,7 @@
-import { NavigationContainer } from "@react-navigation/native";
-import { useAuth } from "../contexts/AuthContext";
-import AppStack from "./AppStack";
-import { Navigation as AuthNavigation } from "./AuthStack";
+import { NavigationContainer } from '@react-navigation/native';
+import { useAuth } from '../contexts/AuthContext';
+import AppStack from './AppStack';
+import { Navigation as AuthNavigation } from './AuthStack';
 
 export function RootNavigator() {
   const { user } = useAuth();

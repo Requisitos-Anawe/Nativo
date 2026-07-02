@@ -1,10 +1,8 @@
 interface UserInterface {
     nome: string,
     email: string,
-    perfil: {
-        id: string,
-        descricao: string
-    },
+    perfil: string,
     data_nascimento: string
-    id: string
+    id: string,
+    foto?: string
 }

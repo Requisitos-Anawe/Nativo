@@ -45,6 +45,15 @@ export default StyleSheet.create({
         marginBottom: 10
     },
 
+    minorButton: {
+        width: 80,
+        backgroundColor: '#CC005F',
+        paddingVertical: 8,
+        borderRadius: 4,
+        alignItems: 'center',
+        marginBottom: 10
+    },
+
     divisor: {
         marginVertical: 15,
         width: '100%',
