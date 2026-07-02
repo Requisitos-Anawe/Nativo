@@ -1,5 +1,5 @@
 import { useNavigation, useFocusEffect } from "@react-navigation/native";
-import { Alert, Platform, Text, TextInput, TouchableOpacity, View, ScrollView, KeyboardAvoidingView } from "react-native"
+import { Alert, Platform, Text, TextInput, TouchableOpacity, View, ScrollView, KeyboardAvoidingView, Linking } from "react-native"
 import styles from "./styles";
 import { useState, useCallback } from "react";
 import Icon from "react-native-vector-icons/Ionicons";
@@ -183,8 +183,14 @@ export default function UserCreate() {
                         style={{ marginBottom: 15 }}
                     />
                     
-                    <TouchableOpacity onPress={() => DownloadFile('termo-uso','https://drive.google.com/uc?export=download&id=1V74rvGWG31ek6fx51rP64viIYK8vtvnk')}>
-                        <Text style={styles.termo}>Baixar Termo de Uso e Políticas de Privacidade</Text>
+                    <TouchableOpacity onPress={async () => {
+                        try {
+                            await Linking.openURL('https://drive.google.com/file/d/1V74rvGWG31ek6fx51rP64viIYK8vtvnk/view?usp=sharing');
+                        } catch (error) {
+                            Alert.alert('Erro', 'Não foi possível abrir os termos de uso.');
+                        }
+                    }}>
+                        <Text style={styles.termo}>Ler Termo de Uso e Políticas de Privacidade</Text>
                     </TouchableOpacity>
 
                     {erro ? <Erro texto={erro} /> : null}

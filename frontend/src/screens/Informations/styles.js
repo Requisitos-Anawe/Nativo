@@ -90,6 +90,19 @@ export default StyleSheet.create({
         fontSize: 11,
         lineHeight: 14,
     },
+    progressBarContainer: {
+        height: 6,
+        backgroundColor: 'rgba(255, 255, 255, 0.2)',
+        borderRadius: 3,
+        marginTop: 8,
+        width: '100%',
+        overflow: 'hidden',
+    },
+    progressBar: {
+        height: '100%',
+        backgroundColor: '#F5E8C7',
+        borderRadius: 3,
+    },
     downloadArrow: {
         marginLeft: 10,
         zIndex: 2,

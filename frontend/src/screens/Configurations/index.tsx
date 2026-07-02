@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Text, TouchableOpacity, View, ScrollView, Switch, Alert, ActivityIndicator, Modal } from "react-native";
+import { Text, TouchableOpacity, View, ScrollView, Switch, Alert, ActivityIndicator, Modal, Linking } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -14,7 +14,7 @@ import { SyncOfflineService } from '../../services/SyncOfflineService';
 export default function Configurations() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const { setUser } = useAuth();
+  const { user, setUser } = useAuth();
   const [offlineAccess, setOfflineAccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -25,16 +25,19 @@ export default function Configurations() {
   useEffect(() => {
     const loadOfflineState = async () => {
       try {
-        const value = await AsyncStorage.getItem('offline_access');
+        const key = user?.id ? `offline_access_${user.id}` : 'offline_access';
+        const value = await AsyncStorage.getItem(key);
         if (value !== null) {
           setOfflineAccess(value === 'true');
+        } else {
+          setOfflineAccess(false);
         }
       } catch (e) {
         console.log('Erro ao carregar estado offline:', e);
       }
     };
     loadOfflineState();
-  }, []);
+  }, [user]);
 
   const sincronizarBancoLocal = async () => {
     const token = await AsyncStorage.getItem('token');
@@ -73,7 +76,8 @@ export default function Configurations() {
               setIsLoading(true);
               setDownloadProgress(0);
               await sincronizarBancoLocal();
-              await AsyncStorage.setItem('offline_access', 'true');
+              const key = user?.id ? `offline_access_${user.id}` : 'offline_access';
+              await AsyncStorage.setItem(key, 'true');
               setOfflineAccess(true);
               setTimeout(() => {
                 Alert.alert("Sucesso", "Banco de traduções atualizado com sucesso!");
@@ -134,7 +138,9 @@ export default function Configurations() {
             <View style={[styles.iconContainer, { backgroundColor: '#e8f0fe' }]}>
               <MaterialIcon name="signal-wifi-off" size={22} color="#1a73e8" />
             </View>
-            <Text style={styles.cardText}>Habilitar tradução offline</Text>
+            <Text style={styles.cardText}>
+              {offlineAccess ? "Atualizar tradução-offline" : "Baixar tradução off-line"}
+            </Text>
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             {isLoading ? (
@@ -159,7 +165,13 @@ export default function Configurations() {
         <TouchableOpacity
           style={styles.card}
           activeOpacity={0.7}
-          onPress={() => DownloadFile('termo-uso', 'https://drive.google.com/uc?export=download&id=1V74rvGWG31ek6fx51rP64viIYK8vtvnk')}
+          onPress={async () => {
+            try {
+              await Linking.openURL('https://drive.google.com/file/d/1V74rvGWG31ek6fx51rP64viIYK8vtvnk/view?usp=sharing');
+            } catch (error) {
+              Alert.alert('Erro', 'Não foi possível abrir os termos de uso.');
+            }
+          }}
         >
           <View style={styles.cardLeft}>
             <View style={[styles.iconContainer, { backgroundColor: '#e8f5e9' }]}>

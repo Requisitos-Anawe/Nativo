@@ -374,14 +374,14 @@ export default function UsuariosTab() {
                     size={22}
                     color={modalTipo === 'banir' ? '#c53226' : modalTipo === 'revogar' ? '#c47c52' : modalTipo === 'desbanir' ? '#2eaf5d' : '#0d3f2b'}
                   />
-                  <Text style={styles.modalAlertText}>{modalTipo === 'banir' ? 'Ação irreversível' : modalTipo === 'desbanir' ? 'Recuperar acesso' : 'Gestão de acesso'}</Text>
+                  <Text style={styles.modalAlertText}>{modalTipo === 'banir' ? 'Bloquear acesso' : modalTipo === 'desbanir' ? 'Recuperar acesso' : 'Gestão de acesso'}</Text>
                 </View>
 
                 <Text style={styles.modalTitle}>{actionLabels[modalTipo].title}</Text>
                 <Text style={styles.modalSubtitle}>
                   {modalTipo === 'atribuir' && `Selecione um novo nível para ${usuarioSelecionado.nome}.`}
                   {modalTipo === 'revogar' && `O cargo atual de ${usuarioSelecionado.nome} será rebaixado para Usuário comum.`}
-                  {modalTipo === 'banir' && 'A conta será inativada permanentemente. O administrador poderá desbanir depois pelo mesmo fluxo.'}
+                  {modalTipo === 'banir' && 'A conta será inativada. O administrador poderá desbanir depois pelo mesmo fluxo.'}
                   {modalTipo === 'desbanir' && `A conta de ${usuarioSelecionado.nome} voltará a acessar a plataforma como usuário comum.`}
                 </Text>
 

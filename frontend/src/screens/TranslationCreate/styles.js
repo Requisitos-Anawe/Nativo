@@ -3,49 +3,128 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
-        padding: 25
+        backgroundColor: '#f4f5f4',
     },
-
-    title: {
+    header: {
+        backgroundColor: '#042d1f',
+        width: '100%',
+        paddingBottom: 25,
+        paddingHorizontal: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        zIndex: 10,
+        position: 'relative',
+    },
+    backButton: {
+        position: 'absolute',
+        left: 20,
+        bottom: 20,
+        padding: 5,
+        zIndex: 11,
+    },
+    headerTitle: {
+        color: '#fff',
+        fontSize: 22,
+        fontWeight: '600',
+        textAlign: 'center',
+    },
+    content: {
+        padding: 20,
+        paddingBottom: 120,
+    },
+    label: {
+        fontSize: 14,
+        fontWeight: '700',
+        color: '#093624',
+        marginBottom: 8,
+        marginTop: 10,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    inputField: {
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        paddingHorizontal: 15,
+        paddingVertical: 12,
         color: '#333333',
-        fontSize: 26,
-        fontWeight: 'bold',
-    },
-
-    subtitle: {
-        color: '#333333',
-        marginBottom: 5,
-        fontWeight: 'bold'
-    },
-
-    input: {
-        borderColor: '#d9d9d9',
+        fontSize: 15,
         borderWidth: 1,
-        borderRadius: 5,
-        paddingHorizontal: 10,
-        marginBottom: 20
+        borderColor: '#e0e0e0',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+        elevation: 1,
+        marginBottom: 15,
     },
-
-    text_button: {
+    pickerContainer: {
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        marginBottom: 15,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+        elevation: 1,
+    },
+    mediaButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#ffffff',
+        padding: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+        marginBottom: 12,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+        elevation: 1,
+    },
+    mediaButtonText: {
+        fontSize: 15,
         color: '#333333',
+        fontWeight: '600',
+        marginLeft: 10,
+    },
+    submitButton: {
+        backgroundColor: '#093624',
+        borderRadius: 25,
+        height: 52,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginTop: 25,
+        marginBottom: 40,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+        elevation: 3,
+    },
+    submitButtonText: {
+        color: '#FFFFFF',
         fontSize: 16,
         fontWeight: 'bold',
     },
-
-    button: {
-        width: 150,
-        backgroundColor: '#CC005F',
-        paddingVertical: 8,
-        borderRadius: 4,
-        alignItems: 'center',
-        marginBottom: 10
+    sectionTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#042d1f',
+        marginTop: 15,
+        marginBottom: 10,
     },
-    
-    divisor: {
-        marginVertical: 15,
-        width: '100%',
-        height: 1,
-        backgroundColor: '#d9d9d9'
-    },
+    mediaPlayerContainer: {
+        backgroundColor: '#ffffff',
+        borderRadius: 12,
+        padding: 10,
+        marginBottom: 15,
+        borderWidth: 1,
+        borderColor: '#e0e0e0',
+    }
 });
