@@ -20,12 +20,41 @@ type UsuarioApi = {
       };
 };
 
-const isProfessor = (usuario: UsuarioApi): boolean => {
-  if (typeof usuario.perfil === 'string') {
-    return usuario.perfil.toLowerCase() === 'professor';
+type UsuariosResponse = {
+  data?: UsuarioApi[];
+  dados?: UsuarioApi[];
+  limit?: number;
+  start_after?: string | null;
+};
+
+const normalizarPerfil = (perfil: UsuarioApi['perfil']): string => {
+  if (typeof perfil === 'string') {
+    return perfil.toLowerCase();
   }
 
-  return usuario.perfil?.descricao?.toLowerCase() === 'professor';
+  return (perfil?.descricao || perfil?.id || '').toLowerCase();
+};
+
+const isProfessor = (usuario: UsuarioApi): boolean => {
+  return normalizarPerfil(usuario.perfil) === 'professor';
+};
+
+const extrairUsuarios = (
+  responseData: UsuarioApi[] | UsuariosResponse,
+): UsuarioApi[] => {
+  if (Array.isArray(responseData)) {
+    return responseData;
+  }
+
+  if (Array.isArray(responseData.data)) {
+    return responseData.data;
+  }
+
+  if (Array.isArray(responseData.dados)) {
+    return responseData.dados;
+  }
+
+  return [];
 };
 
 export async function listarAtividades(
@@ -93,9 +122,13 @@ export async function excluirAtividade(atividadeId: string): Promise<void> {
 }
 
 export async function listarProfessores(): Promise<ProfessorOption[]> {
-  const response = await api.get<UsuarioApi[]>('/usuarios');
+  const response = await api.get<UsuarioApi[] | UsuariosResponse>('/usuarios', {
+    params: {
+      limit: 100,
+    },
+  });
 
-  return response.data
+  return extrairUsuarios(response.data)
     .filter(isProfessor)
     .map(usuario => ({
       id: usuario.id,

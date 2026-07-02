@@ -167,6 +167,7 @@ export default function AtividadesScreen() {
       const dados = await listarProfessores();
       setProfessores(dados);
     } catch {
+        console.log('Erro ao carregar professores:', err);
       setProfessores([]);
     }
   }, []);

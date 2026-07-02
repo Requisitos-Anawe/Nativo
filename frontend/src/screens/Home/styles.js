@@ -96,7 +96,7 @@ export default StyleSheet.create({
 
   // Output Area
   outputContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: '#ececec',
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#dcdcdc',

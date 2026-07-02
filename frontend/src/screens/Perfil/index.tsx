@@ -532,13 +532,15 @@ export default function Perfil() {
               </ScrollView>
             )}
 
-            <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>CONQUISTAS</Text>
-            </View>
-
-            <Text style={styles.emptyText}>
-              Atividades concluídas: {totalAtividades}
-            </Text>
+            <TouchableOpacity
+              style={styles.sectionHeader}
+              activeOpacity={0.7}
+              onPress={() => navigation.navigate('Insignias')}>
+              <Text style={styles.sectionTitle}>
+                CONQUISTAS ({totalAtividades} {totalAtividades === 1 ? 'atividade concluída' : 'atividades concluídas'})
+              </Text>
+              <Icon name="chevron-forward" size={20} color="#000" />
+            </TouchableOpacity>
 
             <View style={styles.achievementsContainer}>
               {loadingInsignias ? (
