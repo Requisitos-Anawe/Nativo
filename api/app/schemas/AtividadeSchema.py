@@ -234,6 +234,25 @@ class BaseAtividadeSchema(Schema):
                     ]
                 })
 
+        # Validar consistência dos campos da insígnia (FE02 / RN06)
+        # Campos: insignia_titulo, insignia_descricao, insignia_imagem_url, insignia_porcentagem_minima
+        insignia_campos = {
+            "insignia_titulo": data.get("insignia_titulo"),
+            "insignia_descricao": data.get("insignia_descricao"),
+            "insignia_imagem_url": data.get("insignia_imagem_url"),
+            "insignia_porcentagem_minima": data.get("insignia_porcentagem_minima"),
+        }
+
+        # Identifica se algum campo foi preenchido
+        campos_preenchidos = {k: v for k, v in insignia_campos.items() if v is not None and v != ""}
+
+        if campos_preenchidos and len(campos_preenchidos) < 4:
+            erros_insignia = {}
+            for campo, valor in insignia_campos.items():
+                if valor is None or valor == "":
+                    erros_insignia[campo] = ["Todos os campos da insígnia (título, descrição, imagem e porcentagem mínima) devem ser preenchidos se um deles for especificado."]
+            raise ValidationError(erros_insignia)
+
 
 class AtividadeSchema(BaseAtividadeSchema):
     """Schema usado em POST e PUT."""
